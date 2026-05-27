@@ -295,12 +295,12 @@ Small-scale per PRD (`target_scale.users: small`). The unique partial index is t
 
 #### Automated
 
-- [ ] 3.1 `npx supabase migration list --linked` shows migration applied
-- [ ] 3.2 Cloudflare Worker deploy unaffected (no rebuild required)
-- [ ] 3.3 `curl -I` against production returns HTTP/2 200
+- [x] 3.1 `npx supabase migration list --linked` shows migration applied
+- [x] 3.2 Cloudflare Worker deploy unaffected (no rebuild required)
+- [x] 3.3 `curl -I` against production returns HTTP/2 200
 
 #### Manual
 
-- [ ] 3.4 Production login still works
-- [ ] 3.5 Manual insert + cascade-delete probe behaves as designed
-- [ ] 3.6 `smoke-notes.md` recorded in change folder
+- [x] 3.4 Production login still works
+- [x] 3.5 Manual insert + cascade-delete probe behaves as designed
+- [x] 3.6 `smoke-notes.md` recorded in change folder
