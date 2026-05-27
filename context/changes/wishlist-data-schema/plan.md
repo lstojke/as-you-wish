@@ -265,31 +265,31 @@ Small-scale per PRD (`target_scale.users: small`). The unique partial index is t
 
 #### Automated
 
-- [x] 1.1 Migration file lints with `npx supabase db lint`
-- [x] 1.2 File naming matches `^[0-9]{14}_[a-z0-9_]+\.sql$`
-- [x] 1.3 `grep -c "enable row level security"` returns 4
-- [x] 1.4 `npm run lint` passes
+- [x] 1.1 Migration file lints with `npx supabase db lint` — 4f6153b
+- [x] 1.2 File naming matches `^[0-9]{14}_[a-z0-9_]+\.sql$` — 4f6153b
+- [x] 1.3 `grep -c "enable row level security"` returns 4 — 4f6153b
+- [x] 1.4 `npm run lint` passes — 4f6153b
 
 #### Manual
 
-- [ ] 1.5 File reviewed end-to-end against the plan contract
-- [ ] 1.6 No `claimer_id` appears in any owner-side policy or view
+- [x] 1.5 File reviewed end-to-end against the plan contract — 4f6153b
+- [x] 1.6 No `claimer_id` appears in any owner-side policy or view — 4f6153b
 
 ### Phase 2: Local verification
 
 #### Automated
 
-- [ ] 2.1 `npx supabase db reset` exits 0
-- [ ] 2.2 All four tables show `Row Security: enabled`
-- [ ] 2.3 Unique partial index appears in `\d reservations`
-- [ ] 2.4 `race-test.sh` reports `OK: exactly one insert succeeded`
+- [x] 2.1 `npx supabase db reset` exits 0
+- [x] 2.2 All four tables show `Row Security: enabled`
+- [x] 2.3 Unique partial index appears in `\d reservations`
+- [x] 2.4 `race-test.sh` reports `OK: exactly one insert succeeded`
 
 #### Manual
 
-- [ ] 2.5 `verify.sql` probes match expected outcomes per persona
-- [ ] 2.6 Owner cannot read `reservations` rows
-- [ ] 2.7 `item_reservation_status` returns correct booleans for owner
-- [ ] 2.8 Accepted invitee has read-only items access
+- [x] 2.5 `verify.sql` probes match expected outcomes per persona
+- [x] 2.6 Owner cannot read `reservations` rows
+- [x] 2.7 `item_reservation_status` returns correct booleans for owner
+- [x] 2.8 Accepted invitee has read-only items access
 
 ### Phase 3: Remote apply
 

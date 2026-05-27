@@ -97,17 +97,102 @@ alter table public.items         enable row level security;
 alter table public.invitations   enable row level security;
 alter table public.reservations  enable row level security;
 
+-- ----------------------------------------------------------------------------
+-- Recursion-safe membership helpers
+-- ----------------------------------------------------------------------------
+--
+-- Cross-table RLS predicates (e.g. "lists is readable if you have an
+-- accepted invitation") can recurse: the policy on `lists` reads
+-- `invitations`, whose own SELECT policy reads `lists`, and Postgres
+-- detects the loop ("infinite recursion detected in policy ...").
+--
+-- These SECURITY DEFINER helpers run as their owner and bypass RLS on the
+-- referenced tables, so policies that call them never re-enter another
+-- policy. STABLE so the planner can fold. search_path is pinned to public
+-- to block search_path-shadowing attacks.
+
+create or replace function public.is_list_owner(list_uuid uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.lists l
+    where l.id = list_uuid
+      and l.owner_id = (select auth.uid())
+  );
+$$;
+
+create or replace function public.is_list_invitee(list_uuid uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.invitations i
+    where i.list_id = list_uuid
+      and i.accepted_by_user_id = (select auth.uid())
+  );
+$$;
+
+create or replace function public.is_list_member(list_uuid uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select public.is_list_owner(list_uuid) or public.is_list_invitee(list_uuid);
+$$;
+
+create or replace function public.is_item_list_member(item_uuid uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select public.is_list_member((select it.list_id from public.items it where it.id = item_uuid));
+$$;
+
+-- Boolean-only reservation status. Owners cannot read `reservations` rows
+-- (their RLS policy restricts to claimer), but they CAN learn taken/free
+-- through this definer-side check — claimer_id never leaves the function.
+create or replace function public.is_item_reserved(item_uuid uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.reservations r
+    where r.item_id = item_uuid and r.released_at is null
+  );
+$$;
+
+revoke execute on function public.is_list_owner(uuid)       from public;
+revoke execute on function public.is_list_invitee(uuid)     from public;
+revoke execute on function public.is_list_member(uuid)      from public;
+revoke execute on function public.is_item_list_member(uuid) from public;
+revoke execute on function public.is_item_reserved(uuid)    from public;
+grant  execute on function public.is_list_owner(uuid)       to authenticated;
+grant  execute on function public.is_list_invitee(uuid)     to authenticated;
+grant  execute on function public.is_list_member(uuid)      to authenticated;
+grant  execute on function public.is_item_list_member(uuid) to authenticated;
+grant  execute on function public.is_item_reserved(uuid)    to authenticated;
+
 -- ----- lists ----------------------------------------------------------------
 
 create policy lists_select on public.lists
   for select to authenticated
   using (
     owner_id = (select auth.uid())
-    or exists (
-      select 1 from public.invitations i
-      where i.list_id = lists.id
-        and i.accepted_by_user_id = (select auth.uid())
-    )
+    or public.is_list_invitee(id)
   );
 
 create policy lists_insert on public.lists
@@ -125,61 +210,22 @@ create policy lists_delete on public.lists
 
 -- ----- items ----------------------------------------------------------------
 
--- Helper predicate (inlined): caller is owner of the parent list, or an
--- accepted invitee.
 create policy items_select on public.items
   for select to authenticated
-  using (
-    exists (
-      select 1 from public.lists l
-      where l.id = items.list_id
-        and (
-          l.owner_id = (select auth.uid())
-          or exists (
-            select 1 from public.invitations i
-            where i.list_id = l.id
-              and i.accepted_by_user_id = (select auth.uid())
-          )
-        )
-    )
-  );
+  using (public.is_list_member(list_id));
 
 create policy items_insert on public.items
   for insert to authenticated
-  with check (
-    exists (
-      select 1 from public.lists l
-      where l.id = items.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  );
+  with check (public.is_list_owner(list_id));
 
 create policy items_update on public.items
   for update to authenticated
-  using (
-    exists (
-      select 1 from public.lists l
-      where l.id = items.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  )
-  with check (
-    exists (
-      select 1 from public.lists l
-      where l.id = items.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  );
+  using (public.is_list_owner(list_id))
+  with check (public.is_list_owner(list_id));
 
 create policy items_delete on public.items
   for delete to authenticated
-  using (
-    exists (
-      select 1 from public.lists l
-      where l.id = items.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  );
+  using (public.is_list_owner(list_id));
 
 -- ----- invitations ----------------------------------------------------------
 
@@ -188,23 +234,13 @@ create policy items_delete on public.items
 create policy invitations_select on public.invitations
   for select to authenticated
   using (
-    exists (
-      select 1 from public.lists l
-      where l.id = invitations.list_id
-        and l.owner_id = (select auth.uid())
-    )
+    public.is_list_owner(list_id)
     or lower(trim((auth.jwt() ->> 'email'))) = invitations.email
   );
 
 create policy invitations_insert on public.invitations
   for insert to authenticated
-  with check (
-    exists (
-      select 1 from public.lists l
-      where l.id = invitations.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  );
+  with check (public.is_list_owner(list_id));
 
 create policy invitations_update on public.invitations
   for update to authenticated
@@ -218,13 +254,7 @@ create policy invitations_update on public.invitations
 
 create policy invitations_delete on public.invitations
   for delete to authenticated
-  using (
-    exists (
-      select 1 from public.lists l
-      where l.id = invitations.list_id
-        and l.owner_id = (select auth.uid())
-    )
-  );
+  using (public.is_list_owner(list_id));
 
 -- Lock down writable columns: invitee may only flip the two acceptance fields.
 revoke update on public.invitations from authenticated;
@@ -242,20 +272,7 @@ create policy reservations_insert on public.reservations
   for insert to authenticated
   with check (
     claimer_id = (select auth.uid())
-    and exists (
-      select 1
-      from public.items it
-      join public.lists l on l.id = it.list_id
-      where it.id = reservations.item_id
-        and (
-          l.owner_id = (select auth.uid())
-          or exists (
-            select 1 from public.invitations inv
-            where inv.list_id = l.id
-              and inv.accepted_by_user_id = (select auth.uid())
-          )
-        )
-    )
+    and public.is_item_list_member(item_id)
   );
 
 create policy reservations_update on public.reservations
@@ -274,21 +291,18 @@ grant  update (released_at) on public.reservations to authenticated;
 -- item_reservation_status view
 -- ----------------------------------------------------------------------------
 
--- security_invoker = true is load-bearing: the caller's RLS on `items` and
--- `reservations` gates the rows the view returns. The view exposes only the
--- boolean is_reserved; claimer_id is never selected.
+-- security_invoker = true is load-bearing for the OUTER scan: the caller's
+-- RLS on `items` filters which item rows the view returns. The is_reserved
+-- boolean is computed via a SECURITY DEFINER helper so that owners (who
+-- cannot read `reservations` rows by policy) still see taken/free without
+-- the view ever projecting `claimer_id`.
 create view public.item_reservation_status
   with (security_invoker = true)
   as
   select
-    i.id      as item_id,
-    i.list_id as list_id,
-    exists (
-      select 1
-      from public.reservations r
-      where r.item_id = i.id
-        and r.released_at is null
-    ) as is_reserved
+    i.id                            as item_id,
+    i.list_id                       as list_id,
+    public.is_item_reserved(i.id)   as is_reserved
   from public.items i;
 
 grant select on public.item_reservation_status to authenticated;
