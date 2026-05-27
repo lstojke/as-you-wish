@@ -279,17 +279,17 @@ Small-scale per PRD (`target_scale.users: small`). The unique partial index is t
 
 #### Automated
 
-- [x] 2.1 `npx supabase db reset` exits 0
-- [x] 2.2 All four tables show `Row Security: enabled`
-- [x] 2.3 Unique partial index appears in `\d reservations`
-- [x] 2.4 `race-test.sh` reports `OK: exactly one insert succeeded`
+- [x] 2.1 `npx supabase db reset` exits 0 — 411cbff
+- [x] 2.2 All four tables show `Row Security: enabled` — 411cbff
+- [x] 2.3 Unique partial index appears in `\d reservations` — 411cbff
+- [x] 2.4 `race-test.sh` reports `OK: exactly one insert succeeded` — 411cbff
 
 #### Manual
 
-- [x] 2.5 `verify.sql` probes match expected outcomes per persona
-- [x] 2.6 Owner cannot read `reservations` rows
-- [x] 2.7 `item_reservation_status` returns correct booleans for owner
-- [x] 2.8 Accepted invitee has read-only items access
+- [x] 2.5 `verify.sql` probes match expected outcomes per persona — 411cbff
+- [x] 2.6 Owner cannot read `reservations` rows — 411cbff
+- [x] 2.7 `item_reservation_status` returns correct booleans for owner — 411cbff
+- [x] 2.8 Accepted invitee has read-only items access — 411cbff
 
 ### Phase 3: Remote apply
 
