@@ -68,6 +68,15 @@ const astroConfig = tseslint.config({
   },
 });
 
+const vendorConfig = tseslint.config({
+  files: ["src/components/ui/**", "src/db/database.types.ts"],
+  rules: {
+    "@typescript-eslint/no-unnecessary-condition": "off",
+    "@typescript-eslint/no-unnecessary-type-conversion": "off",
+    "@typescript-eslint/no-redundant-type-constituents": "off",
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   baseConfig,
@@ -75,5 +84,6 @@ export default tseslint.config(
   eslintPluginAstro.configs["flat/recommended"],
   ...eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,
+  vendorConfig,
   eslintPluginPrettier,
 );
