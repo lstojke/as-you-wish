@@ -51,6 +51,7 @@ A single timestamped migration file under `supabase/migrations/` contains the en
 - **Unique partial index, not full unique.** `CREATE UNIQUE INDEX ON reservations(item_id) WHERE released_at IS NULL` allows a reserved item to be released and re-reserved later; a plain unique constraint would block any historical row.
 - **`pgcrypto` for `gen_random_uuid()`.** Enable the extension at the top of the migration; Supabase usually has it but don't assume.
 - **CASCADE chain.** `lists` → `items` → `reservations`/`invitations` all use `ON DELETE CASCADE`. Deleting a Supabase auth user cascades to `lists.owner_id` (FK to `auth.users(id)`), which then cascades to children. Verify the FK to `auth.users` references the right column.
+- **SECURITY DEFINER helpers break RLS recursion (implementation note).** Phase 2 discovered that the planned inline `EXISTS` predicates (e.g. `lists_select` reading `invitations`, whose own `SELECT` policy reads `lists`) cause Postgres to raise `infinite recursion detected in policy`. The migration replaces those inline predicates with `SECURITY DEFINER STABLE` helpers (`is_list_owner`, `is_list_invitee`, `is_list_member`, `is_item_list_member`, `is_item_reserved`) with pinned `search_path = public`, `REVOKE EXECUTE FROM public`, `GRANT EXECUTE TO authenticated`. The helpers bypass RLS on the referenced tables so policies never re-enter another policy. Do not "simplify" back to inline `EXISTS` — the recursion will return.
 
 ## Phase 1: Author migration
 

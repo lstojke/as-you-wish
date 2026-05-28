@@ -80,7 +80,7 @@ end $$;
 
 begin;
 set local role authenticated;
-set local "request.jwt.claims" = '{"sub":"11111111-1111-1111-1111-111111111111","email":"owner@example.test","role":"authenticated"}';
+set local "request.jwt.claims" = '{"sub":"11111111-1111-1111-1111-111111111111","email":"owner@example.test","email_verified":"true","role":"authenticated"}';
 
 -- Owner sees their own list.
 select pg_temp.assert_count(1,
@@ -111,7 +111,7 @@ commit;
 
 begin;
 set local role authenticated;
-set local "request.jwt.claims" = '{"sub":"22222222-2222-2222-2222-222222222222","email":"invitee@example.test","role":"authenticated"}';
+set local "request.jwt.claims" = '{"sub":"22222222-2222-2222-2222-222222222222","email":"invitee@example.test","email_verified":"true","role":"authenticated"}';
 
 -- Invitee sees the list they were invited to.
 select pg_temp.assert_count(1,
@@ -149,7 +149,7 @@ commit;
 
 begin;
 set local role authenticated;
-set local "request.jwt.claims" = '{"sub":"33333333-3333-3333-3333-333333333333","email":"outsider@example.test","role":"authenticated"}';
+set local "request.jwt.claims" = '{"sub":"33333333-3333-3333-3333-333333333333","email":"outsider@example.test","email_verified":"true","role":"authenticated"}';
 
 select pg_temp.assert_count(0,
   (select count(*)::int from public.lists),
@@ -180,7 +180,7 @@ commit;
 -- Invitee must NOT be able to mutate list_id on their invitation row.
 begin;
 set local role authenticated;
-set local "request.jwt.claims" = '{"sub":"22222222-2222-2222-2222-222222222222","email":"invitee@example.test","role":"authenticated"}';
+set local "request.jwt.claims" = '{"sub":"22222222-2222-2222-2222-222222222222","email":"invitee@example.test","email_verified":"true","role":"authenticated"}';
 
 do $$
 begin

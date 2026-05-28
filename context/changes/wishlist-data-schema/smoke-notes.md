@@ -48,3 +48,9 @@ CASCADE chain from `lists` → `items` → `reservations` and `lists` → `invit
 ## 3.6 — These notes recorded
 
 This file.
+
+## Local-only config tweak (out-of-band, F-01)
+
+`supabase/config.toml` was modified during Phase 2 to set `[realtime] enabled = false` (and `[storage] enabled = false`, `[analytics] enabled = false`). These were workarounds for upstream Supabase CLI image bugs (`storage-api:v1.54.1` ships a zero-byte `/app/package.json`; realtime container failed its health check). The toggles affect `supabase start` only — the hosted production project ignores `config.toml` and was unaffected.
+
+**S-05 watch:** the reservation-status live-update slice will need `[realtime] enabled = true` re-enabled locally before development.
