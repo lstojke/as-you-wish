@@ -9,7 +9,9 @@ type Client = SupabaseClient<Database>;
 export async function listOwnedAndShared(client: Client): Promise<{ owned: ListRow[]; shared: ListRow[] }> {
   const {
     data: { user },
+    error: authError,
   } = await client.auth.getUser();
+  if (authError) throw authError;
   if (!user) {
     return { owned: [], shared: [] };
   }

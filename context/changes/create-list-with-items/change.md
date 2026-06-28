@@ -1,9 +1,9 @@
 ---
 change_id: create-list-with-items
 title: Create list with items
-status: implementing
+status: impl_reviewed
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-06-28
 archived_at: null
 ---
 

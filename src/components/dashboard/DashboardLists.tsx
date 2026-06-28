@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Plus, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreateListDialog } from "@/components/dashboard/CreateListDialog";
+import CreateListDialog from "@/components/dashboard/CreateListDialog";
 import type { ListRow } from "@/lib/services/lists";
 
 interface Props {

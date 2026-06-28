@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import DashboardLists from "@/components/dashboard/DashboardLists";
-import { listOwnedAndShared } from "@/lib/services/lists";
+import { listOwnedAndShared, type ListRow } from "@/lib/services/lists";
 
 export const prerender = false;
 
@@ -9,7 +9,14 @@ const { user, supabase } = Astro.locals;
 if (!user || !supabase) {
   throw new Error("dashboard: middleware should have redirected unauthenticated requests");
 }
-const { owned, shared } = await listOwnedAndShared(supabase);
+let owned: ListRow[] = [];
+let shared: ListRow[] = [];
+try {
+  ({ owned, shared } = await listOwnedAndShared(supabase));
+} catch (e) {
+  // eslint-disable-next-line no-console -- surface SSR load failures in Wrangler tail
+  console.error("dashboard: failed to load lists", e);
+}
 ---
 
 <Layout title="Dashboard">
@@ -31,6 +38,9 @@ const { owned, shared } = await listOwnedAndShared(supabase);
       </form>
     </header>
 
+    {
+      /* client:only prevents Astro SSR from rendering this island — required because react-hook-form and Radix UI primitives inside the dialog resolve to a different React instance than Astro's SSR renderer, producing an "Invalid hook call" crash at runtime. SSR data is fetched above and passed as props. */
+    }
     <DashboardLists client:only="react" owned={owned} shared={shared} />
   </main>
 </Layout>

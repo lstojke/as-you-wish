@@ -26,7 +26,7 @@ interface Props {
   onOptimisticRemove: (placeholderId: string) => void;
 }
 
-export function CreateListDialog({
+export default function CreateListDialog({
   open,
   onOpenChange,
   onOptimisticAdd,

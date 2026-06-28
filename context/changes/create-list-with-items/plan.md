@@ -236,7 +236,7 @@ Replace the dashboard stub with the real lists home: SSR-fetched owned lists and
 
 **Intent**: Server-render the dashboard with the current user's owned and shared lists, then hand interactivity to the React island.
 
-**Contract**: `export const prerender = false;`. In the frontmatter, call `listsService.listOwnedAndShared(Astro.locals.supabase)` to get `{ owned, shared }`. Pass both arrays as props to a single `<DashboardLists client:load owned={owned} shared={shared} userEmail={Astro.locals.user.email} />`. Render inside the shared layout so the Toaster is present.
+**Contract**: `export const prerender = false;`. In the frontmatter, call `listsService.listOwnedAndShared(Astro.locals.supabase)` to get `{ owned, shared }`. Pass both arrays as props to a single `<DashboardLists client:only="react" owned={owned} shared={shared} />` (note: `client:only="react"` rather than `client:load` — required to avoid an Astro SSR React-instance mismatch with react-hook-form/Radix UI inside the dialog; see Phase 3 impl-review F1). `userEmail` is rendered in a static Astro `<header>` block, not passed as a prop to the island (static content belongs in Astro). Render inside the shared layout so the Toaster is present.
 
 #### 2. Dashboard React island
 
@@ -441,18 +441,18 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 
 #### Automated
 
-- [x] 3.1 `astro check` passes
-- [x] 3.2 `npm run lint` passes
-- [x] 3.3 `npm run build` succeeds
+- [x] 3.1 `astro check` passes — e7fd0fe
+- [x] 3.2 `npm run lint` passes — e7fd0fe
+- [x] 3.3 `npm run build` succeeds — e7fd0fe
 
 #### Manual
 
-- [x] 3.4 Fresh user `/dashboard` shows hero empty state with CTA
-- [x] 3.5 Empty title submission shows inline validation error, no network call
-- [x] 3.6 Valid submission inserts optimistically and shows success toast
-- [x] 3.7 Simulated server error rolls back optimistic insert and shows error toast
-- [x] 3.8 No-invitations user does not see a "Shared with me" section
-- [x] 3.9 User with an accepted invitation sees the shared list under "Shared with me"
+- [x] 3.4 Fresh user `/dashboard` shows hero empty state with CTA — e7fd0fe
+- [x] 3.5 Empty title submission shows inline validation error, no network call — e7fd0fe
+- [x] 3.6 Valid submission inserts optimistically and shows success toast — e7fd0fe
+- [x] 3.7 Simulated server error rolls back optimistic insert and shows error toast — e7fd0fe
+- [x] 3.8 No-invitations user does not see a "Shared with me" section — e7fd0fe
+- [x] 3.9 User with an accepted invitation sees the shared list under "Shared with me" — e7fd0fe
 
 ### Phase 4: List detail — view items + add-item flow
 
