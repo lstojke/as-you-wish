@@ -458,18 +458,18 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 
 #### Automated
 
-- [x] 4.1 `astro check` passes
-- [x] 4.2 `npm run lint` passes
-- [x] 4.3 `npm run build` succeeds
-- [x] 4.4 Signed-out `curl -I` on `/lists/<uuid>` returns redirect to sign-in
+- [x] 4.1 `astro check` passes — 60db976
+- [x] 4.2 `npm run lint` passes — 60db976
+- [x] 4.3 `npm run build` succeeds — 60db976
+- [x] 4.4 Signed-out `curl -I` on `/lists/<uuid>` returns redirect to sign-in — 60db976
 
 #### Manual
 
-- [x] 4.5 Clicking an owned list card opens `/lists/<id>` with title + items
-- [x] 4.6 Add item with title only → appears immediately + success toast
-- [x] 4.7 Add item with title + price + URL → renders formatted price and link
-- [x] 4.8 Empty title / malformed URL / negative price all rejected inline
-- [x] 4.9 Unauthorized list UUID returns 404
-- [x] 4.10 Second user with accepted invitation can view the shared list's items
-- [x] 4.11 Signed-out access to `/lists/<id>` redirects to sign-in
+- [x] 4.5 Clicking an owned list card opens `/lists/<id>` with title + items — 60db976
+- [x] 4.6 Add item with title only → appears immediately + success toast — 60db976
+- [x] 4.7 Add item with title + price + URL → renders formatted price and link — 60db976
+- [x] 4.8 Empty title / malformed URL / negative price all rejected inline — 60db976
+- [x] 4.9 Unauthorized list UUID returns 404 — 60db976
+- [x] 4.10 Second user with accepted invitation can view the shared list's items — 60db976
+- [x] 4.11 Signed-out access to `/lists/<id>` redirects to sign-in — 60db976
 - [ ] 4.12 Simulated server error rolls back optimistic insert and shows error toast
