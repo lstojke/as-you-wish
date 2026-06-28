@@ -3,7 +3,7 @@ project: AsYouWish
 version: 1
 status: draft
 created: 2026-05-27
-updated: 2026-05-27
+updated: 2026-06-28
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -29,7 +29,7 @@ A private family gift coordinator is flooded with "what should I buy for X?" mes
 
 | ID    | Change ID                  | Outcome (user can …)                                                | Prerequisites | PRD refs                                          | Status   |
 | ----- | -------------------------- | ------------------------------------------------------------------- | ------------- | ------------------------------------------------- | -------- |
-| F-01  | wishlist-data-schema       | (foundation) lists / items / invitations / reservations tables + RLS landed | —             | FR-005, FR-008, FR-009, FR-013, Access Control, Business Logic | ready    |
+| F-01  | wishlist-data-schema       | (foundation) lists / items / invitations / reservations tables + RLS landed | —             | FR-005, FR-008, FR-009, FR-013, Access Control, Business Logic | done     |
 | S-01  | create-list-with-items     | Sign in, create a wish list, add items (name, est. price, store link) | F-01          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-009    | proposed |
 | S-02  | manage-own-lists-and-items | Edit and delete one's own lists and items                            | S-01          | FR-006, FR-007, FR-010, FR-011                    | proposed |
 | S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | proposed |
@@ -70,7 +70,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sequenced first because every must-have slice consumes this schema; landing it in one cohesive migration lets RLS policies be designed against the full entity graph rather than retrofitted. A piecemeal schema would force re-migrations as later slices reveal cross-table policy needs.
-- **Status:** ready
+- **Status:** done
 
 ## Slices
 
@@ -165,3 +165,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Do NOT pre-populate.)
+
+- **F-01: (foundation) Postgres tables for lists, items, invitations, and reservations are landed via `supabase/migrations/`, with RLS policies that enforce the PRD's Access Control rules (owner-writes-own, invitee-reads-shared, exclusive single-claim per item, reserver identity hidden from owner).** — Archived 2026-06-28 → `context/archive/2026-05-27-wishlist-data-schema/`. Lesson: —.
