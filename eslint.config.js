@@ -68,6 +68,8 @@ const astroConfig = tseslint.config({
   },
 });
 
+// shadcn-vendored + supabase-generated: do not place hand-written code under these paths.
+// Strict type rules are disabled because the generators emit patterns ESLint flags but we don't own.
 const vendorConfig = tseslint.config({
   files: ["src/components/ui/**", "src/db/database.types.ts"],
   rules: {

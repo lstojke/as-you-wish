@@ -28,7 +28,9 @@ export const server = {
         const client = requireSupabase(context.locals);
         try {
           return await createList(client, input);
-        } catch {
+        } catch (err) {
+          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+          console.error("lists.create failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Could not create list",
@@ -45,7 +47,9 @@ export const server = {
         const client = requireSupabase(context.locals);
         try {
           return await createItem(client, input);
-        } catch {
+        } catch (err) {
+          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+          console.error("items.create failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Could not add item",

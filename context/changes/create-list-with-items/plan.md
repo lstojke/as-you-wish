@@ -426,16 +426,16 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 
 #### Automated
 
-- [x] 2.1 `astro check` passes
-- [x] 2.2 `npm run lint` passes
-- [x] 2.3 All seven shadcn primitives present under `src/components/ui/`
-- [x] 2.4 `src/actions/index.ts`, `src/lib/services/lists.ts`, `src/lib/services/items.ts`, `src/lib/schemas/wishlist.ts` all exist
+- [x] 2.1 `astro check` passes — b760add
+- [x] 2.2 `npm run lint` passes — b760add
+- [x] 2.3 All seven shadcn primitives present under `src/components/ui/` — b760add
+- [x] 2.4 `src/actions/index.ts`, `src/lib/services/lists.ts`, `src/lib/services/items.ts`, `src/lib/schemas/wishlist.ts` all exist — b760add
 
 #### Manual
 
-- [x] 2.5 Existing auth pages still render and sign-in/sign-up/sign-out work
-- [x] 2.6 Scratch React component importing `actions` compiles — deferred; covered implicitly by Phase 3 dashboard form
-- [x] 2.7 `context.locals.supabase` works end-to-end in a scratch page — deferred; covered implicitly by Phase 3/4
+- [x] 2.5 Existing auth pages still render and sign-in/sign-up/sign-out work — b760add
+- [x] 2.6 Scratch React component importing `actions` compiles — deferred; covered implicitly by Phase 3 dashboard form — b760add
+- [x] 2.7 `context.locals.supabase` works end-to-end in a scratch page — deferred; covered implicitly by Phase 3/4 — b760add
 
 ### Phase 3: Dashboard — owned + shared lists + create-list flow
 

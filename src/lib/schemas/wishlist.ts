@@ -6,15 +6,24 @@ export const listCreateSchema = z.object({
 
 export type ListCreateInput = z.infer<typeof listCreateSchema>;
 
-export const itemCreateSchema = z.object({
-  listId: z.uuid(),
-  title: z.string().trim().min(1, "Title is required").max(500, "Title must be 500 characters or fewer"),
-  priceCents: z.number().int().nonnegative().optional(),
-  currency: z
-    .string()
-    .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code (e.g. USD)")
-    .optional(),
-  link: z.url("Must be a valid URL").max(2000).optional(),
-});
+export const itemCreateSchema = z
+  .object({
+    listId: z.uuid(),
+    title: z.string().trim().min(1, "Title is required").max(500, "Title must be 500 characters or fewer"),
+    priceCents: z.number().int().nonnegative().optional(),
+    currency: z
+      .string()
+      .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code (e.g. USD)")
+      .optional(),
+    link: z
+      .url("Must be a valid URL")
+      .max(2000)
+      .refine((u) => /^https?:\/\//i.test(u), "Must be an http(s) URL")
+      .optional(),
+  })
+  .refine((v) => v.priceCents !== undefined || v.currency === undefined, {
+    message: "Currency requires a price",
+    path: ["currency"],
+  });
 
 export type ItemCreateInput = z.infer<typeof itemCreateSchema>;
