@@ -1,0 +1,47 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import ListDetail from "@/components/lists/ListDetail";
+import { getListById, type ListRow } from "@/lib/services/lists";
+import { listItems, type ItemRow } from "@/lib/services/items";
+
+export const prerender = false;
+
+const { user, supabase } = Astro.locals;
+if (!user || !supabase) {
+  throw new Error("lists/[id]: middleware should have redirected unauthenticated requests");
+}
+
+const { id } = Astro.params;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!id || !UUID_RE.test(id)) {
+  return new Response(null, { status: 404 });
+}
+
+let maybeList: ListRow | null = null;
+let items: ItemRow[] = [];
+try {
+  maybeList = await getListById(supabase, id);
+  if (maybeList) {
+    items = await listItems(supabase, id);
+  }
+} catch (e) {
+  // eslint-disable-next-line no-console -- surface SSR load failures in Wrangler tail
+  console.error("lists/[id]: failed to load", e);
+}
+
+if (!maybeList) {
+  return new Response(null, { status: 404 });
+}
+
+const list = maybeList;
+---
+
+<Layout title={list.title}>
+  <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+    {
+      /* client:only required — react-hook-form in AddItemForm causes React SSR instance mismatch with client:load (same root cause as DashboardLists). SSR data fetched above and passed as props. */
+    }
+    <ListDetail client:only="react" list={list} initialItems={items} />
+  </main>
+</Layout>
