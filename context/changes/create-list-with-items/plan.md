@@ -441,18 +441,18 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 
 #### Automated
 
-- [ ] 3.1 `astro check` passes
-- [ ] 3.2 `npm run lint` passes
-- [ ] 3.3 `npm run build` succeeds
+- [x] 3.1 `astro check` passes
+- [x] 3.2 `npm run lint` passes
+- [x] 3.3 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 3.4 Fresh user `/dashboard` shows hero empty state with CTA
-- [ ] 3.5 Empty title submission shows inline validation error, no network call
-- [ ] 3.6 Valid submission inserts optimistically and shows success toast
-- [ ] 3.7 Simulated server error rolls back optimistic insert and shows error toast
-- [ ] 3.8 No-invitations user does not see a "Shared with me" section
-- [ ] 3.9 User with an accepted invitation sees the shared list under "Shared with me"
+- [x] 3.4 Fresh user `/dashboard` shows hero empty state with CTA
+- [x] 3.5 Empty title submission shows inline validation error, no network call
+- [x] 3.6 Valid submission inserts optimistically and shows success toast
+- [x] 3.7 Simulated server error rolls back optimistic insert and shows error toast
+- [x] 3.8 No-invitations user does not see a "Shared with me" section
+- [x] 3.9 User with an accepted invitation sees the shared list under "Shared with me"
 
 ### Phase 4: List detail — view items + add-item flow
 

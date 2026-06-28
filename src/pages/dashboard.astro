@@ -1,27 +1,36 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import DashboardLists from "@/components/dashboard/DashboardLists";
+import { listOwnedAndShared } from "@/lib/services/lists";
 
-const { user } = Astro.locals;
+export const prerender = false;
+
+const { user, supabase } = Astro.locals;
+if (!user || !supabase) {
+  throw new Error("dashboard: middleware should have redirected unauthenticated requests");
+}
+const { owned, shared } = await listOwnedAndShared(supabase);
 ---
 
 <Layout title="Dashboard">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
-      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-        Dashboard
-      </h1>
-      <p class="text-blue-100/80">
-        Welcome, <span class="font-semibold text-white">{user?.email}</span>
-      </p>
-      <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <form method="POST" action="/api/auth/signout" class="mt-6">
+  <main class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <header class="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Your wish lists</h1>
+        <p class="text-muted-foreground text-sm">
+          Signed in as <span class="text-foreground font-medium">{user.email}</span>
+        </p>
+      </div>
+      <form method="POST" action="/api/auth/signout">
         <button
           type="submit"
-          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+          class="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
         >
           Sign out
         </button>
       </form>
-    </div>
-  </div>
+    </header>
+
+    <DashboardLists client:only="react" owned={owned} shared={shared} />
+  </main>
 </Layout>

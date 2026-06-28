@@ -18,8 +18,7 @@ export async function listOwnedAndShared(client: Client): Promise<{ owned: ListR
 
   const sharedQuery = client
     .from("lists")
-    .select("*, invitations!inner(accepted_by_user_id)")
-    .eq("invitations.accepted_by_user_id", user.id)
+    .select("*")
     .neq("owner_id", user.id)
     .order("created_at", { ascending: false });
 
@@ -28,12 +27,7 @@ export async function listOwnedAndShared(client: Client): Promise<{ owned: ListR
   if (ownedRes.error) throw ownedRes.error;
   if (sharedRes.error) throw sharedRes.error;
 
-  const shared = sharedRes.data.map((row) => {
-    const { invitations: _invitations, ...rest } = row as ListRow & { invitations: unknown };
-    return rest;
-  });
-
-  return { owned: ownedRes.data, shared };
+  return { owned: ownedRes.data, shared: sharedRes.data };
 }
 
 export async function getListById(client: Client, listId: string): Promise<ListRow | null> {
