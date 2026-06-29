@@ -3,7 +3,7 @@ project: AsYouWish
 version: 1
 status: draft
 created: 2026-05-27
-updated: 2026-06-28
+updated: 2026-06-29
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -30,7 +30,7 @@ A private family gift coordinator is flooded with "what should I buy for X?" mes
 | ID    | Change ID                  | Outcome (user can …)                                                | Prerequisites | PRD refs                                          | Status   |
 | ----- | -------------------------- | ------------------------------------------------------------------- | ------------- | ------------------------------------------------- | -------- |
 | F-01  | wishlist-data-schema       | (foundation) lists / items / invitations / reservations tables + RLS landed | —             | FR-005, FR-008, FR-009, FR-013, Access Control, Business Logic | done     |
-| S-01  | create-list-with-items     | Sign in, create a wish list, add items (name, est. price, store link) | F-01          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-009    | proposed |
+| S-01  | create-list-with-items     | Sign in, create a wish list, add items (name, est. price, store link) | F-01          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-009    | done     |
 | S-02  | manage-own-lists-and-items | Edit and delete one's own lists and items                            | S-01          | FR-006, FR-007, FR-010, FR-011                    | proposed |
 | S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | proposed |
 | S-04  | view-shared-list           | View items on a shared list with available / reserved status        | S-03          | FR-012                                            | proposed |
@@ -84,7 +84,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** This is the chosen north star — the user's read is that "will the coordinator build a list at all" is the bigger open question, ahead of the concurrency rule. Sequenced immediately after F-01 to keep the validation cycle short. Auth FRs (FR-001/002/003) are already satisfied by baseline; they appear in PRD refs because the create flow consumes them.
-- **Status:** proposed
+- **Status:** done
 
 ### S-03: Owner shares a list by email invitation
 
@@ -167,3 +167,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 (Empty on first generation. `/10x-archive` appends an entry here — and flips that item's `Status` to `done` — when a change whose `Change ID` matches the item is archived. Do NOT pre-populate.)
 
 - **F-01: (foundation) Postgres tables for lists, items, invitations, and reservations are landed via `supabase/migrations/`, with RLS policies that enforce the PRD's Access Control rules (owner-writes-own, invitee-reads-shared, exclusive single-claim per item, reserver identity hidden from owner).** — Archived 2026-06-28 → `context/archive/2026-05-27-wishlist-data-schema/`. Lesson: —.
+- **S-01: A signed-in user can create a named wish list, add items to it (name, estimated price, store link), and see the list on their home screen alongside any lists shared with them.** — Archived 2026-06-29 → `context/archive/2026-05-28-create-list-with-items/`. Lesson: —.
