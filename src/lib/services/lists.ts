@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
-import type { ListCreateInput } from "@/lib/schemas/wishlist";
+import type { ListCreateInput, ListRenameInput, ListDeleteInput } from "@/lib/schemas/wishlist";
 
 export type ListRow = Database["public"]["Tables"]["lists"]["Row"];
 
@@ -54,4 +54,23 @@ export async function createList(client: Client, input: ListCreateInput): Promis
 
   if (error) throw error;
   return data;
+}
+
+// RLS gates update/delete to owner_id = auth.uid(); no app-side ownership check needed.
+export async function updateList(client: Client, input: ListRenameInput): Promise<ListRow> {
+  const { data, error } = await client
+    .from("lists")
+    .update({ title: input.title })
+    .eq("id", input.listId)
+    .select("*")
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Cascade is enforced by items.list_id FK (on delete cascade) — see initial wishlist schema.
+export async function deleteList(client: Client, input: ListDeleteInput): Promise<void> {
+  const { error } = await client.from("lists").delete().eq("id", input.listId);
+  if (error) throw error;
 }
