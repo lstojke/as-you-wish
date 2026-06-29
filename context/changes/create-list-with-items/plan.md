@@ -472,4 +472,4 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 - [x] 4.9 Unauthorized list UUID returns 404 — 60db976
 - [x] 4.10 Second user with accepted invitation can view the shared list's items — 60db976
 - [x] 4.11 Signed-out access to `/lists/<id>` redirects to sign-in — 60db976
-- [ ] 4.12 Simulated server error rolls back optimistic insert and shows error toast
+- [x] 4.12 Simulated server error rolls back optimistic insert and shows error toast
