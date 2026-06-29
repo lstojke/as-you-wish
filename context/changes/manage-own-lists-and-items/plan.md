@@ -336,32 +336,32 @@ No data migration. The schema is unchanged.
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Type/Astro check passes: `npx astro check`
-- [x] 1.3 shadcn install left two new files in place: `ls src/components/ui/alert-dialog.tsx src/components/ui/dropdown-menu.tsx`
+- [x] 1.1 Linting passes: `npm run lint` — 9efe95b
+- [x] 1.2 Type/Astro check passes: `npx astro check` — 9efe95b
+- [x] 1.3 shadcn install left two new files in place: `ls src/components/ui/alert-dialog.tsx src/components/ui/dropdown-menu.tsx` — 9efe95b
 
 #### Manual
 
-- [x] 1.4 Hit one new action via `POST /_actions/lists.rename` with an owned list and confirm a 200 + updated row
-- [x] 1.5 Hit the same action with a UUID the signed-in user does not own and confirm an ActionError is returned (RLS blocks the write)
+- [x] 1.4 Hit one new action via `POST /_actions/lists.rename` with an owned list and confirm a 200 + updated row — 9efe95b
+- [x] 1.5 Hit the same action with a UUID the signed-in user does not own and confirm an ActionError is returned (RLS blocks the write) — 9efe95b
 
 ### Phase 2: List rename + delete UI
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Astro check passes: `npx astro check`
-- [ ] 2.3 List-detail page still SSRs without errors for an owned list
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Astro check passes: `npx astro check`
+- [x] 2.3 List-detail page still SSRs without errors for an owned list
 
 #### Manual
 
-- [ ] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed"
-- [ ] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted"
-- [ ] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh
-- [ ] 2.7 Detail-page ⋮ → Rename → header title updates
-- [ ] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent
-- [ ] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …"
-- [ ] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped)
+- [x] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed"
+- [x] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted"
+- [x] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh
+- [x] 2.7 Detail-page ⋮ → Rename → header title updates
+- [x] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent
+- [x] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …"
+- [x] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped)
 
 ### Phase 3: Item edit + delete UI
 

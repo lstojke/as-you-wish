@@ -3,6 +3,9 @@ import { Plus, ListPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import CreateListDialog from "@/components/dashboard/CreateListDialog";
+import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
+import RenameListDialog from "@/components/dashboard/RenameListDialog";
+import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
 import type { ListRow } from "@/lib/services/lists";
 
 interface Props {
@@ -13,6 +16,8 @@ interface Props {
 export default function DashboardLists({ owned: initialOwned, shared }: Props) {
   const [owned, setOwned] = useState<ListRow[]>(initialOwned);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [renameTarget, setRenameTarget] = useState<ListRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ListRow | null>(null);
 
   function handleOptimisticAdd(placeholder: ListRow) {
     setOwned((prev) => [placeholder, ...prev]);
@@ -24,6 +29,10 @@ export default function DashboardLists({ owned: initialOwned, shared }: Props) {
 
   function handleOptimisticRemove(placeholderId: string) {
     setOwned((prev) => prev.filter((l) => l.id !== placeholderId));
+  }
+
+  function handleRenamed(updated: ListRow) {
+    setOwned((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
   }
 
   const hasOwned = owned.length > 0;
@@ -52,7 +61,16 @@ export default function DashboardLists({ owned: initialOwned, shared }: Props) {
         {hasOwned ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {owned.map((list) => (
-              <ListCard key={list.id} list={list} />
+              <OwnedListCard
+                key={list.id}
+                list={list}
+                onRename={() => {
+                  setRenameTarget(list);
+                }}
+                onDelete={() => {
+                  setDeleteTarget(list);
+                }}
+              />
             ))}
           </div>
         ) : (
@@ -71,7 +89,7 @@ export default function DashboardLists({ owned: initialOwned, shared }: Props) {
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shared.map((list) => (
-              <ListCard key={list.id} list={list} />
+              <SharedListCard key={list.id} list={list} />
             ))}
           </div>
         </section>
@@ -84,11 +102,65 @@ export default function DashboardLists({ owned: initialOwned, shared }: Props) {
         onOptimisticReplace={handleOptimisticReplace}
         onOptimisticRemove={handleOptimisticRemove}
       />
+
+      <RenameListDialog
+        list={renameTarget}
+        open={renameTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRenameTarget(null);
+        }}
+        onRenamed={handleRenamed}
+      />
+
+      <DeleteListDialog
+        list={deleteTarget}
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        onOptimisticDelete={() => {
+          if (!deleteTarget) return undefined;
+          const removed = deleteTarget;
+          let originalIndex = -1;
+          setOwned((prev) => {
+            originalIndex = prev.findIndex((l) => l.id === removed.id);
+            return prev.filter((l) => l.id !== removed.id);
+          });
+          return () => {
+            setOwned((prev) => {
+              if (originalIndex < 0) return [removed, ...prev];
+              const next = prev.slice();
+              next.splice(originalIndex, 0, removed);
+              return next;
+            });
+          };
+        }}
+        onDeleted={() => {
+          // Optimistic remove already done; nothing to do on success.
+        }}
+      />
     </div>
   );
 }
 
-function ListCard({ list }: { list: ListRow }) {
+function OwnedListCard({ list, onRename, onDelete }: { list: ListRow; onRename: () => void; onDelete: () => void }) {
+  return (
+    <a
+      href={`/lists/${list.id}`}
+      className="focus-visible:ring-ring/50 block rounded-xl outline-none focus-visible:ring-[3px]"
+      aria-label={`Open list ${list.title}`}
+    >
+      <Card className="hover:border-foreground/20 transition-colors">
+        <CardHeader className="flex flex-row items-start justify-between gap-2">
+          <CardTitle className="min-w-0 flex-1 truncate text-base">{list.title}</CardTitle>
+          <ListActionsMenu listTitle={list.title} onRename={onRename} onDelete={onDelete} />
+        </CardHeader>
+      </Card>
+    </a>
+  );
+}
+
+function SharedListCard({ list }: { list: ListRow }) {
   return (
     <a
       href={`/lists/${list.id}`}

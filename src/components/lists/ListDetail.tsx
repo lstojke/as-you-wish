@@ -3,14 +3,23 @@ import type { ListRow } from "@/lib/services/lists";
 import type { ItemRow } from "@/lib/services/items";
 import ItemsList from "@/components/lists/ItemsList";
 import AddItemForm from "@/components/lists/AddItemForm";
+import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
+import RenameListDialog from "@/components/dashboard/RenameListDialog";
+import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
 
 interface Props {
   list: ListRow;
   initialItems: ItemRow[];
+  currentUserId: string;
 }
 
-export default function ListDetail({ list, initialItems }: Props) {
+export default function ListDetail({ list: initialList, initialItems, currentUserId }: Props) {
+  const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const isOwner = list.owner_id === currentUserId;
 
   function handleOptimisticAdd(placeholder: ItemRow) {
     setItems((prev) => [...prev, placeholder]);
@@ -33,7 +42,20 @@ export default function ListDetail({ list, initialItems }: Props) {
         >
           ← Back to lists
         </a>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
+        <div className="mt-2 flex items-start justify-between gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
+          {isOwner && (
+            <ListActionsMenu
+              listTitle={list.title}
+              onRename={() => {
+                setRenameOpen(true);
+              }}
+              onDelete={() => {
+                setDeleteOpen(true);
+              }}
+            />
+          )}
+        </div>
       </div>
       <ItemsList items={items} />
       <AddItemForm
@@ -42,6 +64,28 @@ export default function ListDetail({ list, initialItems }: Props) {
         onOptimisticReplace={handleOptimisticReplace}
         onOptimisticRemove={handleOptimisticRemove}
       />
+
+      {isOwner && (
+        <>
+          <RenameListDialog
+            list={list}
+            open={renameOpen}
+            onOpenChange={setRenameOpen}
+            onRenamed={(updated) => {
+              setList(updated);
+            }}
+          />
+          <DeleteListDialog
+            list={list}
+            itemCount={items.length}
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            onDeleted={() => {
+              window.location.assign("/dashboard");
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }
