@@ -3,7 +3,7 @@ change_id: manage-own-lists-and-items
 title: Manage own lists and items
 status: implementing
 created: 2026-06-29
-updated: 2026-06-29
+updated: 2026-07-30
 archived_at: null
 ---
 

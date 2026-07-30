@@ -349,36 +349,36 @@ No data migration. The schema is unchanged.
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint`
-- [x] 2.2 Astro check passes: `npx astro check`
-- [x] 2.3 List-detail page still SSRs without errors for an owned list
+- [x] 2.1 Linting passes: `npm run lint` — a6bcc88
+- [x] 2.2 Astro check passes: `npx astro check` — a6bcc88
+- [x] 2.3 List-detail page still SSRs without errors for an owned list — a6bcc88
 
 #### Manual
 
-- [x] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed"
-- [x] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted"
-- [x] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh
-- [x] 2.7 Detail-page ⋮ → Rename → header title updates
-- [x] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent
-- [x] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …"
-- [x] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped)
+- [x] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed" — a6bcc88
+- [x] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted" — a6bcc88
+- [x] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh — a6bcc88
+- [x] 2.7 Detail-page ⋮ → Rename → header title updates — a6bcc88
+- [x] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent — a6bcc88
+- [x] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …" — a6bcc88
+- [x] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped) — a6bcc88
 
 ### Phase 3: Item edit + delete UI
 
 #### Automated
 
-- [ ] 3.1 Linting passes: `npm run lint`
-- [ ] 3.2 Astro check passes: `npx astro check`
-- [ ] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches)
+- [x] 3.1 Linting passes: `npm run lint`
+- [x] 3.2 Astro check passes: `npx astro check`
+- [x] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches)
 
 #### Manual
 
-- [ ] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check)
-- [ ] 3.5 ⋮ → Edit prefills all four fields correctly
-- [ ] 3.6 Change title and save → row updates in place; toast "Item updated"
-- [ ] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call
-- [ ] 3.8 Open Edit, clear the link, save → row renders without a link
-- [ ] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call
-- [ ] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted"
-- [ ] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item"
-- [ ] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships)
+- [x] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check)
+- [x] 3.5 ⋮ → Edit prefills all four fields correctly
+- [x] 3.6 Change title and save → row updates in place; toast "Item updated"
+- [x] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call
+- [x] 3.8 Open Edit, clear the link, save → row renders without a link
+- [x] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call
+- [x] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted"
+- [x] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item"
+- [x] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships)

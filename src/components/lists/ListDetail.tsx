@@ -3,6 +3,8 @@ import type { ListRow } from "@/lib/services/lists";
 import type { ItemRow } from "@/lib/services/items";
 import ItemsList from "@/components/lists/ItemsList";
 import AddItemForm from "@/components/lists/AddItemForm";
+import EditItemForm from "@/components/lists/EditItemForm";
+import DeleteItemDialog from "@/components/lists/DeleteItemDialog";
 import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
 import RenameListDialog from "@/components/dashboard/RenameListDialog";
 import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
@@ -18,6 +20,8 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
   const [items, setItems] = useState<ItemRow[]>(initialItems);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<ItemRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
   const isOwner = list.owner_id === currentUserId;
 
@@ -31,6 +35,10 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
 
   function handleOptimisticRemove(placeholderId: string) {
     setItems((prev) => prev.filter((i) => i.id !== placeholderId));
+  }
+
+  function handleItemUpdated(updated: ItemRow) {
+    setItems((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
   }
 
   return (
@@ -57,7 +65,16 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
           )}
         </div>
       </div>
-      <ItemsList items={items} />
+      <ItemsList
+        items={items}
+        ownedByCurrentUser={isOwner}
+        onEdit={(item) => {
+          setEditTarget(item);
+        }}
+        onDelete={(item) => {
+          setDeleteTarget(item);
+        }}
+      />
       <AddItemForm
         listId={list.id}
         onOptimisticAdd={handleOptimisticAdd}
@@ -82,6 +99,41 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
             onOpenChange={setDeleteOpen}
             onDeleted={() => {
               window.location.assign("/dashboard");
+            }}
+          />
+          <EditItemForm
+            item={editTarget}
+            open={editTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) setEditTarget(null);
+            }}
+            onUpdated={handleItemUpdated}
+          />
+          <DeleteItemDialog
+            item={deleteTarget}
+            open={deleteTarget !== null}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null);
+            }}
+            onOptimisticDelete={() => {
+              if (!deleteTarget) return undefined;
+              const removed = deleteTarget;
+              let originalIndex = -1;
+              setItems((prev) => {
+                originalIndex = prev.findIndex((i) => i.id === removed.id);
+                return prev.filter((i) => i.id !== removed.id);
+              });
+              return () => {
+                setItems((prev) => {
+                  if (originalIndex < 0) return [...prev, removed];
+                  const next = prev.slice();
+                  next.splice(originalIndex, 0, removed);
+                  return next;
+                });
+              };
+            }}
+            onDeleted={() => {
+              // Optimistic remove already done; nothing to do on success.
             }}
           />
         </>
