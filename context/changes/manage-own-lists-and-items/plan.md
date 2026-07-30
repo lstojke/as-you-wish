@@ -367,18 +367,18 @@ No data migration. The schema is unchanged.
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Astro check passes: `npx astro check`
-- [x] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches)
+- [x] 3.1 Linting passes: `npm run lint` — 947b817
+- [x] 3.2 Astro check passes: `npx astro check` — 947b817
+- [x] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches) — 947b817
 
 #### Manual
 
-- [x] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check)
-- [x] 3.5 ⋮ → Edit prefills all four fields correctly
-- [x] 3.6 Change title and save → row updates in place; toast "Item updated"
-- [x] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call
-- [x] 3.8 Open Edit, clear the link, save → row renders without a link
-- [x] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call
-- [x] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted"
-- [x] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item"
-- [x] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships)
+- [x] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check) — 947b817
+- [x] 3.5 ⋮ → Edit prefills all four fields correctly — 947b817
+- [x] 3.6 Change title and save → row updates in place; toast "Item updated" — 947b817
+- [x] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call — 947b817
+- [x] 3.8 Open Edit, clear the link, save → row renders without a link — 947b817
+- [x] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call — 947b817
+- [x] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted" — 947b817
+- [x] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item" — 947b817
+- [x] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships) — 947b817

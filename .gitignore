@@ -29,3 +29,6 @@ pnpm-debug.log*
 
 # claude skillset
 .claude/
+
+#vscode setting folder
+.vscode/
