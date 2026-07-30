@@ -41,12 +41,24 @@ export async function createItem(client: Client, input: ItemCreateInput): Promis
 
 // RLS gates update/delete to is_list_owner(list_id); no app-side ownership check needed.
 export async function updateItem(client: Client, input: ItemUpdateInput): Promise<ItemRow> {
+  // Preserve the item's stored currency on edit; only fall back to the default
+  // when a price is newly added to an item that had none. Revisit when a
+  // per-user default currency (profile setting) ships.
+  const { data: existing, error: readError } = await client
+    .from("items")
+    .select("currency")
+    .eq("id", input.itemId)
+    .single();
+  if (readError) throw readError;
+
+  const currency = input.priceCents !== undefined ? (input.currency ?? existing.currency ?? DEFAULT_CURRENCY) : null;
+
   const { data, error } = await client
     .from("items")
     .update({
       title: input.title,
       price_cents: input.priceCents ?? null,
-      currency: resolveCurrency(input.priceCents, input.currency),
+      currency,
       link: input.link ?? null,
     })
     .eq("id", input.itemId)
