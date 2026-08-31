@@ -197,6 +197,7 @@ export interface Database {
       };
     };
     Functions: {
+      accept_invitation: { Args: { invite_id: string }; Returns: string };
       is_item_list_member: { Args: { item_uuid: string }; Returns: boolean };
       is_item_reserved: { Args: { item_uuid: string }; Returns: boolean };
       is_list_invitee: { Args: { list_uuid: string }; Returns: boolean };

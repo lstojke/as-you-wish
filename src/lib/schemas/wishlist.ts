@@ -69,6 +69,31 @@ export const itemDeleteSchema = z.object({
 
 export type ItemDeleteInput = z.infer<typeof itemDeleteSchema>;
 
+// Self-invite is enforced in the action handler (the schema doesn't know the
+// current user's email). email is normalized to lowercase/trimmed to match the
+// DB check constraint (email = lower(trim(email))) and unique (list_id, email).
+export const invitationCreateSchema = z.object({
+  listId: z.uuid(),
+  email: z.preprocess(
+    (v) => (typeof v === "string" ? v.trim().toLowerCase() : v),
+    z.email("Enter a valid email address").max(320),
+  ),
+});
+
+export type InvitationCreateInput = z.infer<typeof invitationCreateSchema>;
+
+export const invitationRevokeSchema = z.object({
+  invitationId: z.uuid(),
+});
+
+export type InvitationRevokeInput = z.infer<typeof invitationRevokeSchema>;
+
+export const invitationAcceptSchema = z.object({
+  invitationId: z.uuid(),
+});
+
+export type InvitationAcceptInput = z.infer<typeof invitationAcceptSchema>;
+
 // Shared client-form schema: priceInput is a user-typed decimal string that
 // the action handler maps to priceCents (integer cents) before calling either
 // items.create or items.update. AddItemForm and EditItemForm both consume this.
