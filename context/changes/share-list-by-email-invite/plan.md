@@ -363,24 +363,24 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against local Supabase (`npx supabase db reset`)
-- [x] 1.2 Type checking passes (`npm run build`)
-- [x] 1.3 Linting passes (`npm run lint`)
-- [x] 1.4 `accept_invitation` is idempotent and rejects mismatched email (SQL against local DB)
+- [x] 1.1 Migration applies cleanly against local Supabase (`npx supabase db reset`) — 97f492a
+- [x] 1.2 Type checking passes (`npm run build`) — 97f492a
+- [x] 1.3 Linting passes (`npm run lint`) — 97f492a
+- [x] 1.4 `accept_invitation` is idempotent and rejects mismatched email (SQL against local DB) — 97f492a
 
 #### Manual
 
-- [x] 1.5 Non-owner invitation insert is rejected by RLS
-- [x] 1.6 `accept_invitation` flips acceptance for a confirmed invitee even without the `email_verified` claim
-- [x] 1.7 Calling `accept_invitation` twice returns the same `list_id` with no error
+- [x] 1.5 Non-owner invitation insert is rejected by RLS — 97f492a
+- [x] 1.6 `accept_invitation` flips acceptance for a confirmed invitee even without the `email_verified` claim — 97f492a
+- [x] 1.7 Calling `accept_invitation` twice returns the same `list_id` with no error — 97f492a
 
 ### Phase 2: Email delivery via Resend
 
 #### Automated
 
-- [ ] 2.1 Type checking passes (`npm run build`)
-- [ ] 2.2 Linting passes (`npm run lint`)
-- [ ] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset
+- [x] 2.1 Type checking passes (`npm run build`)
+- [x] 2.2 Linting passes (`npm run lint`)
+- [x] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset
 
 #### Manual
 

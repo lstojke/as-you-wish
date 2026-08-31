@@ -10,9 +10,10 @@ import {
   invitationRevokeSchema,
   invitationAcceptSchema,
 } from "@/lib/schemas/wishlist";
-import { createList, updateList, deleteList } from "@/lib/services/lists";
+import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
+import { sendInvitationEmail } from "@/lib/services/email";
 
 function requireSupabase(locals: App.Locals) {
   if (!locals.supabase) {
@@ -160,8 +161,17 @@ export const server = {
               message: "That email has already been invited to this list",
             });
           }
-          // emailSent is wired to Resend in Phase 2; no delivery yet.
-          return { invitation: result.invitation, emailSent: false as const };
+          const { invitation } = result;
+          const origin = new URL(context.request.url).origin;
+          const acceptUrl = `${origin}/invitations/accept?invite=${invitation.id}&email=${encodeURIComponent(invitation.email)}`;
+          const list = await getListById(client, invitation.list_id);
+          const emailSent = await sendInvitationEmail({
+            to: invitation.email,
+            acceptUrl,
+            listTitle: list?.title ?? "a wishlist",
+            inviterEmail: context.locals.user?.email ?? "",
+          });
+          return { invitation, emailSent };
         } catch (err) {
           if (err instanceof ActionError) throw err;
           // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
