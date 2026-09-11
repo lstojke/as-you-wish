@@ -1,0 +1,62 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { acceptInvitation } from "@/lib/services/invitations";
+
+export const prerender = false;
+
+const { user, supabase } = Astro.locals;
+
+const invite = Astro.url.searchParams.get("invite");
+const emailHint = Astro.url.searchParams.get("email") ?? "";
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+if (!invite || !UUID_RE.test(invite)) {
+  return new Response(null, { status: 404 });
+}
+
+// Unauthenticated invitees are bounced through sign-in and returned here.
+// The email is an untrusted prefill hint only — the RPC re-verifies from the session.
+if (!user || !supabase) {
+  const returnTo = `/invitations/accept?invite=${invite}`;
+  const params = new URLSearchParams({ return: returnTo });
+  if (emailHint) params.set("email", emailHint);
+  return Astro.redirect(`/auth/signin?${params.toString()}`);
+}
+
+const result = await acceptInvitation(supabase, { invitationId: invite });
+
+if (result.ok) {
+  return Astro.redirect(`/lists/${result.listId}`);
+}
+
+if (result.reason === "not_found") {
+  return new Response(null, { status: 404 });
+}
+
+const heading =
+  result.reason === "mismatch"
+    ? "This invitation was sent to a different address"
+    : result.reason === "not_confirmed"
+      ? "Please confirm your email first"
+      : "We couldn't accept this invitation";
+
+const detail =
+  result.reason === "mismatch"
+    ? "Sign in with the email address the invitation was sent to, then open the link again."
+    : result.reason === "not_confirmed"
+      ? "Check your inbox for a confirmation email, confirm your address, then open the invitation link again."
+      : "Something went wrong. Try opening the invitation link again.";
+---
+
+<Layout title="Invitation">
+  <main class="mx-auto w-full max-w-md px-4 py-16 sm:px-6 lg:px-8">
+    <h1 class="text-2xl font-semibold tracking-tight">{heading}</h1>
+    <p class="text-muted-foreground mt-3 text-sm">{detail}</p>
+    <a
+      href="/dashboard"
+      class="text-muted-foreground hover:text-foreground mt-6 inline-block text-sm underline-offset-4 hover:underline"
+    >
+      ← Back to your lists
+    </a>
+  </main>
+</Layout>

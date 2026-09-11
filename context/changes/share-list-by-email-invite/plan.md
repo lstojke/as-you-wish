@@ -384,35 +384,35 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 #### Manual
 
-- [ ] 2.4 Valid key + sender delivers an email whose link is `…/invitations/accept?invite=<uuid>&email=<addr>`
-- [ ] 2.5 With the key unset, `invitations.create` returns `emailSent: false` and the row persists
-- [ ] 2.6 The accept link points only at the app's own origin
+- [x] 2.4 Valid key + sender delivers an email whose link is `…/invitations/accept?invite=<uuid>&email=<addr>` — 2411187
+- [x] 2.5 With the key unset, `invitations.create` returns `emailSent: false` and the row persists — 2411187
+- [x] 2.6 The accept link points only at the app's own origin — 2411187
 
 ### Phase 3: Owner invite UI (dialog + pending list with revoke)
 
 #### Automated
 
-- [x] 3.1 Type checking passes (`npm run build`)
-- [x] 3.2 Linting passes (`npm run lint`)
+- [x] 3.1 Type checking passes (`npm run build`) — 9c5c358
+- [x] 3.2 Linting passes (`npm run lint`) — 9c5c358
 
 #### Manual
 
-- [x] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations
-- [x] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate)
-- [x] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI
-- [x] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning
+- [x] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations — 9c5c358
+- [x] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate) — 9c5c358
+- [x] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI — 9c5c358
+- [x] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning — 9c5c358
 
 ### Phase 4: Accept flow (public route + auth bounce)
 
 #### Automated
 
-- [ ] 4.1 Type checking passes (`npm run build`)
-- [ ] 4.2 Linting passes (`npm run lint`)
-- [ ] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard)
+- [x] 4.1 Type checking passes (`npm run build`)
+- [x] 4.2 Linting passes (`npm run lint`)
+- [x] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard)
 
 #### Manual
 
-- [ ] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me"
-- [ ] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list
-- [ ] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance
-- [ ] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list
+- [x] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me"
+- [x] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list
+- [x] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance
+- [x] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list
