@@ -378,9 +378,9 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 #### Automated
 
-- [x] 2.1 Type checking passes (`npm run build`)
-- [x] 2.2 Linting passes (`npm run lint`)
-- [x] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset
+- [x] 2.1 Type checking passes (`npm run build`) — 2411187
+- [x] 2.2 Linting passes (`npm run lint`) — 2411187
+- [x] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset — 2411187
 
 #### Manual
 
@@ -392,15 +392,15 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 #### Automated
 
-- [ ] 3.1 Type checking passes (`npm run build`)
-- [ ] 3.2 Linting passes (`npm run lint`)
+- [x] 3.1 Type checking passes (`npm run build`)
+- [x] 3.2 Linting passes (`npm run lint`)
 
 #### Manual
 
-- [ ] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations
-- [ ] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate)
-- [ ] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI
-- [ ] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning
+- [x] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations
+- [x] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate)
+- [x] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI
+- [x] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning
 
 ### Phase 4: Accept flow (public route + auth bounce)
 

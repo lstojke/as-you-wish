@@ -1,25 +1,32 @@
 import { useState } from "react";
 import type { ListRow } from "@/lib/services/lists";
 import type { ItemRow } from "@/lib/services/items";
+import type { InvitationRow } from "@/lib/services/invitations";
 import ItemsList from "@/components/lists/ItemsList";
 import AddItemForm from "@/components/lists/AddItemForm";
 import EditItemForm from "@/components/lists/EditItemForm";
 import DeleteItemDialog from "@/components/lists/DeleteItemDialog";
+import InviteDialog from "@/components/lists/InviteDialog";
+import PendingInvitations from "@/components/lists/PendingInvitations";
 import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
 import RenameListDialog from "@/components/dashboard/RenameListDialog";
 import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   list: ListRow;
   initialItems: ItemRow[];
+  initialInvitations: InvitationRow[];
   currentUserId: string;
 }
 
-export default function ListDetail({ list: initialList, initialItems, currentUserId }: Props) {
+export default function ListDetail({ list: initialList, initialItems, initialInvitations, currentUserId }: Props) {
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
+  const [invitations, setInvitations] = useState<InvitationRow[]>(initialInvitations);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ItemRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
@@ -53,15 +60,27 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
         <div className="mt-2 flex items-start justify-between gap-2">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
           {isOwner && (
-            <ListActionsMenu
-              listTitle={list.title}
-              onRename={() => {
-                setRenameOpen(true);
-              }}
-              onDelete={() => {
-                setDeleteOpen(true);
-              }}
-            />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setInviteOpen(true);
+                }}
+              >
+                Invite
+              </Button>
+              <ListActionsMenu
+                listTitle={list.title}
+                onRename={() => {
+                  setRenameOpen(true);
+                }}
+                onDelete={() => {
+                  setDeleteOpen(true);
+                }}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -84,6 +103,20 @@ export default function ListDetail({ list: initialList, initialItems, currentUse
 
       {isOwner && (
         <>
+          <PendingInvitations
+            invitations={invitations}
+            onRevoked={(id) => {
+              setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+            }}
+          />
+          <InviteDialog
+            listId={list.id}
+            open={inviteOpen}
+            onOpenChange={setInviteOpen}
+            onInvited={(invitation) => {
+              setInvitations((prev) => [invitation, ...prev]);
+            }}
+          />
           <RenameListDialog
             list={list}
             open={renameOpen}

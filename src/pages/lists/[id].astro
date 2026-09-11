@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import ListDetail from "@/components/lists/ListDetail";
 import { getListById, type ListRow } from "@/lib/services/lists";
 import { listItems, type ItemRow } from "@/lib/services/items";
+import { listInvitations, type InvitationRow } from "@/lib/services/invitations";
 
 export const prerender = false;
 
@@ -20,10 +21,14 @@ if (!id || !UUID_RE.test(id)) {
 
 let maybeList: ListRow | null = null;
 let items: ItemRow[] = [];
+let invitations: InvitationRow[] = [];
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
     items = await listItems(supabase, id);
+    if (maybeList.owner_id === user.id) {
+      invitations = await listInvitations(supabase, id);
+    }
   }
 } catch (e) {
   // eslint-disable-next-line no-console -- surface SSR load failures in Wrangler tail
@@ -42,6 +47,12 @@ const list = maybeList;
     {
       /* client:only required — react-hook-form in AddItemForm causes React SSR instance mismatch with client:load (same root cause as DashboardLists). SSR data fetched above and passed as props. */
     }
-    <ListDetail client:only="react" list={list} initialItems={items} currentUserId={user.id} />
+    <ListDetail
+      client:only="react"
+      list={list}
+      initialItems={items}
+      initialInvitations={invitations}
+      currentUserId={user.id}
+    />
   </main>
 </Layout>
