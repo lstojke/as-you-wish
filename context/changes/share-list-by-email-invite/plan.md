@@ -406,13 +406,13 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 #### Automated
 
-- [x] 4.1 Type checking passes (`npm run build`)
-- [x] 4.2 Linting passes (`npm run lint`)
-- [x] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard)
+- [x] 4.1 Type checking passes (`npm run build`) — d296c80
+- [x] 4.2 Linting passes (`npm run lint`) — d296c80
+- [x] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard) — d296c80
 
 #### Manual
 
-- [x] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me"
-- [x] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list
-- [x] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance
-- [x] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list
+- [x] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me" — d296c80
+- [x] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list — d296c80
+- [x] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance — d296c80
+- [x] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list — d296c80
