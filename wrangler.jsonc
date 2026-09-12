@@ -32,6 +32,10 @@
 			"name": "as-you-wish",
 			"compatibility_date": "2026-05-08",
 			"compatibility_flags": ["nodejs_compat"],
+			"routes": [
+				{ "pattern": "asyouwish.fun", "custom_domain": true },
+				{ "pattern": "www.asyouwish.fun", "custom_domain": true },
+			],
 			"assets": {
 				"binding": "ASSETS",
 				"directory": "./dist",
