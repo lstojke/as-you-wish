@@ -26,8 +26,7 @@ let invitations: InvitationRow[] = [];
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
-    items = await listItems(supabase, id);
-    reservedItemIds = await listReservedItemIds(supabase, id);
+    [items, reservedItemIds] = await Promise.all([listItems(supabase, id), listReservedItemIds(supabase, id)]);
     if (maybeList.owner_id === user.id) {
       invitations = await listInvitations(supabase, id);
     }

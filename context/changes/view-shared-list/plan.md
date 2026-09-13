@@ -34,7 +34,7 @@ Deliver roadmap slice **S-04** (PRD **FR-012**): let an invited (non-owner) view
 - No reserve/release action or button — that is **S-05**.
 - No owner aggregate count ("X of Y reserved") — that is FR-014, deferred.
 - No owner "gift-surprise" toggle to hide badges — documented as a follow-up (`context/changes/view-shared-list/follow-ups/owner-hide-reservation-badges.md`).
-- No schema/migration changes — the view and RLS already exist.
+- No schema/migration changes — the view and RLS already exist. (Addendum: during manual verification we discovered remote↔repo drift in `is_item_reserved` and added migration `20260913081500_align_is_item_reserved_membership_guard.sql` to reconcile it — an approved exception, not new feature scope.)
 - No change to the `listOwnedAndShared` shared-query behavior.
 
 ## Implementation Approach
