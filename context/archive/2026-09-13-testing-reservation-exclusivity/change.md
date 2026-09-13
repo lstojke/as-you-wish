@@ -1,10 +1,10 @@
 ---
 change_id: testing-reservation-exclusivity
 title: Bootstrap Vitest and prove reservation exclusivity under concurrency
-status: impl_reviewed
+status: archived
 created: 2026-09-13
 updated: 2026-09-13
-archived_at: null
+archived_at: 2026-09-13T19:53:32Z
 ---
 
 ## Notes
