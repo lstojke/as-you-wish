@@ -6,6 +6,8 @@ export type InvitationRow = Database["public"]["Tables"]["invitations"]["Row"];
 
 type Client = SupabaseClient<Database>;
 
+// Convention: this service returns typed result-unions for expected outcomes
+// (e.g. duplicate invite) instead of throwing like lists.ts/items.ts — intentional, per plan.
 export type CreateInvitationResult = { ok: true; invitation: InvitationRow } | { ok: false; reason: "already_invited" };
 
 // RLS invitations_insert gates to is_list_owner(list_id); no app-side owner check.
