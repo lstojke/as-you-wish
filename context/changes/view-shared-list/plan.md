@@ -128,12 +128,12 @@ None — no schema changes. The `item_reservation_status` view and all RLS polic
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Type checking / build passes: `npm run build`
+- [x] 1.1 Linting passes: `npm run lint` — b752ffd
+- [x] 1.2 Type checking / build passes: `npm run build` — b752ffd
 
 #### Manual
 
-- [x] 1.3 As an invitee, shared list shows per-item Available/Reserved badges and no add/edit/delete UI
-- [x] 1.4 As the owner, badges render plus all owner controls (invite, list actions, item actions, add form)
-- [x] 1.5 Inserting a reservation row via SQL flips that item to "Reserved" on reload
-- [x] 1.6 No viewer sees who reserved an item
+- [x] 1.3 As an invitee, shared list shows per-item Available/Reserved badges and no add/edit/delete UI — b752ffd
+- [x] 1.4 As the owner, badges render plus all owner controls (invite, list actions, item actions, add form) — b752ffd
+- [x] 1.5 Inserting a reservation row via SQL flips that item to "Reserved" on reload — b752ffd
+- [x] 1.6 No viewer sees who reserved an item — b752ffd
