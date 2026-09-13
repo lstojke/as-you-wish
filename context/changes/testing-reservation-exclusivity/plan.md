@@ -275,9 +275,9 @@ No schema or data migration. `.env.test` holds local-stack demo credentials only
 
 #### Automated
 
-- [x] 3.1 Markdown formats clean: `npx prettier --check` on the changed docs passes (repo-wide `npm run format` reformats many unrelated legacy docs, so scoped the check to Phase 3 files)
+- [x] 3.1 Markdown formats clean: `npx prettier --check` on the changed docs passes (repo-wide `npm run format` reformats many unrelated legacy docs, so scoped the check to Phase 3 files) — 8b762fd
 
 #### Manual
 
-- [x] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring (env template, fixture-helper, and RLS guidance are spelled out)
-- [x] 3.3 Phase 1 status in the test plan reflects completion (§3 row → `complete`, §4 Vitest → 3.2.7, §6 cookbook filled)
+- [x] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring (env template, fixture-helper, and RLS guidance are spelled out) — 8b762fd
+- [x] 3.3 Phase 1 status in the test plan reflects completion (§3 row → `complete`, §4 Vitest → 3.2.7, §6 cookbook filled) — 8b762fd
