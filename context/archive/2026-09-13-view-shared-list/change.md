@@ -1,10 +1,10 @@
 ---
 change_id: view-shared-list
 title: View a shared list with per-item reservation status
-status: impl_reviewed
+status: archived
 created: 2026-09-13
 updated: 2026-09-13
-archived_at: null
+archived_at: 2026-09-13T07:50:19Z
 ---
 
 ## Notes

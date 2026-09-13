@@ -33,7 +33,7 @@ A private family gift coordinator is flooded with "what should I buy for X?" mes
 | S-01  | create-list-with-items     | Sign in, create a wish list, add items (name, est. price, store link) | F-01          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-009    | done     |
 | S-02  | manage-own-lists-and-items | Edit and delete one's own lists and items                            | S-01          | FR-006, FR-007, FR-010, FR-011                    | done     |
 | S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | done     |
-| S-04  | view-shared-list           | View items on a shared list with available / reserved status        | S-03          | FR-012                                            | proposed |
+| S-04  | view-shared-list           | View items on a shared list with available / reserved status        | S-03          | FR-012                                            | done |
 | S-05  | reserve-item-exclusively   | Reserve an available item on a shared list — exclusive, identity hidden from owner | S-04          | US-01, FR-013                                     | proposed |
 
 ## Streams
@@ -109,7 +109,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Straightforward read-side slice once F-01 RLS policies are correct; the work here is mostly UI and a query. Risk concentrated in the RLS policy design, which lands in F-01.
-- **Status:** proposed
+- **Status:** done
 
 ### S-05: Gift-giver reserves an item on a shared list
 
@@ -170,3 +170,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: A signed-in user can create a named wish list, add items to it (name, estimated price, store link), and see the list on their home screen alongside any lists shared with them.** — Archived 2026-06-29 → `context/archive/2026-05-28-create-list-with-items/`. Lesson: —.
 - **S-02: A list owner can rename and delete lists they own, and edit and delete items on those lists, each behind a confirmation prompt for destructive actions.** — Archived 2026-07-30 → `context/archive/2026-06-29-manage-own-lists-and-items/`. Lesson: —.
 - **S-03: A list owner can send an email invitation to a specific person; the invitee receives a message and, after signing up (or in), the list appears on their home screen.** — Archived 2026-09-13 → `context/archive/2026-08-09-share-list-by-email-invite/`. Lesson: —.
+- **S-04: A signed-in user invited to a list can open it and see every item with its current status (available or reserved), without seeing who reserved which item.** — Archived 2026-09-13 → `context/archive/2026-09-13-view-shared-list/`. Lesson: —.
