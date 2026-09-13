@@ -3,7 +3,7 @@ project: AsYouWish
 version: 1
 status: draft
 created: 2026-05-27
-updated: 2026-07-30
+updated: 2026-09-13
 prd_version: 1
 main_goal: speed
 top_blocker: time
@@ -32,7 +32,7 @@ A private family gift coordinator is flooded with "what should I buy for X?" mes
 | F-01  | wishlist-data-schema       | (foundation) lists / items / invitations / reservations tables + RLS landed | —             | FR-005, FR-008, FR-009, FR-013, Access Control, Business Logic | done     |
 | S-01  | create-list-with-items     | Sign in, create a wish list, add items (name, est. price, store link) | F-01          | FR-001, FR-002, FR-003, FR-004, FR-005, FR-009    | done     |
 | S-02  | manage-own-lists-and-items | Edit and delete one's own lists and items                            | S-01          | FR-006, FR-007, FR-010, FR-011                    | done     |
-| S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | proposed |
+| S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | done     |
 | S-04  | view-shared-list           | View items on a shared list with available / reserved status        | S-03          | FR-012                                            | proposed |
 | S-05  | reserve-item-exclusively   | Reserve an available item on a shared list — exclusive, identity hidden from owner | S-04          | US-01, FR-013                                     | proposed |
 
@@ -97,7 +97,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Email delivery transport (Supabase Auth emails vs. dedicated provider). Owner: user. Block: no.
 - **Risk:** Sequenced ahead of S-02 because the speed-biased must-have path to the reservation flow runs S-01 → S-03 → S-04 → S-05; S-02 is hygiene that can land any time after S-01. Spam/inbox-reliability is a known PRD concession (FR-008 Socratic note); not blocking for MVP.
-- **Status:** proposed
+- **Status:** done
 
 ### S-04: Invitee views a shared list with item statuses
 
@@ -169,3 +169,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-01: (foundation) Postgres tables for lists, items, invitations, and reservations are landed via `supabase/migrations/`, with RLS policies that enforce the PRD's Access Control rules (owner-writes-own, invitee-reads-shared, exclusive single-claim per item, reserver identity hidden from owner).** — Archived 2026-06-28 → `context/archive/2026-05-27-wishlist-data-schema/`. Lesson: —.
 - **S-01: A signed-in user can create a named wish list, add items to it (name, estimated price, store link), and see the list on their home screen alongside any lists shared with them.** — Archived 2026-06-29 → `context/archive/2026-05-28-create-list-with-items/`. Lesson: —.
 - **S-02: A list owner can rename and delete lists they own, and edit and delete items on those lists, each behind a confirmation prompt for destructive actions.** — Archived 2026-07-30 → `context/archive/2026-06-29-manage-own-lists-and-items/`. Lesson: —.
+- **S-03: A list owner can send an email invitation to a specific person; the invitee receives a message and, after signing up (or in), the list appears on their home screen.** — Archived 2026-09-13 → `context/archive/2026-08-09-share-list-by-email-invite/`. Lesson: —.
