@@ -102,8 +102,10 @@ export async function setupReservationScenario(): Promise<ReservationScenario> {
     invitee: { ...inviteeUser, client: inviteeClient },
     admin,
     cleanup: async () => {
-      await admin.auth.admin.deleteUser(ownerUser.id);
-      await admin.auth.admin.deleteUser(inviteeUser.id);
+      await Promise.allSettled([
+        admin.auth.admin.deleteUser(ownerUser.id),
+        admin.auth.admin.deleteUser(inviteeUser.id),
+      ]);
     },
   };
 }

@@ -22,3 +22,10 @@
 - **Problem**: EditItemForm resets the form only on open (`open && item`), while RenameListDialog resets on both open and close. The open-only variant works because the next open re-seeds from the freshest row, but the asymmetry across sibling dialogs is a latent inconsistency: a dialog that resets only on open can briefly show the previous target's values during the close animation, and it makes the reset contract non-obvious to the next editor.
 - **Rule**: A prefilled modal form dialog should reset its form state on BOTH transitions — seed from the target row on open, and clear back to empty defaults on close. Keep the reset effect symmetric across all dialogs in the same family so the pattern is predictable.
 - **Applies to**: Every react-hook-form dialog under src/components/** that prefills from a selected row (rename/edit-style modals).
+
+## Pick one error-handling convention per service function family
+
+- **Context**: src/lib/services/ — reservations.ts (pure error-mapper `reserveErrorPayload`), invitations.ts (result-union return types), items.ts / lists.ts (throw directly)
+- **Problem**: The service layer carries three different error-handling strategies. Each new service function forces a re-decision about how errors surface (mapper vs result-union vs throw), and a reader must learn all three to work across the layer. The divergence is pre-existing and grows silently with each addition.
+- **Rule**: For a new service function, throw on unexpected failures and let the action/endpoint boundary map them; add a pure, unit-testable error-mapper (like `reserveErrorPayload`) ONLY when a specific DB error must become a distinct user-facing code (e.g. 23505 → CONFLICT). Reserve result-union return types for flows with multiple expected non-error outcomes. Don't introduce a fourth style.
+- **Applies to**: Every new function under src/lib/services/**.
