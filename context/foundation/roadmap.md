@@ -34,7 +34,7 @@ A private family gift coordinator is flooded with "what should I buy for X?" mes
 | S-02  | manage-own-lists-and-items | Edit and delete one's own lists and items                            | S-01          | FR-006, FR-007, FR-010, FR-011                    | done     |
 | S-03  | share-list-by-email-invite | Invite a specific person to a list via email                         | S-01          | FR-008                                            | done     |
 | S-04  | view-shared-list           | View items on a shared list with available / reserved status        | S-03          | FR-012                                            | done |
-| S-05  | reserve-item-exclusively   | Reserve an available item on a shared list — exclusive, identity hidden from owner | S-04          | US-01, FR-013                                     | proposed |
+| S-05  | reserve-item-exclusively   | Reserve an available item on a shared list — exclusive, identity hidden from owner | S-04          | US-01, FR-013                                     | done |
 
 ## Streams
 
@@ -122,7 +122,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - How does an active reservation interact with the owner editing or deleting that item (PRD Open Question 1)? Owner: user. Block: no.
 - **Risk:** This is the load-bearing concurrency rule (FR-013); a missed DB constraint here means the headline value prop silently fails. Risk is mitigated by enforcing exclusivity at the DB layer in F-01 (unique partial index on reservations), not in app code.
-- **Status:** proposed
+- **Status:** done
 
 ### S-02: Owner edits and deletes lists and items
 
@@ -171,3 +171,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-02: A list owner can rename and delete lists they own, and edit and delete items on those lists, each behind a confirmation prompt for destructive actions.** — Archived 2026-07-30 → `context/archive/2026-06-29-manage-own-lists-and-items/`. Lesson: —.
 - **S-03: A list owner can send an email invitation to a specific person; the invitee receives a message and, after signing up (or in), the list appears on their home screen.** — Archived 2026-09-13 → `context/archive/2026-08-09-share-list-by-email-invite/`. Lesson: —.
 - **S-04: A signed-in user invited to a list can open it and see every item with its current status (available or reserved), without seeing who reserved which item.** — Archived 2026-09-13 → `context/archive/2026-09-13-view-shared-list/`. Lesson: —.
+- **S-05: A signed-in viewer of a shared list can reserve any item with status "available"; the claim is exclusive (two simultaneous reserves resolve to one), the list owner sees only an aggregate change, and the reserver can see that they hold the claim.** — Archived 2026-09-13 → `context/archive/2026-09-13-reserve-item-exclusively/`. Lesson: —.
