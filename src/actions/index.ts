@@ -6,12 +6,15 @@ import {
   itemCreateSchema,
   itemUpdateSchema,
   itemDeleteSchema,
+  reservationCreateSchema,
+  reservationReleaseSchema,
   invitationCreateSchema,
   invitationRevokeSchema,
   invitationAcceptSchema,
 } from "@/lib/schemas/wishlist";
 import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
+import { createReservation, releaseReservation } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
 
@@ -228,6 +231,52 @@ export const server = {
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
             message: "Could not accept invitation",
+          });
+        }
+      },
+    }),
+  },
+  reservations: {
+    reserve: defineAction({
+      accept: "json",
+      input: reservationCreateSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await createReservation(client, input);
+        } catch (err) {
+          if (err instanceof ActionError) throw err;
+          // Lost concurrency race: the unique partial index rejects a second active
+          // reservation with Postgres 23505 — surface it as a distinct CONFLICT.
+          if (typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505") {
+            throw new ActionError({
+              code: "CONFLICT",
+              message: "Someone just reserved this item first",
+            });
+          }
+          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+          console.error("reservations.reserve failed", err);
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Could not reserve item",
+          });
+        }
+      },
+    }),
+    release: defineAction({
+      accept: "json",
+      input: reservationReleaseSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          await releaseReservation(client, input);
+          return { success: true as const };
+        } catch (err) {
+          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+          console.error("reservations.release failed", err);
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Could not cancel reservation",
           });
         }
       },

@@ -69,6 +69,18 @@ export const itemDeleteSchema = z.object({
 
 export type ItemDeleteInput = z.infer<typeof itemDeleteSchema>;
 
+export const reservationCreateSchema = z.object({
+  itemId: z.uuid(),
+});
+
+export type ReservationCreateInput = z.infer<typeof reservationCreateSchema>;
+
+export const reservationReleaseSchema = z.object({
+  itemId: z.uuid(),
+});
+
+export type ReservationReleaseInput = z.infer<typeof reservationReleaseSchema>;
+
 // Self-invite is enforced in the action handler (the schema doesn't know the
 // current user's email). email is normalized to lowercase/trimmed to match the
 // DB check constraint (email = lower(trim(email))) and unique (list_id, email).
