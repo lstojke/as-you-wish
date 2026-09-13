@@ -6,6 +6,20 @@ export type ReservationRow = Database["public"]["Tables"]["reservations"]["Row"]
 
 type Client = SupabaseClient<Database>;
 
+// Maps a createReservation failure to the action-layer error payload. A lost
+// concurrency race surfaces as Postgres 23505 (the unique partial index
+// reservations_one_active_per_item) and becomes a distinct CONFLICT; anything
+// else is an opaque server error. Pure so it can be unit-tested without Astro.
+export function reserveErrorPayload(err: unknown): {
+  code: "CONFLICT" | "INTERNAL_SERVER_ERROR";
+  message: string;
+} {
+  if (typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505") {
+    return { code: "CONFLICT", message: "Someone just reserved this item first" };
+  }
+  return { code: "INTERNAL_SERVER_ERROR", message: "Could not reserve item" };
+}
+
 // Exclusivity is enforced by the unique partial index reservations_one_active_per_item
 // and reservations_insert RLS (claimer_id = auth.uid() and is_item_list_member(item_id)).
 // A lost concurrency race surfaces here as a Postgres 23505; it propagates so the action

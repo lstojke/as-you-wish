@@ -14,7 +14,7 @@ import {
 } from "@/lib/schemas/wishlist";
 import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
-import { createReservation, releaseReservation } from "@/lib/services/reservations";
+import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
 
@@ -246,20 +246,12 @@ export const server = {
           return await createReservation(client, input);
         } catch (err) {
           if (err instanceof ActionError) throw err;
-          // Lost concurrency race: the unique partial index rejects a second active
-          // reservation with Postgres 23505 — surface it as a distinct CONFLICT.
-          if (typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505") {
-            throw new ActionError({
-              code: "CONFLICT",
-              message: "Someone just reserved this item first",
-            });
+          const payload = reserveErrorPayload(err);
+          if (payload.code === "INTERNAL_SERVER_ERROR") {
+            // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+            console.error("reservations.reserve failed", err);
           }
-          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
-          console.error("reservations.reserve failed", err);
-          throw new ActionError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Could not reserve item",
-          });
+          throw new ActionError(payload);
         }
       },
     }),
