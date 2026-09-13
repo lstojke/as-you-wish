@@ -22,6 +22,17 @@ export async function listItems(client: Client, listId: string): Promise<ItemRow
   return data;
 }
 
+// Identity-safe: reads the item_reservation_status view, which exposes only is_reserved
+// (never claimer_id). RLS on the underlying items filters rows to list members.
+export async function listReservedItemIds(client: Client, listId: string): Promise<string[]> {
+  const { data, error } = await client
+    .from("item_reservation_status")
+    .select("item_id, is_reserved")
+    .eq("list_id", listId);
+  if (error) throw error;
+  return data.flatMap((row) => (row.is_reserved && row.item_id !== null ? [row.item_id] : []));
+}
+
 export async function createItem(client: Client, input: ItemCreateInput): Promise<ItemRow> {
   const { data, error } = await client
     .from("items")

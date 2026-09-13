@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import ListDetail from "@/components/lists/ListDetail";
 import { getListById, type ListRow } from "@/lib/services/lists";
-import { listItems, type ItemRow } from "@/lib/services/items";
+import { listItems, listReservedItemIds, type ItemRow } from "@/lib/services/items";
 import { listInvitations, type InvitationRow } from "@/lib/services/invitations";
 
 export const prerender = false;
@@ -21,11 +21,13 @@ if (!id || !UUID_RE.test(id)) {
 
 let maybeList: ListRow | null = null;
 let items: ItemRow[] = [];
+let reservedItemIds: string[] = [];
 let invitations: InvitationRow[] = [];
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
     items = await listItems(supabase, id);
+    reservedItemIds = await listReservedItemIds(supabase, id);
     if (maybeList.owner_id === user.id) {
       invitations = await listInvitations(supabase, id);
     }
@@ -51,6 +53,7 @@ const list = maybeList;
       client:only="react"
       list={list}
       initialItems={items}
+      reservedItemIds={reservedItemIds}
       initialInvitations={invitations}
       currentUserId={user.id}
     />

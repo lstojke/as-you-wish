@@ -16,11 +16,18 @@ import { Button } from "@/components/ui/button";
 interface Props {
   list: ListRow;
   initialItems: ItemRow[];
+  reservedItemIds: string[];
   initialInvitations: InvitationRow[];
   currentUserId: string;
 }
 
-export default function ListDetail({ list: initialList, initialItems, initialInvitations, currentUserId }: Props) {
+export default function ListDetail({
+  list: initialList,
+  initialItems,
+  reservedItemIds,
+  initialInvitations,
+  currentUserId,
+}: Props) {
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
   const [invitations, setInvitations] = useState<InvitationRow[]>(initialInvitations);
@@ -86,6 +93,7 @@ export default function ListDetail({ list: initialList, initialItems, initialInv
       </div>
       <ItemsList
         items={items}
+        reservedItemIds={reservedItemIds}
         ownedByCurrentUser={isOwner}
         onEdit={(item) => {
           setEditTarget(item);
@@ -94,15 +102,15 @@ export default function ListDetail({ list: initialList, initialItems, initialInv
           setDeleteTarget(item);
         }}
       />
-      <AddItemForm
-        listId={list.id}
-        onOptimisticAdd={handleOptimisticAdd}
-        onOptimisticReplace={handleOptimisticReplace}
-        onOptimisticRemove={handleOptimisticRemove}
-      />
 
       {isOwner && (
         <>
+          <AddItemForm
+            listId={list.id}
+            onOptimisticAdd={handleOptimisticAdd}
+            onOptimisticReplace={handleOptimisticReplace}
+            onOptimisticRemove={handleOptimisticRemove}
+          />
           <PendingInvitations
             invitations={invitations}
             onRevoked={(id) => {

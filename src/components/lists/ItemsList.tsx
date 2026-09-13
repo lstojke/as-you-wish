@@ -1,8 +1,10 @@
 import type { ItemRow } from "@/lib/services/items";
 import ItemActionsMenu from "@/components/lists/ItemActionsMenu";
+import { Badge } from "@/components/ui/badge";
 
 interface Props {
   items: ItemRow[];
+  reservedItemIds: string[];
   ownedByCurrentUser: boolean;
   onEdit: (item: ItemRow) => void;
   onDelete: (item: ItemRow) => void;
@@ -16,17 +18,26 @@ function formatPrice(priceCents: number, currency: string): string {
   }
 }
 
-export default function ItemsList({ items, ownedByCurrentUser, onEdit, onDelete }: Props) {
+export default function ItemsList({ items, reservedItemIds, ownedByCurrentUser, onEdit, onDelete }: Props) {
   if (items.length === 0) {
     return <p className="text-muted-foreground text-sm">No items yet. Add your first below.</p>;
   }
+
+  const reserved = new Set(reservedItemIds);
 
   return (
     <ul className="space-y-3">
       {items.map((item) => (
         <li key={item.id} className="border-border flex items-start justify-between gap-2 rounded-lg border px-4 py-3">
           <div className="flex min-w-0 flex-col gap-1">
-            <span className="font-medium">{item.title}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{item.title}</span>
+              {reserved.has(item.id) ? (
+                <Badge variant="secondary">Reserved</Badge>
+              ) : (
+                <Badge variant="outline">Available</Badge>
+              )}
+            </div>
             {item.price_cents !== null && item.currency !== null && (
               <span className="text-muted-foreground text-sm">{formatPrice(item.price_cents, item.currency)}</span>
             )}
