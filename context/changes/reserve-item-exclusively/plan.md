@@ -240,9 +240,9 @@ None. No schema, RLS, or view changes. The generated `Database` types already in
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run build`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Formatting is clean: `npm run format`
+- [x] 2.1 Type checking passes: `npm run build` — cec82e6
+- [x] 2.2 Linting passes: `npm run lint` — cec82e6
+- [x] 2.3 Formatting is clean: `npm run format` — cec82e6
 
 #### Manual
 

@@ -1,7 +1,7 @@
 ---
 change_id: reserve-item-exclusively
 title: Gift-giver reserves an item exclusively (with self-cancel)
-status: implementing
+status: implemented
 created: 2026-09-13
 updated: 2026-09-13
 archived_at: null
