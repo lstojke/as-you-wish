@@ -225,30 +225,30 @@ None. No schema, RLS, or view changes. The generated `Database` types already in
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run build`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Formatting is clean: `npm run format`
-- [x] 1.4 Exclusivity holds at the DB: second active reservation for an item fails with `23505`
-- [x] 1.5 Release re-opens the item: fresh insert after `released_at = now()` succeeds
+- [x] 1.1 Type checking passes: `npm run build` — 99cd921
+- [x] 1.2 Linting passes: `npm run lint` — 99cd921
+- [x] 1.3 Formatting is clean: `npm run format` — 99cd921
+- [x] 1.4 Exclusivity holds at the DB: second active reservation for an item fails with `23505` — 99cd921
+- [x] 1.5 Release re-opens the item: fresh insert after `released_at = now()` succeeds — 99cd921
 
 #### Manual
 
-- [ ] 1.6 `reservations.reserve` / `reservations.release` actions return expected shapes
-- [ ] 1.7 No existing action or query regressed (dashboard + list detail load)
+- [x] 1.6 `reservations.reserve` / `reservations.release` actions return expected shapes
+- [x] 1.7 No existing action or query regressed (dashboard + list detail load)
 
 ### Phase 2: Reserve / cancel UI
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run build`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Formatting is clean: `npm run format`
+- [x] 2.1 Type checking passes: `npm run build`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Formatting is clean: `npm run format`
 
 #### Manual
 
-- [ ] 2.4 Non-owner: Available → Reserve → "Reserved by you" + Cancel + success toast
-- [ ] 2.5 Cancel returns the item to Available
-- [ ] 2.6 Second user sees "Reserved" (no button), claimer never shown
-- [ ] 2.7 Concurrency: simultaneous Reserve → one wins, other gets conflict toast + Reserved badge
-- [ ] 2.8 Owner on own list: badges only, no Reserve/Cancel controls, no identity
-- [ ] 2.9 Reserve/cancel response under ~2s (NFR)
+- [x] 2.4 Non-owner: Available → Reserve → "Reserved by you" + Cancel + success toast
+- [x] 2.5 Cancel returns the item to Available
+- [x] 2.6 Second user sees "Reserved" (no button), claimer never shown
+- [x] 2.7 Concurrency: simultaneous Reserve → one wins, other gets conflict toast + Reserved badge
+- [x] 2.8 Owner on own list: badges only, no Reserve/Cancel controls, no identity
+- [x] 2.9 Reserve/cancel response under ~2s (NFR)

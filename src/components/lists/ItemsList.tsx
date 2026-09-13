@@ -1,13 +1,19 @@
 import type { ItemRow } from "@/lib/services/items";
 import ItemActionsMenu from "@/components/lists/ItemActionsMenu";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   items: ItemRow[];
   reservedItemIds: string[];
+  myReservedItemIds: string[];
+  pendingItemIds: string[];
+  canClaim: boolean;
   ownedByCurrentUser: boolean;
   onEdit: (item: ItemRow) => void;
   onDelete: (item: ItemRow) => void;
+  onReserve: (item: ItemRow) => void;
+  onRelease: (item: ItemRow) => void;
 }
 
 function formatPrice(priceCents: number, currency: string): string {
@@ -18,12 +24,25 @@ function formatPrice(priceCents: number, currency: string): string {
   }
 }
 
-export default function ItemsList({ items, reservedItemIds, ownedByCurrentUser, onEdit, onDelete }: Props) {
+export default function ItemsList({
+  items,
+  reservedItemIds,
+  myReservedItemIds,
+  pendingItemIds,
+  canClaim,
+  ownedByCurrentUser,
+  onEdit,
+  onDelete,
+  onReserve,
+  onRelease,
+}: Props) {
   if (items.length === 0) {
     return <p className="text-muted-foreground text-sm">No items yet. Add your first below.</p>;
   }
 
   const reserved = new Set(reservedItemIds);
+  const myReserved = new Set(myReservedItemIds);
+  const pending = new Set(pendingItemIds);
 
   return (
     <ul className="space-y-3">
@@ -32,7 +51,9 @@ export default function ItemsList({ items, reservedItemIds, ownedByCurrentUser, 
           <div className="flex min-w-0 flex-col gap-1">
             <div className="flex items-center gap-2">
               <span className="font-medium">{item.title}</span>
-              {reserved.has(item.id) ? (
+              {myReserved.has(item.id) ? (
+                <Badge>Reserved by you</Badge>
+              ) : reserved.has(item.id) ? (
                 <Badge variant="secondary">Reserved</Badge>
               ) : (
                 <Badge variant="outline">Available</Badge>
@@ -63,6 +84,31 @@ export default function ItemsList({ items, reservedItemIds, ownedByCurrentUser, 
               }}
             />
           )}
+          {canClaim &&
+            (myReserved.has(item.id) ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending.has(item.id)}
+                onClick={() => {
+                  onRelease(item);
+                }}
+              >
+                {pending.has(item.id) ? "Cancelling…" : "Cancel"}
+              </Button>
+            ) : reserved.has(item.id) ? null : (
+              <Button
+                type="button"
+                size="sm"
+                disabled={pending.has(item.id)}
+                onClick={() => {
+                  onReserve(item);
+                }}
+              >
+                {pending.has(item.id) ? "Reserving…" : "Reserve"}
+              </Button>
+            ))}
         </li>
       ))}
     </ul>

@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.astro";
 import ListDetail from "@/components/lists/ListDetail";
 import { getListById, type ListRow } from "@/lib/services/lists";
 import { listItems, listReservedItemIds, type ItemRow } from "@/lib/services/items";
+import { listMyReservedItemIds } from "@/lib/services/reservations";
 import { listInvitations, type InvitationRow } from "@/lib/services/invitations";
 
 export const prerender = false;
@@ -22,11 +23,19 @@ if (!id || !UUID_RE.test(id)) {
 let maybeList: ListRow | null = null;
 let items: ItemRow[] = [];
 let reservedItemIds: string[] = [];
+let myReservedItemIds: string[] = [];
 let invitations: InvitationRow[] = [];
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
-    [items, reservedItemIds] = await Promise.all([listItems(supabase, id), listReservedItemIds(supabase, id)]);
+    items = await listItems(supabase, id);
+    [reservedItemIds, myReservedItemIds] = await Promise.all([
+      listReservedItemIds(supabase, id),
+      listMyReservedItemIds(
+        supabase,
+        items.map((i) => i.id),
+      ),
+    ]);
     if (maybeList.owner_id === user.id) {
       invitations = await listInvitations(supabase, id);
     }
@@ -53,6 +62,7 @@ const list = maybeList;
       list={list}
       initialItems={items}
       reservedItemIds={reservedItemIds}
+      myReservedItemIds={myReservedItemIds}
       initialInvitations={invitations}
       currentUserId={user.id}
     />

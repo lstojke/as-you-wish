@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { actions } from "astro:actions";
+import { toast } from "sonner";
 import type { ListRow } from "@/lib/services/lists";
 import type { ItemRow } from "@/lib/services/items";
 import type { InvitationRow } from "@/lib/services/invitations";
@@ -17,6 +19,7 @@ interface Props {
   list: ListRow;
   initialItems: ItemRow[];
   reservedItemIds: string[];
+  myReservedItemIds: string[];
   initialInvitations: InvitationRow[];
   currentUserId: string;
 }
@@ -25,12 +28,16 @@ export default function ListDetail({
   list: initialList,
   initialItems,
   reservedItemIds,
+  myReservedItemIds,
   initialInvitations,
   currentUserId,
 }: Props) {
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
   const [invitations, setInvitations] = useState<InvitationRow[]>(initialInvitations);
+  const [reserved, setReserved] = useState<string[]>(reservedItemIds);
+  const [myReserved, setMyReserved] = useState<string[]>(myReservedItemIds);
+  const [pendingItemIds, setPendingItemIds] = useState<string[]>([]);
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -38,6 +45,38 @@ export default function ListDetail({
   const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
   const isOwner = list.owner_id === currentUserId;
+
+  async function handleReserve(item: ItemRow) {
+    setPendingItemIds((prev) => [...prev, item.id]);
+    const { error } = await actions.reservations.reserve({ itemId: item.id });
+    setPendingItemIds((prev) => prev.filter((id) => id !== item.id));
+    if (error) {
+      // Lost the race: the item is now taken by someone else — reflect that truthfully.
+      if (error.code === "CONFLICT") {
+        setReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+        toast.error("Someone just reserved this item first");
+        return;
+      }
+      toast.error(error.message || "Could not reserve item");
+      return;
+    }
+    setReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+    setMyReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+    toast.success("Item reserved");
+  }
+
+  async function handleRelease(item: ItemRow) {
+    setPendingItemIds((prev) => [...prev, item.id]);
+    const { error } = await actions.reservations.release({ itemId: item.id });
+    setPendingItemIds((prev) => prev.filter((id) => id !== item.id));
+    if (error) {
+      toast.error(error.message || "Could not cancel reservation");
+      return;
+    }
+    setReserved((prev) => prev.filter((id) => id !== item.id));
+    setMyReserved((prev) => prev.filter((id) => id !== item.id));
+    toast.success("Reservation cancelled");
+  }
 
   function handleOptimisticAdd(placeholder: ItemRow) {
     setItems((prev) => [...prev, placeholder]);
@@ -93,7 +132,10 @@ export default function ListDetail({
       </div>
       <ItemsList
         items={items}
-        reservedItemIds={reservedItemIds}
+        reservedItemIds={reserved}
+        myReservedItemIds={myReserved}
+        pendingItemIds={pendingItemIds}
+        canClaim={!isOwner}
         ownedByCurrentUser={isOwner}
         onEdit={(item) => {
           setEditTarget(item);
@@ -101,6 +143,8 @@ export default function ListDetail({
         onDelete={(item) => {
           setDeleteTarget(item);
         }}
+        onReserve={handleReserve}
+        onRelease={handleRelease}
       />
 
       {isOwner && (
