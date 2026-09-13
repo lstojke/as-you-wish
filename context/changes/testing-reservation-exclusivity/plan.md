@@ -247,29 +247,29 @@ No schema or data migration. `.env.test` holds local-stack demo credentials only
 
 #### Automated
 
-- [x] 1.1 Dependencies install: `npm install`
-- [x] 1.2 Unit project runs green: `npm run test:unit`
-- [x] 1.3 Type checking passes: `npx astro sync && npx tsc --noEmit`
-- [x] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Dependencies install: `npm install` — 69c1e85
+- [x] 1.2 Unit project runs green: `npm run test:unit` — 69c1e85
+- [x] 1.3 Type checking passes: `npx astro sync && npx tsc --noEmit` — 69c1e85
+- [x] 1.4 Linting passes: `npm run lint` — 69c1e85
 
 #### Manual
 
-- [ ] 1.5 `npm run test:unit` reports the mapping cases with no external services running
-- [ ] 1.6 Reserving still shows the CONFLICT message on a real conflict (action path unchanged)
+- [x] 1.5 `npm run test:unit` reports the mapping cases with no external services running — 69c1e85
+- [x] 1.6 Reserving still shows the CONFLICT message on a real conflict (action path unchanged) — 69c1e85
 
 ### Phase 2: Integration harness + concurrency proof
 
 #### Automated
 
-- [ ] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration`
-- [ ] 2.2 Full suite passes: `npm test`
-- [ ] 2.3 Type checking passes: `npx tsc --noEmit`
-- [ ] 2.4 Linting passes: `npm run lint`
+- [x] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration` (2 tests)
+- [x] 2.2 Full suite passes: `npm test` (6 tests)
+- [x] 2.3 Type checking passes: `npm run build` green; new files add no `tsc` errors (the 3 pre-existing `InviteDialog.tsx` errors are unrelated, same as 1.3)
+- [x] 2.4 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 2.5 Dropping the unique index makes the concurrency spec fail with two successes
-- [ ] 2.6 Suite passes twice in a row without manual DB cleanup
+- [x] 2.5 Dropping `reservations_one_active_per_item` locally made the concurrency spec fail with two successes (`Expected 1, Received 2`); index restored
+- [x] 2.6 Suite passes twice in a row without manual DB cleanup (fixtures self-teardown via user-delete cascade)
 
 ### Phase 3: Document the pattern
 
