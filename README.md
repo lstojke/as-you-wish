@@ -55,6 +55,29 @@ npm run dev
 - `npm run lint` - Run ESLint with type-checked rules
 - `npm run lint:fix` - Auto-fix ESLint issues
 - `npm run format` - Run Prettier
+- `npm test` - Run the full test suite (unit + integration)
+- `npm run test:unit` - Run fast unit tests only (no services needed)
+- `npm run test:integration` - Run integration tests (requires the local Supabase stack)
+
+### Running tests
+
+Unit tests need nothing extra:
+
+```sh
+npm run test:unit
+```
+
+Integration tests run against the local Supabase stack. Start it first, copy the
+test env template, and fill it from `npx supabase status`:
+
+```sh
+npx supabase start
+cp .env.test.example .env.test   # then paste Project URL + publishable/secret keys
+npm run test:integration         # or `npm test` for the whole suite
+```
+
+`.env.test` is gitignored — it holds local-stack credentials only, never the
+remote project values.
 
 ## Project Structure
 

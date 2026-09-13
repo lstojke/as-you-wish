@@ -261,23 +261,23 @@ No schema or data migration. `.env.test` holds local-stack demo credentials only
 
 #### Automated
 
-- [x] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration` (2 tests)
-- [x] 2.2 Full suite passes: `npm test` (6 tests)
-- [x] 2.3 Type checking passes: `npm run build` green; new files add no `tsc` errors (the 3 pre-existing `InviteDialog.tsx` errors are unrelated, same as 1.3)
-- [x] 2.4 Linting passes: `npm run lint`
+- [x] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration` (2 tests) — 6573b9e
+- [x] 2.2 Full suite passes: `npm test` (6 tests) — 6573b9e
+- [x] 2.3 Type checking passes: `npm run build` green; new files add no `tsc` errors (the 3 pre-existing `InviteDialog.tsx` errors are unrelated, same as 1.3) — 6573b9e
+- [x] 2.4 Linting passes: `npm run lint` — 6573b9e
 
 #### Manual
 
-- [x] 2.5 Dropping `reservations_one_active_per_item` locally made the concurrency spec fail with two successes (`Expected 1, Received 2`); index restored
-- [x] 2.6 Suite passes twice in a row without manual DB cleanup (fixtures self-teardown via user-delete cascade)
+- [x] 2.5 Dropping `reservations_one_active_per_item` locally made the concurrency spec fail with two successes (`Expected 1, Received 2`); index restored — 6573b9e
+- [x] 2.6 Suite passes twice in a row without manual DB cleanup (fixtures self-teardown via user-delete cascade) — 6573b9e
 
 ### Phase 3: Document the pattern
 
 #### Automated
 
-- [ ] 3.1 Markdown formats clean: `npm run format`
+- [x] 3.1 Markdown formats clean: `npx prettier --check` on the changed docs passes (repo-wide `npm run format` reformats many unrelated legacy docs, so scoped the check to Phase 3 files)
 
 #### Manual
 
-- [ ] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring
-- [ ] 3.3 Phase 1 status in the test plan reflects completion
+- [x] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring (env template, fixture-helper, and RLS guidance are spelled out)
+- [x] 3.3 Phase 1 status in the test plan reflects completion (§3 row → `complete`, §4 Vitest → 3.2.7, §6 cookbook filled)
