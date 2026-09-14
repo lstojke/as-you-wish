@@ -260,10 +260,10 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 3.1 Both new spec files exist on disk
-- [x] 3.2 Full suite green: `npm test`
+- [x] 3.1 Both new spec files exist on disk — d19a315
+- [x] 3.2 Full suite green: `npm test` — d19a315
 
 #### Manual
 
-- [x] 3.3 §6.2b reads as an actionable recipe
-- [x] 3.4 §3 status and §6.6 note match what shipped
+- [x] 3.3 §6.2b reads as an actionable recipe — d19a315
+- [x] 3.4 §3 status and §6.6 note match what shipped — d19a315

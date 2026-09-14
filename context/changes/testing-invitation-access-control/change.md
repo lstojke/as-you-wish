@@ -1,7 +1,7 @@
 ---
 change_id: testing-invitation-access-control
 title: Test invitation acceptance and access-control (IDOR) at the data layer
-status: implementing
+status: implemented
 created: 2026-09-13
 updated: 2026-09-14
 archived_at: null
