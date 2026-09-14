@@ -328,52 +328,52 @@ No data or schema migration. The only structural code change is replacing `Topba
 
 #### Automated
 
-- [x] 1.1 Build succeeds: `npm run build`
-- [x] 1.2 Astro type/diagnostics pass: `npx astro check`
-- [x] 1.3 Lint passes: `npm run lint`
+- [x] 1.1 Build succeeds: `npm run build` — 963b4b2
+- [x] 1.2 Astro type/diagnostics pass: `npx astro check` — 963b4b2
+- [x] 1.3 Lint passes: `npm run lint` — 963b4b2
 
 #### Manual
 
-- [x] 1.4 Dashboard and list detail render cosmic (no neutral-gray controls)
-- [x] 1.5 Auth form controls match the cosmic glass wrapper
-- [x] 1.6 Primary/destructive/disabled/focus states legible
-- [x] 1.7 Reused foreground/background token pairs meet WCAG AA
+- [x] 1.4 Dashboard and list detail render cosmic (no neutral-gray controls) — 963b4b2
+- [x] 1.5 Auth form controls match the cosmic glass wrapper — 963b4b2
+- [x] 1.6 Primary/destructive/disabled/focus states legible — 963b4b2
+- [x] 1.7 Reused foreground/background token pairs meet WCAG AA — 963b4b2
 
 #### Project identity rename (added scope — 2026-09-14)
 
-- [x] 1.8 Renamed `10x-astro-starter` → `as-you-wish` in package.json, package-lock.json, wrangler.jsonc top-level name, Layout.astro default title, config-status docsUrl, and README title/clone
-- [x] 1.9 Fixed pre-existing InviteDialog resolver typing (preprocess-free form schema) so `npx astro check` passes clean; build/lint green, only intentional refs remain (supabase project_id kept, Welcome headline deferred to Phase 3)
+- [x] 1.8 Renamed `10x-astro-starter` → `as-you-wish` in package.json, package-lock.json, wrangler.jsonc top-level name, Layout.astro default title, config-status docsUrl, and README title/clone — 963b4b2
+- [x] 1.9 Fixed pre-existing InviteDialog resolver typing (preprocess-free form schema) so `npx astro check` passes clean; build/lint green, only intentional refs remain (supabase project_id kept, Welcome headline deferred to Phase 3) — 963b4b2
 
 ### Phase 2: Unified themed header
 
 #### Automated
 
-- [ ] 2.1 Build succeeds: `npm run build`
-- [ ] 2.2 Astro check passes: `npx astro check`
-- [ ] 2.3 Lint passes: `npm run lint`
-- [ ] 2.4 `grep -r "Topbar" src` returns nothing
+- [x] 2.1 Build succeeds: `npm run build`
+- [x] 2.2 Astro check passes: `npx astro check`
+- [x] 2.3 Lint passes: `npm run lint`
+- [x] 2.4 `grep -r "Topbar" src` returns nothing
 
 #### Manual
 
-- [ ] 2.5 Same header on landing, dashboard, and list pages
-- [ ] 2.6 Signed-out vs signed-in header states correct
-- [ ] 2.7 Header sign-out logs out and redirects as before
-- [ ] 2.8 Header colors match the cosmic palette everywhere
+- [x] 2.5 Same header on landing, dashboard, and list pages
+- [x] 2.6 Signed-out vs signed-in header states correct
+- [x] 2.7 Header sign-out logs out and redirects as before
+- [x] 2.8 Header colors match the cosmic palette everywhere
 
 ### Phase 3: Landing page restructure
 
 #### Automated
 
-- [ ] 3.1 Build succeeds: `npm run build`
-- [ ] 3.2 Astro check passes: `npx astro check`
-- [ ] 3.3 Lint passes: `npm run lint`
-- [ ] 3.4 No boilerplate strings remain (`grep -ri` clean)
+- [x] 3.1 Build succeeds: `npm run build`
+- [x] 3.2 Astro check passes: `npx astro check`
+- [x] 3.3 Lint passes: `npm run lint`
+- [x] 3.4 No boilerplate strings remain (`grep -ri` clean)
 
 #### Manual
 
-- [ ] 3.5 Landing reads as AsYouWish (hero + how-it-works + value props + CTA)
-- [ ] 3.6 All CTAs navigate to correct auth pages
-- [ ] 3.7 Responsive and legible against cosmic background (AA)
+- [x] 3.5 Landing reads as AsYouWish (hero + how-it-works + value props + CTA)
+- [x] 3.6 All CTAs navigate to correct auth pages
+- [x] 3.7 Responsive and legible against cosmic background (AA)
 
 ### Phase 4: Token migration + accessibility sweep
 

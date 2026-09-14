@@ -1,5 +1,6 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import AppHeader from "@/components/AppHeader.astro";
 import ListDetail from "@/components/lists/ListDetail";
 import { getListById, type ListRow } from "@/lib/services/lists";
 import { listItems, listReservedItemIds, type ItemRow } from "@/lib/services/items";
@@ -53,6 +54,7 @@ const list = maybeList;
 ---
 
 <Layout title={list.title}>
+  <AppHeader />
   <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
     {
       /* client:only required — react-hook-form in AddItemForm causes React SSR instance mismatch with client:load (same root cause as DashboardLists). SSR data fetched above and passed as props. */

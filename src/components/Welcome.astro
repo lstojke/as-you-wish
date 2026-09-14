@@ -1,5 +1,5 @@
 ---
-import Topbar from "@/components/Topbar.astro";
+import AppHeader from "@/components/AppHeader.astro";
 ---
 
 <div class="bg-cosmic relative min-h-screen w-full overflow-hidden">
@@ -25,102 +25,154 @@ import Topbar from "@/components/Topbar.astro";
   </div>
 
   <div class="relative z-10 p-4 sm:p-8">
-    <Topbar />
+    <AppHeader />
 
     <!-- Hero section -->
-    <div class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-24 text-center sm:py-32 lg:py-40">
-      <h1
-        class="mb-6 bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-5xl leading-tight font-bold text-transparent sm:text-6xl lg:text-7xl"
+    <section
+      class="mx-auto flex max-w-4xl flex-col items-center justify-center px-4 py-24 text-center sm:py-32 lg:py-40"
+    >
+      <span
+        class="border-border text-muted-foreground mb-6 inline-flex items-center rounded-full border px-4 py-1.5 text-sm"
       >
-        10x Astro Starter
+        Private family wish lists
+      </span>
+      <h1 class="text-foreground mb-6 text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
+        Give the right gift, <span class="text-primary">every time</span>
       </h1>
-      <p class="mb-10 max-w-2xl text-lg text-blue-100/70 sm:text-xl">
-        A production-ready starter with authentication, modern tooling, and a cosmic developer experience.
+      <p class="text-muted-foreground mb-10 max-w-2xl text-lg sm:text-xl">
+        AsYouWish lets your family share wish lists and quietly reserve gifts — so everyone gets something they love and
+        no one buys the same present twice.
       </p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <a
-          href="/auth/signin"
-          class="inline-flex items-center justify-center rounded-lg bg-purple-600 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-purple-500"
+          href="/auth/signup"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium transition-colors"
         >
-          Sign In
+          Get started
         </a>
         <a
-          href="/auth/signup"
-          class="inline-flex items-center justify-center rounded-lg border border-white/20 px-6 py-3 text-base font-medium text-white transition-colors hover:bg-white/10"
+          href="/auth/signin"
+          class="border-border text-foreground hover:bg-card inline-flex items-center justify-center rounded-lg border px-6 py-3 text-base font-medium transition-colors"
         >
-          Sign Up
+          Sign in
         </a>
       </div>
-    </div>
+    </section>
 
-    <!-- Feature cards -->
-    <div class="mx-auto grid max-w-4xl grid-cols-1 gap-6 px-4 pb-24 sm:grid-cols-3">
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Authentication Ready</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Built-in Supabase auth with sign in, sign up, and protected routes out of the box.
-        </p>
-      </div>
+    <!-- How it works -->
+    <section class="mx-auto max-w-4xl px-4 pb-8">
+      <h2 class="text-foreground mb-2 text-center text-2xl font-semibold sm:text-3xl">How it works</h2>
+      <p class="text-muted-foreground mb-10 text-center">Three steps to coordinated, stress-free gifting.</p>
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div class="border-border bg-card/60 rounded-xl border p-6 backdrop-blur-xl">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-primary mb-4"
+          >
+            <path d="M11 12H3"></path>
+            <path d="M16 6H3"></path>
+            <path d="M16 18H3"></path>
+            <path d="M18 9v6"></path>
+            <path d="M21 12h-6"></path>
+          </svg>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">1 · Create</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Start a wish list and add the things you would love to receive.
+          </p>
+        </div>
 
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-          <polyline points="2 17 12 22 22 17"></polyline>
-          <polyline points="2 12 12 17 22 12"></polyline>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Modern Stack</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          Astro 5, React 19, Tailwind 4, and TypeScript — the latest tools, ready to go.
-        </p>
-      </div>
+        <div class="border-border bg-card/60 rounded-xl border p-6 backdrop-blur-xl">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-primary mb-4"
+          >
+            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          </svg>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">2 · Share</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Invite your family by email so they can see what you are hoping for.
+          </p>
+        </div>
 
-      <div class="rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="mb-4 text-purple-300"
-        >
-          <polyline points="16 18 22 12 16 6"></polyline>
-          <polyline points="8 6 2 12 8 18"></polyline>
-        </svg>
-        <h3 class="mb-2 text-lg font-semibold text-white">Developer Experience</h3>
-        <p class="text-sm leading-relaxed text-blue-100/60">
-          ESLint, Prettier, and pre-commit hooks keep your codebase clean from day one.
-        </p>
+        <div class="border-border bg-card/60 rounded-xl border p-6 backdrop-blur-xl">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-primary mb-4"
+          >
+            <rect x="3" y="8" width="18" height="4" rx="1"></rect>
+            <path d="M12 8v13"></path>
+            <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
+            <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>
+          </svg>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">3 · Reserve</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Claim an item so no one double-buys — the giver's choice stays a surprise.
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
+
+    <!-- Value props -->
+    <section class="mx-auto max-w-4xl px-4 py-16">
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">No duplicate gifts</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Once an item is reserved it is off the table for everyone else, so surprises never collide.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">The reserver stays hidden</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            List owners can see an item was claimed, but never by whom — the surprise stays intact.
+          </p>
+        </div>
+        <div>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">Your private circle</h3>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Lists are shared only with people you invite. It is a family space, not a public registry.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer CTA -->
+    <section class="mx-auto max-w-3xl px-4 pb-24 text-center">
+      <div class="border-border bg-card/60 rounded-2xl border p-10 backdrop-blur-xl">
+        <h2 class="text-foreground mb-3 text-2xl font-semibold sm:text-3xl">Ready to make gifting effortless?</h2>
+        <p class="text-muted-foreground mb-8">Create your first wish list in minutes.</p>
+        <a
+          href="/auth/signup"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium transition-colors"
+        >
+          Get started
+        </a>
+      </div>
+    </section>
   </div>
 </div>
