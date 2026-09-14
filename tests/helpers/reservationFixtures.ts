@@ -1,28 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/db/database.types";
-
-type Client = SupabaseClient<Database>;
-
-const FIXTURE_PASSWORD = "concurrency-fixture-pw-123!";
-
-function env(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Integration env ${name} is not set (see tests/setup/integration.ts).`);
-  return value;
-}
-
-function anonClient(): Client {
-  return createClient<Database>(env("SUPABASE_URL"), env("SUPABASE_ANON_KEY"), {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
-
-function adminClient(): Client {
-  // Secret (service_role) key bypasses RLS — used ONLY to seed and inspect fixtures.
-  return createClient<Database>(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-}
+import { adminClient, createMember, signIn, type Client } from "./supabaseTestClients";
 
 export interface ReservationMember {
   id: string;
@@ -38,24 +14,6 @@ export interface ReservationScenario {
   /** Service-role client for RLS-bypassing assertions (e.g. counting rows). */
   admin: Client;
   cleanup: () => Promise<void>;
-}
-
-async function createMember(admin: Client, role: string): Promise<{ id: string; email: string }> {
-  const email = `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.test`;
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password: FIXTURE_PASSWORD,
-    email_confirm: true,
-  });
-  if (error) throw error;
-  return { id: data.user.id, email };
-}
-
-async function signIn(email: string): Promise<Client> {
-  const client = anonClient();
-  const { error } = await client.auth.signInWithPassword({ email, password: FIXTURE_PASSWORD });
-  if (error) throw error;
-  return client;
 }
 
 /**
