@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-09-13 (Phase 1 complete: Vitest + unit/integration landed)
+> Last updated: 2026-09-14 (Phase 2 complete: invitation accept + non-member access-control integration specs landed)
 
 ## 1. Strategy
 
@@ -85,7 +85,7 @@ orchestrator updates Status as artifacts appear on disk.
 | #   | Phase name                          | Goal (one line)                                                                                                                   | Risks covered | Test types             | Status      | Change folder                                    |
 | --- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------- | ----------- | ------------------------------------------------ |
 | 1   | Bootstrap + reservation exclusivity | Stand up Vitest and prove the exclusive-claim rule resolves concurrent reserves to exactly one success                            | #1            | unit + integration     | complete    | context/changes/testing-reservation-exclusivity/ |
-| 2   | Invitation & access control         | Prove invite/accept grants access only to the right, email-confirmed user and that non-members are denied read/reserve            | #2, #3        | integration            | not started | —                                                |
+| 2   | Invitation & access control         | Prove invite/accept grants access only to the right, email-confirmed user and that non-members are denied read/reserve            | #2, #3        | integration            | complete      | context/changes/testing-invitation-access-control/ |
 | 3   | Privacy + input integrity           | Prove reserver identity never reaches the owner, server-side validation parity holds, and reserved-item mutation stays consistent | #4, #5, #6    | integration + contract | not started | —                                                |
 | 4   | Quality-gates wiring                | Lock lint + typecheck + test into CI so the floor can't silently regress                                                          | cross-cutting | gates                  | not started | —                                                |
 
@@ -142,10 +142,15 @@ the relevant rollout phase ships; before that, the sub-section reads
 ### 6.2 Adding an integration test (against local Supabase)
 
 - Start the stack first: `npx supabase start` (Docker). Put the spec under `tests/integration/**/*.test.ts` and run `npm run test:integration` (or `npm test` for the whole suite).
-- **Credentials**: the `integration` project's setup file [tests/setup/integration.ts](../../../tests/setup/integration.ts) loads a gitignored `.env.test` via `process.loadEnvFile` and fails fast with an actionable message if the stack is unreachable or a var is missing. Copy `.env.test.example` and fill it from `npx supabase status` (`SUPABASE_URL`, `SUPABASE_ANON_KEY` = publishable key, `SUPABASE_SERVICE_ROLE_KEY` = secret key). Never commit `.env.test`; never point it at the remote project.
+- **Credentials**: the `integration` project's setup file [tests/setup/integration.ts](../../../tests/setup/integration.ts) loads a gitignored `.env.test` via `process.loadEnvFile` and fails fast with an actionable message if the stack is unreachable or a var is missing. Copy `.env.test.example` and fill it from `npx supabase status` (`SUPABASE_URL`, `SUPABASE_ANON_KEY` = publishable key, `SUPABASE_SERVICE_ROLE_KEY` = secret key, `SUPABASE_DB_URL` = the Database URL, used only by fixtures needing direct auth-schema access). Never commit `.env.test`; never point it at the remote project.
 - **Fixtures & RLS**: seed the membership graph with a **service-role** client (bypasses RLS) — see [tests/helpers/reservationFixtures.ts](../../../tests/helpers/reservationFixtures.ts): `auth.admin.createUser({ email_confirm: true })` for each actor, then insert `lists`/`items`/`invitations` (set `accepted_by_user_id` to make an invitee a member). Then exercise the actual behaviour through **member clients** signed in with the publishable key (`signInWithPassword`) so RLS is genuinely tested. Teardown deletes the auth users, which cascades away lists/items/invitations/reservations — keeping runs isolated without a full `db reset`.
 
-### 6.2b Access-control (non-member denied) pattern — see §3 Phase 2 (not yet shipped).
+### 6.2b Access-control (non-member denied) pattern
+
+- Seed the full membership graph with the **service-role** client (owner + list + item), plus a signed-in **outsider** member who was never invited to that list — see [tests/helpers/invitationFixtures.ts](../../../tests/helpers/invitationFixtures.ts). Exercise denial through the outsider's **publishable-key** client so RLS is genuinely enforced.
+- **Assert the two denial shapes, which differ**: a blocked SELECT returns an **empty result set with no error** (RLS filters rows silently — `lists_select` / `items_select` via `is_list_member`), whereas a blocked write **rejects** (`reservations_insert` WITH CHECK `is_item_list_member`). Don't expect an error on the read.
+- **Guard against false-empty**: pair every "read denied" assertion with a service-role control read of the same rows proving they exist — otherwise a seeding gap masquerades as a passing denial. Pattern: [tests/integration/access-control.test.ts](../../../tests/integration/access-control.test.ts).
+- **Negative control** (manual one-off, never committed): temporarily relax the relevant policy locally (e.g. broaden `reservations_insert` or `items_select`), re-run the spec, and confirm the denial case flips to a pass-through — proof the test exercises RLS, not app logic. Restore the policy afterward. This mirrors §6.5's dropped-index proof without a destructive automated step.
 
 ### 6.3 Adding an e2e test
 
@@ -166,6 +171,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 (Optional. After each phase lands, `/10x-implement` appends a 2–3 line note here capturing anything surprising the rollout phase taught.)
 
 - **Phase 1**: The Supabase CLI (2.98+) issues per-project **publishable/secret** keys (`sb_publishable_…`/`sb_secret_…`) that are not deterministic across machines — so local test credentials live in a gitignored `.env.test` (template committed) rather than being hard-coded. `process.loadEnvFile` (Node 22) loads them with zero extra deps.
+- **Phase 2**: GoTrue refuses a password session for any user whose `email_confirmed_at` is null (even with `GOTRUE_MAILER_AUTOCONFIRM=true`), and the admin API can't un-confirm an already-confirmed user. To exercise the `accept_invitation` P0001 gate with a live session, the fixture signs the user in **while confirmed**, then nulls `email_confirmed_at` directly via a `pg` connection (`SUPABASE_DB_URL`, added to `.env.test`) so the RPC re-reads the un-confirmed row. This is the only path that reaches the RPC's own guard rather than the upstream login gate.
 
 ## 7. What We Deliberately Don't Test
 

@@ -248,22 +248,22 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run typecheck`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Integration suite passes: `npm run test:integration`
+- [x] 2.1 Type checking passes: `npm run typecheck` — 0ca206e
+- [x] 2.2 Linting passes: `npm run lint` — 0ca206e
+- [x] 2.3 Integration suite passes: `npm run test:integration` — 0ca206e
 
 #### Manual
 
-- [x] 2.4 Read-denied assertion paired with a service-role control read
+- [x] 2.4 Read-denied assertion paired with a service-role control read — 0ca206e
 
 ### Phase 3: Test-plan cookbook + status update
 
 #### Automated
 
-- [ ] 3.1 Both new spec files exist on disk
-- [ ] 3.2 Full suite green: `npm test`
+- [x] 3.1 Both new spec files exist on disk
+- [x] 3.2 Full suite green: `npm test`
 
 #### Manual
 
-- [ ] 3.3 §6.2b reads as an actionable recipe
-- [ ] 3.4 §3 status and §6.6 note match what shipped
+- [x] 3.3 §6.2b reads as an actionable recipe
+- [x] 3.4 §3 status and §6.6 note match what shipped
