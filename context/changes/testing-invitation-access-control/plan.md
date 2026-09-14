@@ -234,27 +234,27 @@ None — no schema or data changes.
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run typecheck`
-- [x] 1.2 Linting passes: `npm run lint`
-- [x] 1.3 Unit tests still pass: `npm run test:unit`
-- [x] 1.4 Integration suite passes (incl. unchanged reservation spec): `npm run test:integration`
+- [x] 1.1 Type checking passes: `npm run typecheck` — dfc9e1d
+- [x] 1.2 Linting passes: `npm run lint` — dfc9e1d
+- [x] 1.3 Unit tests still pass: `npm run test:unit` — dfc9e1d
+- [x] 1.4 Integration suite passes (incl. unchanged reservation spec): `npm run test:integration` — dfc9e1d
 
 #### Manual
 
-- [x] 1.5 Stack-down guard still fails fast with the actionable message
-- [x] 1.6 Happy-case reads go through the invitee's publishable-key client (real RLS)
+- [x] 1.5 Stack-down guard still fails fast with the actionable message — dfc9e1d
+- [x] 1.6 Happy-case reads go through the invitee's publishable-key client (real RLS) — dfc9e1d
 
 ### Phase 2: Non-member access-control spec (#3)
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run typecheck`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Integration suite passes: `npm run test:integration`
+- [x] 2.1 Type checking passes: `npm run typecheck`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Integration suite passes: `npm run test:integration`
 
 #### Manual
 
-- [ ] 2.4 Read-denied assertion paired with a service-role control read
+- [x] 2.4 Read-denied assertion paired with a service-role control read
 
 ### Phase 3: Test-plan cookbook + status update
 
