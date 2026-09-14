@@ -15,11 +15,14 @@ import {
 } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { invitationCreateSchema } from "@/lib/schemas/wishlist";
 import type { InvitationRow } from "@/lib/services/invitations";
 import { z } from "zod";
 
-const inviteFormSchema = invitationCreateSchema.pick({ email: true });
+// Preprocess-free so the resolver's input type is `string`, not `unknown`; the
+// server action re-validates and normalizes via the full invitationCreateSchema.
+const inviteFormSchema = z.object({
+  email: z.email("Enter a valid email address").max(320),
+});
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
 interface Props {
