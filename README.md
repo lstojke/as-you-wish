@@ -1,7 +1,5 @@
 # AsYouWish
 
-![](./public/template.png)
-
 Private family wish lists with exclusive, identity-hidden reservations — so no gift gets bought twice.
 
 ## Tech Stack
@@ -107,26 +105,20 @@ Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
 cp .env.example .env
 ```
 
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
-
-```bash
-npx supabase init
-```
-
-3. Start the local stack (downloads Docker images on first run):
+2. Start the local stack (downloads Docker images on first run, applies the migrations in `supabase/migrations/`):
 
 ```bash
 npx supabase start
 ```
 
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
+3. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
 
 ```
 SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_KEY=<anon key from CLI output>
 ```
 
-5. To stop the stack when done:
+4. To stop the stack when done:
 
 ```bash
 npx supabase stop
@@ -134,20 +126,24 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+The database schema (wish lists, items, invitations, reservations, and their RLS policies) lives in `supabase/migrations/` and is applied automatically by `npx supabase start`.
 
 ### Using a cloud Supabase project instead
 
 If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
 
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
+| Variable         | Description                                                       |
+| ---------------- | ----------------------------------------------------------------- |
+| `SUPABASE_URL`   | Project URL from Supabase dashboard → Settings → API              |
+| `SUPABASE_KEY`   | `anon` public key from Supabase dashboard → Settings → API        |
+| `RESEND_API_KEY` | [Resend](https://resend.com/) API key for sending list invitations |
+| `RESEND_FROM`    | From address used for invitation emails (e.g. `AsYouWish <no-reply@yourdomain>`) |
 
 ```
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
+RESEND_API_KEY=<resend-api-key>
+RESEND_FROM=<from-address>
 ```
 
 ### Email confirmation in local development
@@ -167,9 +163,10 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/auth/signin`        | Email/password sign-in form                                             |
 | `/auth/signup`        | Email/password sign-up form                                             |
 | `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
+| `/dashboard`          | Protected home for a signed-in user (redirects to `/auth/signin` if unauthenticated) |
+| `/lists/[id]`         | Protected wish-list detail page                                         |
 
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
+Route protection is handled in `src/middleware.ts` (`PROTECTED_ROUTES` currently covers `/dashboard` and `/lists`). Add paths to that array to require authentication.
 
 ## Deployment
 
