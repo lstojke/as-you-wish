@@ -379,14 +379,14 @@ No data or schema migration. The only structural code change is replacing `Topba
 
 #### Automated
 
-- [x] 4.1 Build succeeds: `npm run build`
-- [x] 4.2 Astro check passes: `npx astro check`
-- [x] 4.3 Lint passes: `npm run lint`
-- [x] 4.4 Straggler grep returns only intentional decorative usages
+- [x] 4.1 Build succeeds: `npm run build` — 34a5e0a
+- [x] 4.2 Astro check passes: `npx astro check` — 34a5e0a
+- [x] 4.3 Lint passes: `npm run lint` — 34a5e0a
+- [x] 4.4 Straggler grep returns only intentional decorative usages — 34a5e0a
 
 #### Manual
 
-- [x] 4.5 Auth cards/controls/links match the cosmic palette
-- [x] 4.6 Contrast checker confirms AA on key text/UI pairs
-- [x] 4.7 Keyboard focus rings visible across pages
-- [x] 4.8 Full walkthrough shows one consistent theme, no dialog/menu/toast/badge regressions
+- [x] 4.5 Auth cards/controls/links match the cosmic palette — 34a5e0a
+- [x] 4.6 Contrast checker confirms AA on key text/UI pairs — 34a5e0a
+- [x] 4.7 Keyboard focus rings visible across pages — 34a5e0a
+- [x] 4.8 Full walkthrough shows one consistent theme, no dialog/menu/toast/badge regressions — 34a5e0a
