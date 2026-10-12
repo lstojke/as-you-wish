@@ -29,3 +29,10 @@
 - **Problem**: The service layer carries three different error-handling strategies. Each new service function forces a re-decision about how errors surface (mapper vs result-union vs throw), and a reader must learn all three to work across the layer. The divergence is pre-existing and grows silently with each addition.
 - **Rule**: For a new service function, throw on unexpected failures and let the action/endpoint boundary map them; add a pure, unit-testable error-mapper (like `reserveErrorPayload`) ONLY when a specific DB error must become a distinct user-facing code (e.g. 23505 → CONFLICT). Reserve result-union return types for flows with multiple expected non-error outcomes. Don't introduce a fourth style.
 - **Applies to**: Every new function under src/lib/services/**.
+
+## Keep interactive input boundaries distinct from their fill
+
+- **Context**: `src/styles/global.css` (`--input`) and interactive fields under `src/components/**`.
+- **Problem**: Reusing the same translucent token for an input's fill and border can erase the visible boundary. In this change, border-to-fill contrast measured 1.00:1 and the field boundary against its dark card measured 1.63:1, below the 3:1 UI-boundary target.
+- **Rule**:
+- **Applies to**:

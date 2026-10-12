@@ -1,7 +1,7 @@
 ---
 change_id: unify-app-visual-theme
 title: Rework landing page copy and extend its colorway app-wide
-status: implemented
+status: impl_reviewed
 created: 2026-09-13
 updated: 2026-10-12
 archived_at: null
