@@ -348,45 +348,45 @@ No data or schema migration. The only structural code change is replacing `Topba
 
 #### Automated
 
-- [x] 2.1 Build succeeds: `npm run build`
-- [x] 2.2 Astro check passes: `npx astro check`
-- [x] 2.3 Lint passes: `npm run lint`
-- [x] 2.4 `grep -r "Topbar" src` returns nothing
+- [x] 2.1 Build succeeds: `npm run build` — dd43543
+- [x] 2.2 Astro check passes: `npx astro check` — dd43543
+- [x] 2.3 Lint passes: `npm run lint` — dd43543
+- [x] 2.4 `grep -r "Topbar" src` returns nothing — dd43543
 
 #### Manual
 
-- [x] 2.5 Same header on landing, dashboard, and list pages
-- [x] 2.6 Signed-out vs signed-in header states correct
-- [x] 2.7 Header sign-out logs out and redirects as before
-- [x] 2.8 Header colors match the cosmic palette everywhere
+- [x] 2.5 Same header on landing, dashboard, and list pages — dd43543
+- [x] 2.6 Signed-out vs signed-in header states correct — dd43543
+- [x] 2.7 Header sign-out logs out and redirects as before — dd43543
+- [x] 2.8 Header colors match the cosmic palette everywhere — dd43543
 
 ### Phase 3: Landing page restructure
 
 #### Automated
 
-- [x] 3.1 Build succeeds: `npm run build`
-- [x] 3.2 Astro check passes: `npx astro check`
-- [x] 3.3 Lint passes: `npm run lint`
-- [x] 3.4 No boilerplate strings remain (`grep -ri` clean)
+- [x] 3.1 Build succeeds: `npm run build` — dd43543
+- [x] 3.2 Astro check passes: `npx astro check` — dd43543
+- [x] 3.3 Lint passes: `npm run lint` — dd43543
+- [x] 3.4 No boilerplate strings remain (`grep -ri` clean) — dd43543
 
 #### Manual
 
-- [x] 3.5 Landing reads as AsYouWish (hero + how-it-works + value props + CTA)
-- [x] 3.6 All CTAs navigate to correct auth pages
-- [x] 3.7 Responsive and legible against cosmic background (AA)
+- [x] 3.5 Landing reads as AsYouWish (hero + how-it-works + value props + CTA) — dd43543
+- [x] 3.6 All CTAs navigate to correct auth pages — dd43543
+- [x] 3.7 Responsive and legible against cosmic background (AA) — dd43543
 
 ### Phase 4: Token migration + accessibility sweep
 
 #### Automated
 
-- [ ] 4.1 Build succeeds: `npm run build`
-- [ ] 4.2 Astro check passes: `npx astro check`
-- [ ] 4.3 Lint passes: `npm run lint`
-- [ ] 4.4 Straggler grep returns only intentional decorative usages
+- [x] 4.1 Build succeeds: `npm run build`
+- [x] 4.2 Astro check passes: `npx astro check`
+- [x] 4.3 Lint passes: `npm run lint`
+- [x] 4.4 Straggler grep returns only intentional decorative usages
 
 #### Manual
 
-- [ ] 4.5 Auth cards/controls/links match the cosmic palette
-- [ ] 4.6 Contrast checker confirms AA on key text/UI pairs
-- [ ] 4.7 Keyboard focus rings visible across pages
-- [ ] 4.8 Full walkthrough shows one consistent theme, no dialog/menu/toast/badge regressions
+- [x] 4.5 Auth cards/controls/links match the cosmic palette
+- [x] 4.6 Contrast checker confirms AA on key text/UI pairs
+- [x] 4.7 Keyboard focus rings visible across pages
+- [x] 4.8 Full walkthrough shows one consistent theme, no dialog/menu/toast/badge regressions
