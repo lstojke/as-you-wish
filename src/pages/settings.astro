@@ -1,0 +1,29 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import AppHeader from "@/components/AppHeader.astro";
+import CurrencySettingsForm from "@/components/settings/CurrencySettingsForm";
+import { getDefaultCurrency } from "@/lib/services/profiles";
+
+export const prerender = false;
+
+const { user, supabase } = Astro.locals;
+if (!user || !supabase) {
+  throw new Error("settings: middleware should have redirected unauthenticated requests");
+}
+
+const defaultCurrency = await getDefaultCurrency(supabase);
+---
+
+<Layout title="Settings">
+  <AppHeader />
+  <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+    <a href="/dashboard" class="text-muted-foreground hover:text-foreground text-sm transition-colors">
+      ← Back to lists
+    </a>
+    <header class="mt-4 mb-8">
+      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Settings</h1>
+    </header>
+    {/* client:only — react-hook-form + Radix need the client React instance (same as DashboardLists). */}
+    <CurrencySettingsForm client:only="react" defaultCurrency={defaultCurrency} />
+  </main>
+</Layout>

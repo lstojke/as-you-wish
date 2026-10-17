@@ -14,7 +14,8 @@ import {
 } from "@/lib/schemas/wishlist";
 import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
-import { getDefaultCurrency } from "@/lib/services/profiles";
+import { getDefaultCurrency, updateDefaultCurrency } from "@/lib/services/profiles";
+import { profileUpdateSchema } from "@/lib/currency";
 import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
@@ -62,6 +63,25 @@ function shareAction(operation: "status" | "create" | "disable" | "replace") {
 }
 
 export const server = {
+  profile: {
+    updateCurrency: defineAction({
+      accept: "json",
+      input: profileUpdateSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await updateDefaultCurrency(client, input);
+        } catch (err) {
+          // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
+          console.error("profile.updateCurrency failed", err);
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Could not update settings",
+          });
+        }
+      },
+    }),
+  },
   listShares: {
     status: shareAction("status"),
     create: shareAction("create"),

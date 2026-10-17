@@ -1,4 +1,6 @@
 ---
+import ProfileMenu from "@/components/ProfileMenu";
+
 const { user } = Astro.locals;
 ---
 
@@ -10,15 +12,13 @@ const { user } = Astro.locals;
     {
       user ? (
         <div class="flex items-center gap-4 text-sm">
-          <span class="text-muted-foreground hidden sm:inline">{user.email}</span>
           <a href="/dashboard" class="text-foreground hover:text-primary transition-colors">
             Dashboard
           </a>
-          <form method="POST" action="/api/auth/signout">
-            <button type="submit" class="text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-              Sign out
-            </button>
-          </form>
+          {/* client:only — Radix dropdown needs the client React instance (same as other islands). */}
+          <ProfileMenu client:only="react" email={user.email ?? ""}>
+            <span slot="fallback" class="bg-muted block size-8 rounded-full" aria-hidden="true" />
+          </ProfileMenu>
         </div>
       ) : (
         <div class="flex items-center gap-3 text-sm">

@@ -210,11 +210,11 @@ Give users a place to change their default and make the optimistic add-item row 
 
 #### Automated
 
-- [x] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`)
-- [x] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`)
-- [x] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem`
-- [x] 2.4 Resolve default in `items.create`/`items.update` action handlers
-- [x] 2.5 `npm run lint` and `npx astro check` pass
+- [x] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`) — 3821071
+- [x] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`) — 3821071
+- [x] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem` — 3821071
+- [x] 2.4 Resolve default in `items.create`/`items.update` action handlers — 3821071
+- [x] 2.5 `npm run lint` and `npx astro check` pass — 3821071
 
 #### Manual
 
@@ -224,12 +224,12 @@ Give users a place to change their default and make the optimistic add-item row 
 
 #### Automated
 
-- [ ] 3.1 `npx shadcn@latest add select`
-- [ ] 3.2 Add `profile.updateCurrency` action
-- [ ] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro`
-- [ ] 3.4 Create `CurrencySettingsForm.tsx`
-- [ ] 3.5 Add the shared email-initial profile menu with Settings/Sign out and thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder
-- [ ] 3.6 `npm run lint` and `npx astro check` pass
+- [x] 3.1 `npx shadcn@latest add select`
+- [x] 3.2 Add `profile.updateCurrency` action
+- [x] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro`
+- [x] 3.4 Create `CurrencySettingsForm.tsx`
+- [x] 3.5 Add the shared email-initial profile menu with Settings/Sign out and thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder
+- [x] 3.6 `npm run lint` and `npx astro check` pass
 
 #### Manual
 

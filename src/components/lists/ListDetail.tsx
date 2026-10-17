@@ -23,6 +23,7 @@ interface Props {
   myReservedItemIds: string[];
   initialInvitations: InvitationRow[];
   currentUserId: string;
+  defaultCurrency: string;
 }
 
 export default function ListDetail({
@@ -32,6 +33,7 @@ export default function ListDetail({
   myReservedItemIds,
   initialInvitations,
   currentUserId,
+  defaultCurrency,
 }: Props) {
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
@@ -163,6 +165,7 @@ export default function ListDetail({
         <>
           <AddItemForm
             listId={list.id}
+            defaultCurrency={defaultCurrency}
             onOptimisticAdd={handleOptimisticAdd}
             onOptimisticReplace={handleOptimisticReplace}
             onOptimisticRemove={handleOptimisticRemove}

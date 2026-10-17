@@ -6,6 +6,8 @@ import { getListById, type ListRow } from "@/lib/services/lists";
 import { listItems, listReservedItemIds, type ItemRow } from "@/lib/services/items";
 import { listMyReservedItemIds } from "@/lib/services/reservations";
 import { listInvitations, type InvitationRow } from "@/lib/services/invitations";
+import { getDefaultCurrency } from "@/lib/services/profiles";
+import { SYSTEM_DEFAULT_CURRENCY } from "@/lib/currency";
 
 export const prerender = false;
 
@@ -26,6 +28,7 @@ let items: ItemRow[] = [];
 let reservedItemIds: string[] = [];
 let myReservedItemIds: string[] = [];
 let invitations: InvitationRow[] = [];
+let defaultCurrency: string = SYSTEM_DEFAULT_CURRENCY;
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
@@ -38,7 +41,7 @@ try {
       ),
     ]);
     if (maybeList.owner_id === user.id) {
-      invitations = await listInvitations(supabase, id);
+      [invitations, defaultCurrency] = await Promise.all([listInvitations(supabase, id), getDefaultCurrency(supabase)]);
     }
   }
 } catch (e) {
@@ -67,6 +70,7 @@ const list = maybeList;
       myReservedItemIds={myReservedItemIds}
       initialInvitations={invitations}
       currentUserId={user.id}
+      defaultCurrency={defaultCurrency}
     />
   </main>
 </Layout>

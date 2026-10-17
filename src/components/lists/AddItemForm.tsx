@@ -11,12 +11,19 @@ import type { ItemRow } from "@/lib/services/items";
 
 interface Props {
   listId: string;
+  defaultCurrency: string;
   onOptimisticAdd: (placeholder: ItemRow) => void;
   onOptimisticReplace: (placeholderId: string, real: ItemRow) => void;
   onOptimisticRemove: (placeholderId: string) => void;
 }
 
-export default function AddItemForm({ listId, onOptimisticAdd, onOptimisticReplace, onOptimisticRemove }: Props) {
+export default function AddItemForm({
+  listId,
+  defaultCurrency,
+  onOptimisticAdd,
+  onOptimisticReplace,
+  onOptimisticRemove,
+}: Props) {
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: { title: "", priceInput: "", link: "" },
@@ -34,7 +41,7 @@ export default function AddItemForm({ listId, onOptimisticAdd, onOptimisticRepla
       notes: null,
       link: input.link ?? null,
       price_cents: input.priceCents ?? null,
-      currency: input.priceCents !== undefined ? "USD" : null,
+      currency: input.priceCents !== undefined ? defaultCurrency : null,
       created_at: now,
       updated_at: now,
     };
