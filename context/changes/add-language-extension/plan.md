@@ -392,10 +392,10 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [x] 4.1 Unit tests pass (incl. email builder): `npm run test:unit`
-- [x] 4.2 Type checking passes: `npx astro check`
-- [x] 4.3 Linting passes: `npm run lint`
-- [x] 4.4 Build passes: `npm run build`
+- [x] 4.1 Unit tests pass (incl. email builder): `npm run test:unit` — 95065ee
+- [x] 4.2 Type checking passes: `npx astro check` — 95065ee
+- [x] 4.3 Linting passes: `npm run lint` — 95065ee
+- [x] 4.4 Build passes: `npm run build` — 95065ee
 
 #### Manual
 
