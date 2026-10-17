@@ -166,6 +166,7 @@ Amend the PRD access-control requirements/non-goal wording narrowly: owner-enabl
 
 - Service unit and database sharing tests pass: `npm run test:unit -- src/lib/services/list-shares.test.ts` and `npm run test:integration -- tests/integration/list-shares.test.ts`.
 - With the local app running, HTTP smoke checks verify anonymous 200, equivalent signed-in outsider view, existing-member 302, generic invalid/disabled/replaced/deleted 404, and privacy headers on each response.
+- Repeat the anonymous 200, invalid-token 404, and existing-member 302 checks with `node tests/smoke/list-shares.mjs`; set `BASE_URL`, `ACTIVE_TOKEN`, `MEMBER_COOKIE`, and `EXPECTED_MEMBER_LOCATION` from local-only test data.
 - Type checks and touched-file lint pass: `npx astro check` and `npx eslint src/lib/services/list-shares.ts src/lib/services/list-shares.test.ts src/lib/schemas/list-shares.ts src/types.ts src/pages/share/'[token].astro' src/layouts/Layout.astro`; include any added presentation file.
 
 #### Manual Verification
@@ -243,6 +244,8 @@ Unique token lookup and the existing item `list_id` index bound reads to one lis
 ## Migration Notes
 
 The schema is additive and leaves existing lists unshared by default. Apply the migration before deploying the Worker that calls its functions; regenerate types against the migrated local schema. Run destructive reset commands only against a disposable local test database.
+
+Before applying the sharing migration to a non-disposable database, verify pgcrypto's installed schema with `select n.nspname from pg_catalog.pg_extension e join pg_catalog.pg_namespace n on n.oid = e.extnamespace where e.extname = 'pgcrypto';`. Proceed only when it reports `extensions`. If pgcrypto is installed elsewhere, stop and have a database owner explicitly review and relocate it; the migration intentionally fails rather than relocating the extension or changing dependent objects.
 
 Worker rollback leaves the table/functions in place and does not invalidate already enabled links at the database layer. If access itself must be stopped, disable the links or revoke the public reader's execution grants as a deliberate operational action; do not rely on a Worker rollback as database revocation. Direct production deployments require human confirmation.
 

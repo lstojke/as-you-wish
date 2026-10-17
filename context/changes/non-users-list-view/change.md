@@ -1,7 +1,7 @@
 ---
 change_id: non-users-list-view
 title: Share read-only wishlist links with people without accounts
-status: implemented
+status: impl_reviewed
 created: 2026-10-17
 updated: 2026-10-17
 archived_at: null
