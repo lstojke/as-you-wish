@@ -270,26 +270,26 @@ Bearer paths may appear in browser history and platform request logs even with a
 
 #### Automated
 
-- [x] 1.1 Migration applies to the disposable local database
-- [x] 1.2 Sharing and existing access-control integration tests pass
-- [x] 1.3 Lifecycle, concurrency, isolation, and DTO exclusion assertions pass
+- [x] 1.1 Migration applies to the disposable local database — d7c698b
+- [x] 1.2 Sharing and existing access-control integration tests pass — d7c698b
+- [x] 1.3 Lifecycle, concurrency, isolation, and DTO exclusion assertions pass — d7c698b
 
 #### Manual
 
-- [x] 1.4 Inspect local grants, generated types, and unchanged table access
+- [x] 1.4 Inspect local grants, generated types, and unchanged table access — d7c698b
 
 ### Phase 2: Public read-only SSR view
 
 #### Automated
 
-- [ ] 2.1 Service unit and database sharing tests pass
-- [ ] 2.2 HTTP status, member redirect, and privacy-header smoke checks pass
-- [ ] 2.3 Type checks and touched-file lint pass
+- [x] 2.1 Service unit and database sharing tests pass
+- [x] 2.2 HTTP status, member redirect, and privacy-header smoke checks pass
+- [x] 2.3 Type checks and touched-file lint pass
 
 #### Manual
 
-- [ ] 2.4 Verify private-browser display, mobile layout, and absence of reservation data
-- [ ] 2.5 Verify member redirects, outsider access, refresh freshness, and revocation
+- [x] 2.4 Verify private-browser display, mobile layout, and absence of reservation data
+- [x] 2.5 Verify member redirects, outsider access, refresh freshness, and revocation
 
 ### Phase 3: Owner sharing controls
 

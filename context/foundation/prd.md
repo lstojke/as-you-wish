@@ -92,6 +92,10 @@ The insight: existing tools (Amazon wishlists, store-specific registries, weddin
 - FR-016: User can request AI-generated gift idea suggestions for a wish list recipient (name, optional age/interests as context). The app returns a short list of suggestions the user can add directly to the wish list. Priority: nice-to-have
   > Note: Implemented via a Supabase Edge Function calling an LLM API. Rate-limited to prevent runaway API costs (max N requests per user per day — exact limit TBD at implementation). Suggestions are not saved automatically; user explicitly chooses which to add as items.
 
+### Post-MVP: Unlisted Read-only Sharing
+- FR-017: A list owner can create and copy one stable, unlisted read-only link, disable it, or replace it with a new link that invalidates the old one. Links have no automatic expiry. Anyone possessing an active link can view current list/item contents without an account, but receives no membership, reservation information, or mutation permissions. Existing owners and accepted invitees opening an active link reach the normal list page with their existing permissions. Priority: must-have for `non-users-list-view`
+  > Scope extension approved 2026-10-17: email invitations remain the membership mechanism. Sharing again reuses the active URL; disabling requires explicit replacement to restore sharing. Recipients may forward links or retain already received contents.
+
 ## Non-Functional Requirements
 
 - User-perceived response time for any interaction (reserve, create list, add item) is under 2 seconds under normal load.
@@ -107,13 +111,15 @@ The rule consumes two inputs: an item with status "available" on a wish list sha
 
 Multi-user login (email + password or social OAuth). Flat role model: every logged-in member can create and manage their own wish list, and view and claim items on any other member's list. No admin tier for MVP. Sign-up creates an account; the family circle forms by members registering and finding each other within the app. List membership is established by email invitation from the list owner (FR-008).
 
+Post-MVP exception (FR-017): owners may explicitly enable unlisted, bearer-link read access for non-members. This reveals list titles and item names, notes, estimated prices/currencies, and store links, but no reservation data or identities. A link never grants membership, including to a signed-in outsider. Normal member permissions and database policies remain unchanged.
+
 ## Non-Goals
 
 - No price tracking or purchase integration with stores — the app lists items and links to them; the act of buying happens outside the app entirely.
 - No group contributions on a single item — one reserver per item; splitting the cost of an expensive gift is out of scope for MVP.
 - No photo upload on items for MVP — deferred to v2 (see Open Question 2).
 - No unreserve/cancel-claim flow guaranteed for MVP — FR-015 is nice-to-have only.
-- No public registry surface — the product targets a private family circle, not open discovery.
+- No public registry discovery or indexing — the product targets a private family circle. Owner-enabled, unlisted read-only links (FR-017, post-MVP) are supported, not a public directory or anonymous claiming.
 
 ## Open Questions
 

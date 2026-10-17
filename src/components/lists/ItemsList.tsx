@@ -2,6 +2,7 @@ import type { ItemRow } from "@/lib/services/items";
 import ItemActionsMenu from "@/components/lists/ItemActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/format-price";
 
 interface Props {
   items: ItemRow[];
@@ -14,14 +15,6 @@ interface Props {
   onDelete: (item: ItemRow) => void;
   onReserve: (item: ItemRow) => void;
   onRelease: (item: ItemRow) => void;
-}
-
-function formatPrice(priceCents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(priceCents / 100);
-  } catch {
-    return `${(priceCents / 100).toFixed(2)} ${currency}`;
-  }
 }
 
 export default function ItemsList({

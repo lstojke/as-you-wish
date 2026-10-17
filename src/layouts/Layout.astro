@@ -6,9 +6,11 @@ import { Toaster } from "@/components/ui/sonner";
 
 interface Props {
   title?: string;
+  privatePage?: boolean;
+  showToaster?: boolean;
 }
 
-const { title = "AsYouWish" } = Astro.props;
+const { title = "AsYouWish", privatePage = false, showToaster = true } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,6 +18,8 @@ const { title = "AsYouWish" } = Astro.props;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
+    {privatePage && <meta name="robots" content="noindex, nofollow" />}
+    {privatePage && <meta name="referrer" content="no-referrer" />}
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>{title}</title>
   </head>
@@ -37,7 +41,7 @@ const { title = "AsYouWish" } = Astro.props;
       ))
     }
     <slot />
-    <Toaster client:load />
+    {showToaster && <Toaster client:load />}
   </body>
 </html>
 
