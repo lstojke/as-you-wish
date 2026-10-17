@@ -295,13 +295,13 @@ Bearer paths may appear in browser history and platform request logs even with a
 
 #### Automated
 
-- [x] 3.1 Unit tests pass
-- [x] 3.2 Sharing and existing integration regression tests pass
-- [x] 3.3 Project lint, type checking, and build pass
+- [x] 3.1 Unit tests pass — 3df2022
+- [x] 3.2 Sharing and existing integration regression tests pass — 3df2022
+- [x] 3.3 Project lint, type checking, and build pass — 3df2022
 
 #### Manual
 
-- [x] 3.4 Verify stable URL persistence and clipboard failure behavior
-- [x] 3.5 Verify disable, replacement, and list-deletion lifecycle
-- [x] 3.6 Verify owner-only controls and existing invitation/editing/reservation flows
-- [x] 3.7 Review bearer-path logging and document platform retention limitations
+- [x] 3.4 Verify stable URL persistence and clipboard failure behavior — 3df2022
+- [x] 3.5 Verify disable, replacement, and list-deletion lifecycle — 3df2022
+- [x] 3.6 Verify owner-only controls and existing invitation/editing/reservation flows — 3df2022
+- [x] 3.7 Review bearer-path logging and document platform retention limitations — 3df2022
