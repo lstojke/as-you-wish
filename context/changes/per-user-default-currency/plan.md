@@ -197,10 +197,10 @@ Give users a place to change their default and make the optimistic add-item row 
 
 #### Automated
 
-- [x] 1.1 Write the `profiles` migration (table, RLS policies, `handle_new_user()` trigger, backfill)
-- [x] 1.2 `npx supabase db reset` applies the migration; profiles table and policies exist
-- [x] 1.3 Regenerate `src/db/database.types.ts`; confirm `profiles` types; `npx astro check` passes
-- [x] 1.4 `npm run test:integration -- tests/integration/profiles.test.ts` passes provisioning and cross-user RLS cases
+- [x] 1.1 Write the `profiles` migration (table, RLS policies, `handle_new_user()` trigger, backfill) — 294eda5
+- [x] 1.2 `npx supabase db reset` applies the migration; profiles table and policies exist — 294eda5
+- [x] 1.3 Regenerate `src/db/database.types.ts`; confirm `profiles` types; `npx astro check` passes — 294eda5
+- [x] 1.4 `npm run test:integration -- tests/integration/profiles.test.ts` passes provisioning and cross-user RLS cases — 294eda5
 
 #### Manual
 
@@ -210,11 +210,11 @@ Give users a place to change their default and make the optimistic add-item row 
 
 #### Automated
 
-- [ ] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`)
-- [ ] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`)
-- [ ] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem`
-- [ ] 2.4 Resolve default in `items.create`/`items.update` action handlers
-- [ ] 2.5 `npm run lint` and `npx astro check` pass
+- [x] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`)
+- [x] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`)
+- [x] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem`
+- [x] 2.4 Resolve default in `items.create`/`items.update` action handlers
+- [x] 2.5 `npm run lint` and `npx astro check` pass
 
 #### Manual
 

@@ -14,6 +14,7 @@ import {
 } from "@/lib/schemas/wishlist";
 import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
+import { getDefaultCurrency } from "@/lib/services/profiles";
 import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
@@ -128,7 +129,8 @@ export const server = {
       handler: async (input, context) => {
         const client = requireSupabase(context.locals);
         try {
-          return await createItem(client, input);
+          const defaultCurrency = await getDefaultCurrency(client);
+          return await createItem(client, input, defaultCurrency);
         } catch (err) {
           // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
           console.error("items.create failed", err);
@@ -145,7 +147,8 @@ export const server = {
       handler: async (input, context) => {
         const client = requireSupabase(context.locals);
         try {
-          return await updateItem(client, input);
+          const defaultCurrency = await getDefaultCurrency(client);
+          return await updateItem(client, input, defaultCurrency);
         } catch (err) {
           // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
           console.error("items.update failed", err);

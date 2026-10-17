@@ -6,10 +6,12 @@ export type ItemRow = Database["public"]["Tables"]["items"]["Row"];
 
 type Client = SupabaseClient<Database>;
 
-const DEFAULT_CURRENCY = "USD";
-
-function resolveCurrency(priceCents: number | undefined, currency: string | undefined): string | null {
-  return priceCents !== undefined ? (currency ?? DEFAULT_CURRENCY) : (currency ?? null);
+function resolveCurrency(
+  priceCents: number | undefined,
+  currency: string | undefined,
+  defaultCurrency: string,
+): string | null {
+  return priceCents !== undefined ? (currency ?? defaultCurrency) : (currency ?? null);
 }
 
 export async function listItems(client: Client, listId: string): Promise<ItemRow[]> {
@@ -33,14 +35,14 @@ export async function listReservedItemIds(client: Client, listId: string): Promi
   return data.flatMap((row) => (row.is_reserved && row.item_id !== null ? [row.item_id] : []));
 }
 
-export async function createItem(client: Client, input: ItemCreateInput): Promise<ItemRow> {
+export async function createItem(client: Client, input: ItemCreateInput, defaultCurrency: string): Promise<ItemRow> {
   const { data, error } = await client
     .from("items")
     .insert({
       list_id: input.listId,
       title: input.title,
       price_cents: input.priceCents ?? null,
-      currency: resolveCurrency(input.priceCents, input.currency),
+      currency: resolveCurrency(input.priceCents, input.currency, defaultCurrency),
       link: input.link ?? null,
     })
     .select("*")
@@ -51,10 +53,9 @@ export async function createItem(client: Client, input: ItemCreateInput): Promis
 }
 
 // RLS gates update/delete to is_list_owner(list_id); no app-side ownership check needed.
-export async function updateItem(client: Client, input: ItemUpdateInput): Promise<ItemRow> {
-  // Preserve the item's stored currency on edit; only fall back to the default
-  // when a price is newly added to an item that had none. Revisit when a
-  // per-user default currency (profile setting) ships.
+export async function updateItem(client: Client, input: ItemUpdateInput, defaultCurrency: string): Promise<ItemRow> {
+  // Preserve the item's stored currency on edit; only fall back to the
+  // caller's profile default when a price is newly added to an item that had none.
   const { data: existing, error: readError } = await client
     .from("items")
     .select("currency")
@@ -62,7 +63,7 @@ export async function updateItem(client: Client, input: ItemUpdateInput): Promis
     .single();
   if (readError) throw readError;
 
-  const currency = input.priceCents !== undefined ? (input.currency ?? existing.currency ?? DEFAULT_CURRENCY) : null;
+  const currency = input.priceCents !== undefined ? (input.currency ?? existing.currency ?? defaultCurrency) : null;
 
   const { data, error } = await client
     .from("items")

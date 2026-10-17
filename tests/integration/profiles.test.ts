@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { adminClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
+import { createItem, updateItem } from "@/lib/services/items";
+import { createList } from "@/lib/services/lists";
+import { getDefaultCurrency, updateDefaultCurrency } from "@/lib/services/profiles";
 
 interface Member {
   id: string;
@@ -78,5 +81,39 @@ describe("profiles", () => {
   it("rejects inserting a profile for another user", async () => {
     const { error } = await alice.client.from("profiles").insert({ id: bob.id });
     expect(error?.code).toBe("42501");
+  });
+
+  it("stamps new priced items with the profile default and preserves stored currency on edit", async () => {
+    const client = alice.client;
+    expect(await getDefaultCurrency(client)).toBe("PLN");
+    await updateDefaultCurrency(client, { defaultCurrency: "EUR" });
+    const defaultCurrency = await getDefaultCurrency(client);
+    expect(defaultCurrency).toBe("EUR");
+
+    const list = await createList(client, { title: "Currency list" });
+    const priced = await createItem(client, { listId: list.id, title: "Priced", priceCents: 1000 }, defaultCurrency);
+    expect(priced.currency).toBe("EUR");
+
+    const unpriced = await createItem(client, { listId: list.id, title: "Unpriced" }, defaultCurrency);
+    expect(unpriced.currency).toBeNull();
+
+    const legacy = await createItem(
+      client,
+      { listId: list.id, title: "Legacy", priceCents: 500, currency: "USD" },
+      defaultCurrency,
+    );
+    const renamed = await updateItem(
+      client,
+      { itemId: legacy.id, title: "Legacy renamed", priceCents: 500 },
+      defaultCurrency,
+    );
+    expect(renamed.currency).toBe("USD");
+
+    const newlyPriced = await updateItem(
+      client,
+      { itemId: unpriced.id, title: "Unpriced", priceCents: 700 },
+      defaultCurrency,
+    );
+    expect(newlyPriced.currency).toBe("EUR");
   });
 });
