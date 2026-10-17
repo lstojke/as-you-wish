@@ -1,24 +1,11 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export interface Database {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
   graphql_public: {
     Tables: Record<never, never>;
     Views: Record<never, never>;
     Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
+      graphql: { Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json }; Returns: Json };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
@@ -34,6 +21,7 @@ export interface Database {
           invited_at: string;
           list_id: string;
         };
+        ComputedFields: never;
         Insert: {
           accepted_at?: string | null;
           accepted_by_user_id?: string | null;
@@ -72,6 +60,7 @@ export interface Database {
           title: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           currency?: string | null;
@@ -104,6 +93,33 @@ export interface Database {
           },
         ];
       };
+      list_share_links: {
+        Row: {
+          disabled_at: string | null;
+          list_id: string;
+          token: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          disabled_at?: string | null;
+          list_id: string;
+          token: string;
+        };
+        Update: {
+          disabled_at?: string | null;
+          list_id?: string;
+          token?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "list_share_links_list_id_fkey";
+            columns: ["list_id"];
+            isOneToOne: true;
+            referencedRelation: "lists";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lists: {
         Row: {
           created_at: string;
@@ -112,6 +128,7 @@ export interface Database {
           title: string;
           updated_at: string;
         };
+        ComputedFields: never;
         Insert: {
           created_at?: string;
           id?: string;
@@ -136,6 +153,7 @@ export interface Database {
           item_id: string;
           released_at: string | null;
         };
+        ComputedFields: never;
         Insert: {
           claimed_at?: string;
           claimer_id: string;
@@ -175,6 +193,7 @@ export interface Database {
           item_id: string | null;
           list_id: string | null;
         };
+        ComputedFields: never;
         Insert: {
           is_reserved?: never;
           item_id?: string | null;
@@ -198,11 +217,15 @@ export interface Database {
     };
     Functions: {
       accept_invitation: { Args: { invite_id: string }; Returns: string };
+      disable_list_share: { Args: { p_list_id: string }; Returns: Json };
+      get_or_create_list_share: { Args: { p_list_id: string }; Returns: Json };
       is_item_list_member: { Args: { item_uuid: string }; Returns: boolean };
       is_item_reserved: { Args: { item_uuid: string }; Returns: boolean };
       is_list_invitee: { Args: { list_uuid: string }; Returns: boolean };
       is_list_member: { Args: { list_uuid: string }; Returns: boolean };
       is_list_owner: { Args: { list_uuid: string }; Returns: boolean };
+      read_list_share: { Args: { p_token: string }; Returns: Json };
+      replace_list_share: { Args: { p_list_id: string }; Returns: Json };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
@@ -223,9 +246,7 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -247,9 +268,7 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
@@ -270,9 +289,7 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
@@ -293,9 +310,7 @@ export type Enums<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -310,9 +325,7 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
