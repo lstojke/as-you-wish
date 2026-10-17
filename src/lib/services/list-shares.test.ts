@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Database } from "@/db/database.types";
 import { sharedStoreLinkSchema } from "@/lib/schemas/list-shares";
 import { formatPrice } from "@/lib/format-price";
-import { canAccessSharedList, readListShare } from "./list-shares";
+import { canAccessSharedList, listShareView, manageListShare, readListShare } from "./list-shares";
 
 const token = "a".repeat(64);
 const listId = "00000000-0000-4000-8000-000000000001";
@@ -91,6 +91,45 @@ describe("shared item presentation", () => {
     for (const value of ["javascript:alert(1)", "data:text/html,test", "ftp://example.test", "/relative", "", null]) {
       expect(sharedStoreLinkSchema.safeParse(value).success).toBe(false);
     }
+  });
+
+  describe("owner sharing management", () => {
+    it("validates every management result and masks disabled tokens", async () => {
+      for (const operation of ["create", "disable", "replace"] as const) {
+        reply({ state: "active", token });
+        expect(await manageListShare(client, listId, operation)).toEqual({ state: "active", token });
+        reply({ state: "disabled", token: null });
+        expect(await manageListShare(client, listId, operation)).toEqual({ state: "disabled", token: null });
+      }
+      reply({ state: "not_created", token: null });
+      expect(await manageListShare(client, listId, "disable")).toEqual({ state: "not_created", token: null });
+      for (const invalid of [null, {}, { state: "active", token: "invalid" }, { state: "disabled", token }]) {
+        reply(invalid);
+        await expect(manageListShare(client, listId, "create")).rejects.toBeDefined();
+      }
+    });
+
+    it("propagates management failures without returning success-shaped state", async () => {
+      reply({ code: "42501", message: "Not owned", details: "", hint: "" }, 403);
+      await expect(manageListShare(client, listId, "replace")).rejects.toMatchObject({ code: "42501" });
+    });
+
+    it("builds stable URLs from the request origin without carrying action paths or queries", () => {
+      expect(listShareView({ state: "active", token }, "http://localhost:4321/_actions/listShares.create?x=1")).toEqual(
+        {
+          state: "active",
+          url: `http://localhost:4321/share/${token}`,
+        },
+      );
+      expect(listShareView({ state: "disabled", token: null }, "https://asyouwish.fun")).toEqual({
+        state: "disabled",
+        url: null,
+      });
+      expect(listShareView({ state: "not_created", token: null }, "https://asyouwish.fun")).toEqual({
+        state: "not_created",
+        url: null,
+      });
+    });
   });
 
   it("preserves the existing price display and fallback convention", () => {

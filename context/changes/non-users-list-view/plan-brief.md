@@ -67,6 +67,7 @@ No service-role credential, new frontend framework, or globally readable list po
 - Link holders can forward URLs and retain content; revocation cannot withdraw copies.
 - A disabled URL is not re-enabled: explicit replacement creates a new URL.
 - Recoverable tokens require owner-only storage and careful diagnostics; platform URL logging needs rollout review.
+- `wrangler.jsonc` currently enables observability in default, preview, and production environments. Provider invocation/request logs may retain full bearer paths; no-store/no-referrer do not redact server logs. Review retention/access and request-log redaction before rollout. Sharing code logs only fixed operation labels, never raw errors or URLs.
 - Search exclusion is not secrecy; no automatic expiry means owners must act to revoke access.
 - Migrations remain compatible with the previous Worker; Worker rollback is not database revocation.
 

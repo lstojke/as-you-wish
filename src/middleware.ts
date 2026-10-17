@@ -22,5 +22,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  return next();
+  const response = await next();
+  if (context.url.pathname.startsWith("/_actions/listShares.")) {
+    response.headers.set("Cache-Control", "private, no-store");
+  }
+  return response;
 });

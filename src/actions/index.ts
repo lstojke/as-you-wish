@@ -17,6 +17,8 @@ import { createItem, updateItem, deleteItem } from "@/lib/services/items";
 import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
+import { listShareManageSchema } from "@/lib/schemas/list-shares";
+import { getListShareState, listShareView, manageListShare } from "@/lib/services/list-shares";
 
 function requireSupabase(locals: App.Locals) {
   if (!locals.supabase) {
@@ -34,7 +36,37 @@ function requireSupabase(locals: App.Locals) {
   return locals.supabase;
 }
 
+function shareAction(operation: "status" | "create" | "disable" | "replace") {
+  return defineAction({
+    accept: "json",
+    input: listShareManageSchema,
+    handler: async (input, context) => {
+      const client = requireSupabase(context.locals);
+      try {
+        const state =
+          operation === "status"
+            ? await getListShareState(client, input.listId)
+            : await manageListShare(client, input.listId, operation);
+        return listShareView(state, context.request.url);
+      } catch {
+        // eslint-disable-next-line no-console -- never log bearer tokens or raw sharing errors
+        console.error(`listShares.${operation} failed`);
+        throw new ActionError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Could not update sharing. Refresh the sharing status before trying again.",
+        });
+      }
+    },
+  });
+}
+
 export const server = {
+  listShares: {
+    status: shareAction("status"),
+    create: shareAction("create"),
+    disable: shareAction("disable"),
+    replace: shareAction("replace"),
+  },
   lists: {
     create: defineAction({
       accept: "json",

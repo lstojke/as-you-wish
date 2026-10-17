@@ -9,6 +9,7 @@ import AddItemForm from "@/components/lists/AddItemForm";
 import EditItemForm from "@/components/lists/EditItemForm";
 import DeleteItemDialog from "@/components/lists/DeleteItemDialog";
 import InviteDialog from "@/components/lists/InviteDialog";
+import ShareLinkDialog from "@/components/lists/ShareLinkDialog";
 import PendingInvitations from "@/components/lists/PendingInvitations";
 import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
 import RenameListDialog from "@/components/dashboard/RenameListDialog";
@@ -41,6 +42,7 @@ export default function ListDetail({
   const [renameOpen, setRenameOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<ItemRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
@@ -106,7 +108,17 @@ export default function ListDetail({
         <div className="mt-2 flex items-start justify-between gap-2">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
           {isOwner && (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShareOpen(true);
+                }}
+              >
+                Share link
+              </Button>
               <Button
                 type="button"
                 variant="outline"
@@ -169,6 +181,7 @@ export default function ListDetail({
               setInvitations((prev) => [invitation, ...prev]);
             }}
           />
+          {shareOpen && <ShareLinkDialog listId={list.id} open={shareOpen} onOpenChange={setShareOpen} />}
           <RenameListDialog
             list={list}
             open={renameOpen}

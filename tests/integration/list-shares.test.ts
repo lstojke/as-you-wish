@@ -3,6 +3,7 @@ import { Client as PgClient } from "pg";
 import { setupReservationScenario, type ReservationScenario } from "../helpers/reservationFixtures";
 import { anonClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
 import type { Json } from "@/db/database.types";
+import { getListShareState, manageListShare } from "@/lib/services/list-shares";
 
 const managementFunctions = ["get_or_create_list_share", "disable_list_share", "replace_list_share"] as const;
 
@@ -53,6 +54,20 @@ describe("read-only list sharing", () => {
     const { data, error } = await admin.from("list_share_links").select("*").eq("list_id", listId);
     expect(error).toBeNull();
     expect(data).toEqual([{ list_id: listId, token: tokens[0], disabled_at: null }]);
+  });
+
+  it("reads owner-only status without creating or reactivating sharing", async () => {
+    const { owner, invitee, listId } = scenario;
+    expect(await getListShareState(owner.client, listId)).toEqual({ state: "not_created", token: null });
+    await expect(getListShareState(invitee.client, listId)).rejects.toThrow("List not found or not owned");
+    await expect(getListShareState(outsider.client, listId)).rejects.toThrow("List not found or not owned");
+    await expect(getListShareState(anonClient(), listId)).rejects.toBeDefined();
+    const token = await createShare(owner.client, listId);
+    expect(await getListShareState(owner.client, listId)).toEqual({ state: "active", token });
+    expect(await manageListShare(owner.client, listId, "disable")).toEqual({ state: "disabled", token: null });
+    expect(await getListShareState(owner.client, listId)).toEqual({ state: "disabled", token: null });
+    const replacement = await manageListShare(owner.client, listId, "replace");
+    expect(activeToken(replacement)).not.toBe(token);
   });
 
   it("returns only display fields, with no reservation information, for every reader", async () => {
