@@ -35,6 +35,14 @@ Not in `scripts` (run via `npx`):
 - **Env vars**: server-only, declared in `astro.config.mjs` under `env.schema`. Access via `astro:env/server` — never `import.meta.env` for `SUPABASE_*` secrets. Local Node uses `.env`; Cloudflare local dev uses `.dev.vars` (gitignored).
 - **Supabase migrations**: place in `supabase/migrations/` as `YYYYMMDDHHmmss_short_description.sql`. Always enable RLS on new tables and write granular per-operation, per-role policies.
 
+## i18n (Polish default, English optional)
+
+- Dictionaries: `src/lib/i18n/pl.ts` (canonical, add keys here first) and `en.ts` (typed against PL; a unit test enforces key parity and PL plural forms `one/few/many/other`).
+- Locale: `context.locals.locale`, resolved in `src/middleware.ts` from the `lang` cookie → `profiles.language` → `pl`. Switching goes through `POST /api/locale`. No URL prefixes.
+- Astro: `t(Astro.locals.locale, "ns.key", params)`. React islands: each island root takes a `locale` prop and wraps its tree in `<I18nProvider>`; descendants use `useT()` from `@/components/hooks/useT`.
+- Zod schema messages are i18n keys (`validation.*`), translated at render (`FormMessage` and `tm()`). Server `ActionError` messages are translated server-side with `t(context.locals.locale, "errors.*")`.
+- Format prices/dates with `intlLocale(locale)`; never hardcode user-facing English strings.
+
 ## Auth flow (do not duplicate)
 
 - SSR client: `src/lib/supabase.ts` (cookie-based session via `@supabase/ssr`).

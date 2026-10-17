@@ -306,4 +306,12 @@ export const pl = {
     saving: "Zapisywanie…",
     save: "Zapisz",
   },
+  email: {
+    invitation: {
+      subject: "{inviter} zaprasza Cię do swojej listy życzeń",
+      intro: "{inviter} zaprasza Cię do obejrzenia listy „{list}” w AsYouWish.",
+      cta: "Przyjmij zaproszenie",
+      ignore: "Jeśli nie spodziewałeś(-aś) się tej wiadomości, możesz ją zignorować.",
+    },
+  },
 } as const;

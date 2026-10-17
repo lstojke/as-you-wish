@@ -375,11 +375,11 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm run test:unit`
-- [x] 3.2 Integration tests pass: `npm run test:integration`
-- [x] 3.3 Type checking passes: `npx astro check`
-- [x] 3.4 Linting passes: `npm run lint`
-- [x] 3.5 No English leftovers in `src/components` per grep
+- [x] 3.1 Unit tests pass: `npm run test:unit` — 1f28bc1
+- [x] 3.2 Integration tests pass: `npm run test:integration` — 1f28bc1
+- [x] 3.3 Type checking passes: `npx astro check` — 1f28bc1
+- [x] 3.4 Linting passes: `npm run lint` — 1f28bc1
+- [x] 3.5 No English leftovers in `src/components` per grep — 1f28bc1
 
 #### Manual
 
@@ -392,10 +392,10 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass (incl. email builder): `npm run test:unit`
-- [ ] 4.2 Type checking passes: `npx astro check`
-- [ ] 4.3 Linting passes: `npm run lint`
-- [ ] 4.4 Build passes: `npm run build`
+- [x] 4.1 Unit tests pass (incl. email builder): `npm run test:unit`
+- [x] 4.2 Type checking passes: `npx astro check`
+- [x] 4.3 Linting passes: `npm run lint`
+- [x] 4.4 Build passes: `npm run build`
 
 #### Manual
 

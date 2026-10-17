@@ -3,7 +3,7 @@ change_id: add-language-extension
 title: Add Polish as the default language while keeping English
 status: implementing
 created: 2026-10-18
-updated: 2026-10-18
+updated: 2026-05-14
 archived_at: null
 ---
 

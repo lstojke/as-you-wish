@@ -298,4 +298,12 @@ export const en: Dictionary = {
     saving: "Saving…",
     save: "Save",
   },
+  email: {
+    invitation: {
+      subject: "{inviter} invited you to a wishlist",
+      intro: "{inviter} invited you to view their list “{list}” on AsYouWish.",
+      cta: "Accept the invitation",
+      ignore: "If you weren't expecting this, you can ignore this email.",
+    },
+  },
 };
