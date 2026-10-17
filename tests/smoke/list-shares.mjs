@@ -57,7 +57,7 @@ console.log("PASS anonymous active link: 200 with privacy headers");
 const invalid = await request("invalid link", invalidToken);
 assert.equal(invalid.status, 404, "invalid link: status");
 assertPrivacyHeaders(invalid, "invalid link");
-if (!/This sharing link is unavailable\./.test(await invalid.text())) {
+if (!(await invalid.text()).includes("This sharing link is unavailable.")) {
   throw new Error("invalid link: generic unavailable response");
 }
 console.log("PASS invalid link: generic 404 with privacy headers");

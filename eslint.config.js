@@ -61,6 +61,13 @@ const reactConfig = tseslint.config({
 
 const astroConfig = tseslint.config({
   files: ["**/*.astro"],
+  languageOptions: {
+    parserOptions: {
+      project: true,
+      projectService: false,
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
   rules: {
     "astro/no-set-html-directive": "error",
     "astro/no-unused-css-selector": "warn",
@@ -68,6 +75,22 @@ const astroConfig = tseslint.config({
     // astro-eslint-parser crashes on return statements in frontmatter if-blocks with this rule;
     // return new Response() is an Astro SSR pattern, not a misused Promise.
     "@typescript-eslint/no-misused-promises": "off",
+  },
+});
+
+const smokeConfig = tseslint.config({
+  files: ["tests/smoke/**/*.mjs"],
+  extends: [tseslint.configs.disableTypeChecked],
+  languageOptions: {
+    globals: {
+      console: "readonly",
+      fetch: "readonly",
+      process: "readonly",
+      URL: "readonly",
+    },
+  },
+  rules: {
+    "no-console": "off",
   },
 });
 
@@ -89,6 +112,7 @@ export default tseslint.config(
   eslintPluginAstro.configs["flat/recommended"],
   ...eslintPluginAstro.configs["flat/jsx-a11y-recommended"],
   astroConfig,
+  smokeConfig,
   vendorConfig,
   eslintPluginPrettier,
 );
