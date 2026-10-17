@@ -1,22 +1,26 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import SignInForm from "@/components/auth/SignInForm";
+import { t } from "@/lib/i18n";
+import { authErrorMessage } from "@/lib/i18n/auth-errors";
 
-const error = Astro.url.searchParams.get("error");
+const { locale } = Astro.locals;
+const error = authErrorMessage(locale, Astro.url.searchParams.get("error"));
 const returnTo = Astro.url.searchParams.get("return") ?? "";
 const emailPrefill = Astro.url.searchParams.get("email") ?? "";
 ---
 
-<Layout title="Sign in">
+<Layout title={t(locale, "auth.signInTitle")} languageSwitcher>
   <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
     <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-2xl border p-8 backdrop-blur-xl">
-      <h1 class="text-foreground mb-6 text-center text-2xl font-bold">Sign in</h1>
+      <h1 class="text-foreground mb-6 text-center text-2xl font-bold">{t(locale, "auth.signInTitle")}</h1>
       <SignInForm serverError={error} returnTo={returnTo} initialEmail={emailPrefill} client:load />
       <p class="text-muted-foreground mt-4 text-center text-sm">
-        Don't have an account? <a
+        {t(locale, "auth.noAccount")}
+        <a
           href="/auth/signup"
           class="text-primary focus-visible:ring-ring focus-visible:ring-offset-card rounded-sm hover:underline focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-          >Sign up</a
+          >{t(locale, "auth.signUpLink")}</a
         >
       </p>
     </div>

@@ -1,24 +1,27 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import { t } from "@/lib/i18n";
+
+const { locale } = Astro.locals;
 
 const isAutoConfirmed = import.meta.env.DEV;
 
 const content = isAutoConfirmed
   ? {
       emoji: "✅",
-      heading: "Registration successful",
-      description: "Your account has been created. You can now sign in.",
-      linkText: "Go to sign in",
+      heading: t(locale, "auth.confirm.successHeading"),
+      description: t(locale, "auth.confirm.successBody"),
+      linkText: t(locale, "auth.confirm.successLink"),
     }
   : {
       emoji: "📧",
-      heading: "Check your email",
-      description: "We've sent a confirmation link to your email address. Click it to activate your account.",
-      linkText: "Back to sign in",
+      heading: t(locale, "auth.confirm.checkHeading"),
+      description: t(locale, "auth.confirm.checkBody"),
+      linkText: t(locale, "auth.confirm.checkLink"),
     };
 ---
 
-<Layout title={content.heading}>
+<Layout title={content.heading} languageSwitcher>
   <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
     <div
       class="border-border bg-card text-card-foreground w-full max-w-sm rounded-2xl border p-8 text-center backdrop-blur-xl"

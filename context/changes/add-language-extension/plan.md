@@ -346,30 +346,30 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `npx supabase db reset`
-- [x] 1.2 Unit tests pass: `npm run test:unit`
-- [x] 1.3 Integration tests pass: `npm run test:integration`
-- [x] 1.4 Type checking passes: `npx astro check`
-- [x] 1.5 Linting passes: `npm run lint`
+- [x] 1.1 Migration applies cleanly: `npx supabase db reset` — 1dcc49f
+- [x] 1.2 Unit tests pass: `npm run test:unit` — 1dcc49f
+- [x] 1.3 Integration tests pass: `npm run test:integration` — 1dcc49f
+- [x] 1.4 Type checking passes: `npx astro check` — 1dcc49f
+- [x] 1.5 Linting passes: `npm run lint` — 1dcc49f
 
 #### Manual
 
-- [x] 1.6 `/api/locale` sets cookie and rejects off-site return paths
-- [x] 1.7 `<html lang>` follows the cookie (default `pl`)
+- [x] 1.6 `/api/locale` sets cookie and rejects off-site return paths — 1dcc49f
+- [x] 1.7 `<html lang>` follows the cookie (default `pl`) — 1dcc49f
 
 ### Phase 2: Astro Pages, Header Switchers, Auth Errors
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page
+- [x] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page
 - [ ] 2.5 Profile-menu language persists across browsers via profile
-- [ ] 2.6 Wrong password shows Polish message; URL carries only a code
+- [x] 2.6 Wrong password shows Polish message; URL carries only a code
 
 ### Phase 3: React Islands, Validation & Action Messages
 

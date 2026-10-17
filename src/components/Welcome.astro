@@ -1,5 +1,8 @@
 ---
 import AppHeader from "@/components/AppHeader.astro";
+import { t } from "@/lib/i18n";
+
+const { locale } = Astro.locals;
 ---
 
 <div class="bg-cosmic relative min-h-screen w-full overflow-hidden">
@@ -34,35 +37,35 @@ import AppHeader from "@/components/AppHeader.astro";
       <span
         class="border-border text-muted-foreground mb-6 inline-flex items-center rounded-full border px-4 py-1.5 text-sm"
       >
-        Private family wish lists
+        {t(locale, "home.badge")}
       </span>
       <h1 class="text-foreground mb-6 text-4xl leading-tight font-bold tracking-tight sm:text-5xl lg:text-6xl">
-        Give the right gift, <span class="text-primary">every time</span>
+        {t(locale, "home.heroTitle")}
+        <span class="text-primary">{t(locale, "home.heroTitleAccent")}</span>
       </h1>
       <p class="text-muted-foreground mb-10 max-w-2xl text-lg sm:text-xl">
-        AsYouWish lets your family share wish lists and quietly reserve gifts — so everyone gets something they love and
-        no one buys the same present twice.
+        {t(locale, "home.heroLead")}
       </p>
       <div class="flex flex-col gap-4 sm:flex-row">
         <a
           href="/auth/signup"
           class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium transition-colors"
         >
-          Get started
+          {t(locale, "home.getStarted")}
         </a>
         <a
           href="/auth/signin"
           class="border-border text-foreground hover:bg-card inline-flex items-center justify-center rounded-lg border px-6 py-3 text-base font-medium transition-colors"
         >
-          Sign in
+          {t(locale, "home.signIn")}
         </a>
       </div>
     </section>
 
     <!-- How it works -->
     <section class="mx-auto max-w-4xl px-4 pb-8">
-      <h2 class="text-foreground mb-2 text-center text-2xl font-semibold sm:text-3xl">How it works</h2>
-      <p class="text-muted-foreground mb-10 text-center">Three steps to coordinated, stress-free gifting.</p>
+      <h2 class="text-foreground mb-2 text-center text-2xl font-semibold sm:text-3xl">{t(locale, "home.howTitle")}</h2>
+      <p class="text-muted-foreground mb-10 text-center">{t(locale, "home.howLead")}</p>
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <div class="border-border bg-card/60 rounded-xl border p-6 backdrop-blur-xl">
           <svg
@@ -83,9 +86,9 @@ import AppHeader from "@/components/AppHeader.astro";
             <path d="M18 9v6"></path>
             <path d="M21 12h-6"></path>
           </svg>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">1 · Create</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">1 · {t(locale, "home.step1Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            Start a wish list and add the things you would love to receive.
+            {t(locale, "home.step1Body")}
           </p>
         </div>
 
@@ -105,9 +108,9 @@ import AppHeader from "@/components/AppHeader.astro";
             <rect width="20" height="16" x="2" y="4" rx="2"></rect>
             <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
           </svg>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">2 · Share</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">2 · {t(locale, "home.step2Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            Invite your family by email so they can see what you are hoping for.
+            {t(locale, "home.step2Body")}
           </p>
         </div>
 
@@ -129,9 +132,9 @@ import AppHeader from "@/components/AppHeader.astro";
             <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"></path>
             <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"></path>
           </svg>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">3 · Reserve</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">3 · {t(locale, "home.step3Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            Claim an item so no one double-buys — the giver's choice stays a surprise.
+            {t(locale, "home.step3Body")}
           </p>
         </div>
       </div>
@@ -141,21 +144,21 @@ import AppHeader from "@/components/AppHeader.astro";
     <section class="mx-auto max-w-4xl px-4 py-16">
       <div class="grid grid-cols-1 gap-8 sm:grid-cols-3">
         <div>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">No duplicate gifts</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">{t(locale, "home.value1Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            Once an item is reserved it is off the table for everyone else, so surprises never collide.
+            {t(locale, "home.value1Body")}
           </p>
         </div>
         <div>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">The reserver stays hidden</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">{t(locale, "home.value2Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            List owners can see an item was claimed, but never by whom — the surprise stays intact.
+            {t(locale, "home.value2Body")}
           </p>
         </div>
         <div>
-          <h3 class="text-foreground mb-2 text-lg font-semibold">Your private circle</h3>
+          <h3 class="text-foreground mb-2 text-lg font-semibold">{t(locale, "home.value3Title")}</h3>
           <p class="text-muted-foreground text-sm leading-relaxed">
-            Lists are shared only with people you invite. It is a family space, not a public registry.
+            {t(locale, "home.value3Body")}
           </p>
         </div>
       </div>
@@ -164,13 +167,13 @@ import AppHeader from "@/components/AppHeader.astro";
     <!-- Footer CTA -->
     <section class="mx-auto max-w-3xl px-4 pb-24 text-center">
       <div class="border-border bg-card/60 rounded-2xl border p-10 backdrop-blur-xl">
-        <h2 class="text-foreground mb-3 text-2xl font-semibold sm:text-3xl">Ready to make gifting effortless?</h2>
-        <p class="text-muted-foreground mb-8">Create your first wish list in minutes.</p>
+        <h2 class="text-foreground mb-3 text-2xl font-semibold sm:text-3xl">{t(locale, "home.ctaTitle")}</h2>
+        <p class="text-muted-foreground mb-8">{t(locale, "home.ctaLead")}</p>
         <a
           href="/auth/signup"
           class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-6 py-3 text-base font-medium transition-colors"
         >
-          Get started
+          {t(locale, "home.getStarted")}
         </a>
       </div>
     </section>

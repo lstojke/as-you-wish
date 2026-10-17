@@ -1,10 +1,11 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { acceptInvitation } from "@/lib/services/invitations";
+import { t } from "@/lib/i18n";
 
 export const prerender = false;
 
-const { user, supabase } = Astro.locals;
+const { user, supabase, locale } = Astro.locals;
 
 const invite = Astro.url.searchParams.get("invite");
 const emailHint = Astro.url.searchParams.get("email") ?? "";
@@ -35,20 +36,20 @@ if (result.reason === "not_found") {
 
 const heading =
   result.reason === "mismatch"
-    ? "This invitation was sent to a different address"
+    ? t(locale, "invitation.mismatchHeading")
     : result.reason === "not_confirmed"
-      ? "Please confirm your email first"
-      : "We couldn't accept this invitation";
+      ? t(locale, "invitation.notConfirmedHeading")
+      : t(locale, "invitation.failedHeading");
 
 const detail =
   result.reason === "mismatch"
-    ? "Sign in with the email address the invitation was sent to, then open the link again."
+    ? t(locale, "invitation.mismatchDetail")
     : result.reason === "not_confirmed"
-      ? "Check your inbox for a confirmation email, confirm your address, then open the invitation link again."
-      : "Something went wrong. Try opening the invitation link again.";
+      ? t(locale, "invitation.notConfirmedDetail")
+      : t(locale, "invitation.failedDetail");
 ---
 
-<Layout title="Invitation">
+<Layout title={t(locale, "invitation.pageTitle")} languageSwitcher>
   <main class="mx-auto w-full max-w-md px-4 py-16 sm:px-6 lg:px-8">
     <h1 class="text-2xl font-semibold tracking-tight">{heading}</h1>
     <p class="text-muted-foreground mt-3 text-sm">{detail}</p>
@@ -56,7 +57,7 @@ const detail =
       href="/dashboard"
       class="text-muted-foreground hover:text-foreground mt-6 inline-block text-sm underline-offset-4 hover:underline"
     >
-      ← Back to your lists
+      {t(locale, "common.backToLists")}
     </a>
   </main>
 </Layout>
