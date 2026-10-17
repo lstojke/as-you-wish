@@ -224,12 +224,12 @@ Give users a place to change their default and make the optimistic add-item row 
 
 #### Automated
 
-- [x] 3.1 `npx shadcn@latest add select`
-- [x] 3.2 Add `profile.updateCurrency` action
-- [x] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro`
-- [x] 3.4 Create `CurrencySettingsForm.tsx`
-- [x] 3.5 Add the shared email-initial profile menu with Settings/Sign out and thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder
-- [x] 3.6 `npm run lint` and `npx astro check` pass
+- [x] 3.1 `npx shadcn@latest add select` — 6784b7e
+- [x] 3.2 Add `profile.updateCurrency` action — 6784b7e
+- [x] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro` — 6784b7e
+- [x] 3.4 Create `CurrencySettingsForm.tsx` — 6784b7e
+- [x] 3.5 Add the shared email-initial profile menu with Settings/Sign out and thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder — 6784b7e
+- [x] 3.6 `npm run lint` and `npx astro check` pass — 6784b7e
 
 #### Manual
 
