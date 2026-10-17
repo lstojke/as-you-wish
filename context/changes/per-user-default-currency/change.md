@@ -1,9 +1,9 @@
 ---
 change_id: per-user-default-currency
 title: Per-user default currency with PLN system fallback
-status: planned
+status: implementing
 created: 2026-07-30
-updated: 2026-07-30
+updated: 2026-10-17
 archived_at: null
 ---
 

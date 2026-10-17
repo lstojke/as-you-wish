@@ -25,12 +25,12 @@ S-02's F1 fix already made `updateItem` preserve an item's stored currency inste
 - Path alias `@/*` → `src/*`. React islands that use react-hook-form must mount `client:only="react"` (SSR instance mismatch otherwise).
 - Astro Actions in [src/actions/index.ts](../../../src/actions/index.ts): `requireSupabase(locals)` gate, try/catch, `console.error("<action> failed", err)` with the eslint-disable comment, then `ActionError({ code: "INTERNAL_SERVER_ERROR", message })`. Validate input with zod.
 - shadcn/ui new-york: add primitives via `npx shadcn@latest add <name>`; never hand-roll.
-- Verification is manual + `npm run lint` + `npx astro check` — there is no test runner. Local DB checks use `npx supabase db reset` / `npx supabase migration list --linked`.
+- Verification uses the existing Vitest runners (`npm run test:unit` / `npm run test:integration`), `npm run lint`, and `npx astro check`. Integration tests that need the database use the local Supabase stack; local DB checks use `npx supabase db reset` / `npx supabase migration list --linked`.
 - Lessons priors: URL fields require an `^https?:\/\//i` refine (already satisfied); modal form dialogs reset on both open and close (no new modal here, but the settings form should reset predictably).
 
 ---
 
-## Phase 1 — Schema: `profiles` table, provisioning, regenerated types
+## Phase 1: Schema
 
 Introduce the per-user profile store and provision a row for every user (new + existing), then regenerate the typed client so all downstream code is typed end-to-end before any service/UI work.
 
@@ -63,16 +63,30 @@ Introduce the per-user profile store and provision a row for every user (new + e
 - Run `npx supabase gen types typescript --linked > src/db/database.types.ts`.
 - Confirm `Database["public"]["Tables"]["profiles"]` now exists with `Row`/`Insert`/`Update` carrying `id`, `default_currency`, `created_at`, `updated_at`.
 
+### 3. Profile integration tests
+
+**File**: `tests/integration/profiles.test.ts`.
+
+- Use the existing local Supabase integration setup to verify a newly provisioned user receives a `PLN` profile.
+- Verify an authenticated user can read and update their own profile but cannot read or update another user's profile.
+- Keep the one-time backfill check in the manual verification because it runs during migration application, before the integration suite.
+
 ### Phase 1 verification
 
+#### Automated Verification
+
 - `npx supabase db reset` succeeds; the profiles table, trigger, and policies are present (`\d public.profiles`, `select * from pg_policies where tablename = 'profiles'`).
-- `select id, default_currency from public.profiles` returns one `PLN` row per existing user.
+- `npm run test:integration -- tests/integration/profiles.test.ts` passes the provisioning and cross-user RLS cases.
 - `npx astro check` passes with the regenerated types (no code consumes `profiles` yet, so this only confirms the types compile).
-- Commit.
+
+#### Manual Verification
+
+- `select id, default_currency from public.profiles` returns one `PLN` row per existing user.
+- Inspect the profile policies and trigger to confirm their self-only access and provisioning behavior.
 
 ---
 
-## Phase 2 — Server wiring: profiles service, PLN fallback, item currency resolution
+## Phase 2: Server wiring
 
 Make new items inherit the caller's profile default, flip the system fallback to PLN, and keep `updateItem`'s currency-preservation behavior intact. No UI yet.
 
@@ -109,13 +123,17 @@ Make new items inherit the caller's profile default, flip the system fallback to
 
 ### Phase 2 verification
 
+#### Automated Verification
+
 - `npm run lint` and `npx astro check` pass (all `createItem`/`updateItem` call sites updated — only the two action handlers call them).
+
+#### Manual Verification
+
 - Manual (local `supabase start`): with a profile default of `PLN`, add a priced item → row stores `PLN`. Edit an existing `USD` priced item's title → currency stays `USD`. Add a price to a previously price-less item → currency becomes the profile default.
-- Commit.
 
 ---
 
-## Phase 3 — UI: `/settings` page + optimistic parity
+## Phase 3: UI
 
 Give users a place to change their default and make the optimistic add-item row reflect it.
 
@@ -144,45 +162,26 @@ Give users a place to change their default and make the optimistic add-item row 
 - shadcn `Select` bound to the `defaultCurrency` field, options from `SUPPORTED_CURRENCIES`.
 - On submit: `actions.profile.updateCurrency(values)`; on error `toast.error`, on success `toast.success("Settings saved")` and reset the form's default to the saved value so the button disables until the next change. Disable submit while `isSubmitting` or when the value is unchanged.
 
-### 5. Nav link + optimistic currency parity
+### 5. Shared profile menu + optimistic currency parity
 
-**Files**: [src/pages/dashboard.astro](../../../src/pages/dashboard.astro), [src/pages/lists/[id].astro](../../../src/pages/lists/%5Bid%5D.astro), [src/components/lists/ListDetail.tsx](../../../src/components/lists/ListDetail.tsx), [src/components/lists/AddItemForm.tsx](../../../src/components/lists/AddItemForm.tsx).
+**Files**: `src/components/AppHeader.astro`, `src/components/ProfileMenu.tsx` (new), [src/pages/lists/[id].astro](../../../src/pages/lists/%5Bid%5D.astro), [src/components/lists/ListDetail.tsx](../../../src/components/lists/ListDetail.tsx), [src/components/lists/AddItemForm.tsx](../../../src/components/lists/AddItemForm.tsx).
 
-- Dashboard header: add a small `/settings` link next to "Sign out".
+- Add a `ProfileMenu` React island to the shared `AppHeader` so it appears on all signed-in pages. Render a circular avatar button with the uppercase first character of the user's email; its dropdown contains a `/settings` link and the existing sign-out action. Use the existing shadcn dropdown-menu primitives.
 - `lists/[id].astro`: load `const defaultCurrency = await getDefaultCurrency(supabase);` and pass it to `ListDetail`.
 - `ListDetail`: accept `defaultCurrency: string`, forward it to `AddItemForm`.
 - `AddItemForm`: accept `defaultCurrency: string`; replace the hardcoded `currency: input.priceCents !== undefined ? "USD" : null` placeholder with `input.priceCents !== undefined ? defaultCurrency : null` so the optimistic row matches what the server will persist. (The server remains authoritative — `onOptimisticReplace` swaps in the real row.)
 
 ### Phase 3 verification
 
+#### Automated Verification
+
 - `npm run lint` and `npx astro check` pass.
-- Manual: visit `/settings` while signed in → shows current default; unauthenticated → redirected to `/auth/signin`. Change default to `EUR`, save (toast). Add a priced item → optimistic row and persisted row both show `EUR`. Existing `USD` items are unchanged. Sign-out link still works.
-- Commit.
+
+#### Manual Verification
+
+- Manual: visit `/settings` while signed in → shows current default; unauthenticated → redirected to `/auth/signin`. Change default to `EUR`, save (toast). Add a priced item → optimistic row and persisted row both show `EUR`. Existing `USD` items are unchanged. The shared profile menu appears on signed-in pages, shows the email initial, links to settings, and signs out successfully.
 
 ---
-
-## Progress
-
-### Phase 1 — Schema
-- [ ] 1.1 Write the `profiles` migration (table, RLS policies, `handle_new_user()` trigger, backfill)
-- [ ] 1.2 `npx supabase db reset` applies clean; verify policies/trigger/backfill rows
-- [ ] 1.3 Regenerate `src/db/database.types.ts`; confirm `profiles` types
-- [ ] 1.4 `npx astro check` passes; commit
-
-### Phase 2 — Server wiring
-- [ ] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`)
-- [ ] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`)
-- [ ] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem`
-- [ ] 2.4 Resolve default in `items.create`/`items.update` action handlers
-- [ ] 2.5 `npm run lint` + `npx astro check` + manual currency checks; commit
-
-### Phase 3 — UI
-- [ ] 3.1 `npx shadcn@latest add select`
-- [ ] 3.2 Add `profile.updateCurrency` action
-- [ ] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro`
-- [ ] 3.4 Create `CurrencySettingsForm.tsx`
-- [ ] 3.5 Dashboard `/settings` link + thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder
-- [ ] 3.6 `npm run lint` + `npx astro check` + manual verification; commit
 
 ## Out of scope
 
@@ -190,3 +189,50 @@ Give users a place to change their default and make the optimistic add-item row 
 - Backfilling or re-stamping existing items' currency (existing rows keep their stored value).
 - Multi-currency conversion / FX rates / totals — items store a single currency string; no arithmetic across currencies.
 - Broader account/profile settings beyond the currency selector (the `/settings` page is scaffolded to grow, but only currency ships here).
+- Avatar initials from a user's name and profile photo uploads (the initial is derived from email for now).
+
+## Progress
+
+### Phase 1: Schema
+
+#### Automated
+
+- [x] 1.1 Write the `profiles` migration (table, RLS policies, `handle_new_user()` trigger, backfill)
+- [x] 1.2 `npx supabase db reset` applies the migration; profiles table and policies exist
+- [x] 1.3 Regenerate `src/db/database.types.ts`; confirm `profiles` types; `npx astro check` passes
+- [x] 1.4 `npm run test:integration -- tests/integration/profiles.test.ts` passes provisioning and cross-user RLS cases
+
+#### Manual
+
+- [ ] 1.5 Confirm one `PLN` profile per existing user and inspect the self-only policies and trigger
+
+### Phase 2: Server wiring
+
+#### Automated
+
+- [ ] 2.1 Add `src/lib/currency.ts` (`SUPPORTED_CURRENCIES`, `SYSTEM_DEFAULT_CURRENCY`, `currencySchema`, `profileUpdateSchema`)
+- [ ] 2.2 Add `src/lib/services/profiles.ts` (`getDefaultCurrency`, `updateDefaultCurrency`)
+- [ ] 2.3 Flip fallback to PLN and thread `defaultCurrency` through `resolveCurrency`/`createItem`/`updateItem`
+- [ ] 2.4 Resolve default in `items.create`/`items.update` action handlers
+- [ ] 2.5 `npm run lint` and `npx astro check` pass
+
+#### Manual
+
+- [ ] 2.6 New priced items use the profile default; title-only edits preserve stored currency; adding a price uses the default
+
+### Phase 3: UI
+
+#### Automated
+
+- [ ] 3.1 `npx shadcn@latest add select`
+- [ ] 3.2 Add `profile.updateCurrency` action
+- [ ] 3.3 Add `/settings` to `PROTECTED_ROUTES` and create `settings.astro`
+- [ ] 3.4 Create `CurrencySettingsForm.tsx`
+- [ ] 3.5 Add the shared email-initial profile menu with Settings/Sign out and thread `defaultCurrency` into `ListDetail`/`AddItemForm` optimistic placeholder
+- [ ] 3.6 `npm run lint` and `npx astro check` pass
+
+#### Manual
+
+- [ ] 3.7 `/settings` shows the saved default when signed in and redirects unauthenticated users to sign-in
+- [ ] 3.8 Saving a changed default succeeds; optimistic and persisted new-item currencies match; existing items remain unchanged
+- [ ] 3.9 The shared profile menu appears across signed-in pages and its Settings and Sign out actions work

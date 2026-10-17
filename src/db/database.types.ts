@@ -145,6 +145,28 @@ export interface Database {
         };
         Relationships: [];
       };
+      profiles: {
+        Row: {
+          created_at: string;
+          default_currency: string;
+          id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          default_currency?: string;
+          id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          default_currency?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       reservations: {
         Row: {
           claimed_at: string;
