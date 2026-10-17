@@ -11,9 +11,10 @@ import type { ListRow } from "@/lib/services/lists";
 interface Props {
   owned: ListRow[];
   shared: ListRow[];
+  loadError: boolean;
 }
 
-export default function DashboardLists({ owned: initialOwned, shared }: Props) {
+export default function DashboardLists({ owned: initialOwned, shared, loadError }: Props) {
   const [owned, setOwned] = useState<ListRow[]>(initialOwned);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<ListRow | null>(null);
@@ -37,6 +38,33 @@ export default function DashboardLists({ owned: initialOwned, shared }: Props) {
 
   const hasOwned = owned.length > 0;
   const hasShared = shared.length > 0;
+
+  if (loadError) {
+    return (
+      <section
+        aria-labelledby="lists-load-error-heading"
+        role="alert"
+        className="border-destructive/40 bg-destructive/10 flex flex-col items-start gap-3 rounded-xl border p-6"
+      >
+        <div>
+          <h2 id="lists-load-error-heading" className="font-semibold">
+            Your wish lists couldn’t be loaded
+          </h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Please try again. If the problem continues, refresh the page in a moment.
+          </p>
+        </div>
+        <Button
+          onClick={() => {
+            window.location.reload();
+          }}
+          size="sm"
+        >
+          Try again
+        </Button>
+      </section>
+    );
+  }
 
   return (
     <div className="space-y-12">
