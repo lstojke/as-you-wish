@@ -209,6 +209,7 @@ export default function ListDetail({
               if (!open) setEditTarget(null);
             }}
             onUpdated={handleItemUpdated}
+            defaultCurrency={defaultCurrency}
           />
           <DeleteItemDialog
             item={deleteTarget}

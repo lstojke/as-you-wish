@@ -123,6 +123,7 @@ export const itemFormSchema = z.object({
     .trim()
     .max(2000, "Link must be 2000 characters or fewer")
     .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "Must be an http(s) URL"),
+  currency: z.string().regex(/^[A-Z]{3}$/, "Select a currency"),
 });
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>;
@@ -136,20 +137,25 @@ function normalizeLink(link: string): string | undefined {
   return link === "" ? undefined : link;
 }
 
+// Currency is only meaningful alongside a price; the server rejects one without the other.
 export function mapItemFormToCreate(listId: string, values: ItemFormValues): ItemCreateInput {
+  const priceCents = parsePriceCents(values.priceInput);
   return {
     listId,
     title: values.title,
-    priceCents: parsePriceCents(values.priceInput),
+    priceCents,
+    currency: priceCents !== undefined ? values.currency : undefined,
     link: normalizeLink(values.link),
   };
 }
 
 export function mapItemFormToUpdate(itemId: string, values: ItemFormValues): ItemUpdateInput {
+  const priceCents = parsePriceCents(values.priceInput);
   return {
     itemId,
     title: values.title,
-    priceCents: parsePriceCents(values.priceInput),
+    priceCents,
+    currency: priceCents !== undefined ? values.currency : undefined,
     link: normalizeLink(values.link),
   };
 }

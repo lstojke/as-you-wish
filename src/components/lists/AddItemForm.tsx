@@ -26,7 +26,7 @@ export default function AddItemForm({
 }: Props) {
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues: { title: "", priceInput: "", link: "" },
+    defaultValues: { title: "", priceInput: "", link: "", currency: defaultCurrency },
   });
 
   async function onSubmit(values: ItemFormValues) {
@@ -41,7 +41,7 @@ export default function AddItemForm({
       notes: null,
       link: input.link ?? null,
       price_cents: input.priceCents ?? null,
-      currency: input.priceCents !== undefined ? defaultCurrency : null,
+      currency: input.currency ?? null,
       created_at: now,
       updated_at: now,
     };

@@ -23,33 +23,35 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdated: (updated: ItemRow) => void;
+  defaultCurrency: string;
 }
 
-function itemRowToFormValues(item: ItemRow | null): ItemFormValues {
+function itemRowToFormValues(item: ItemRow | null, defaultCurrency: string): ItemFormValues {
   return {
     title: item?.title ?? "",
     priceInput: item?.price_cents != null ? (item.price_cents / 100).toFixed(2) : "",
     link: item?.link ?? "",
+    currency: item?.currency ?? defaultCurrency,
   };
 }
 
-export default function EditItemForm({ item, open, onOpenChange, onUpdated }: Props) {
+export default function EditItemForm({ item, open, onOpenChange, onUpdated, defaultCurrency }: Props) {
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
-    defaultValues: itemRowToFormValues(item),
+    defaultValues: itemRowToFormValues(item, defaultCurrency),
   });
 
   useEffect(() => {
     if (open && item) {
-      form.reset(itemRowToFormValues(item));
+      form.reset(itemRowToFormValues(item, defaultCurrency));
     }
-  }, [open, item, form]);
+  }, [open, item, form, defaultCurrency]);
 
   async function onSubmit(values: ItemFormValues) {
     if (!item) return;
 
     // Nothing changed — close without hitting the server.
-    if (JSON.stringify(values) === JSON.stringify(itemRowToFormValues(item))) {
+    if (JSON.stringify(values) === JSON.stringify(itemRowToFormValues(item, defaultCurrency))) {
       onOpenChange(false);
       return;
     }
