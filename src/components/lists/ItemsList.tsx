@@ -3,6 +3,7 @@ import ItemActionsMenu from "@/components/lists/ItemActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   items: ItemRow[];
@@ -15,6 +16,7 @@ interface Props {
   onDelete: (item: ItemRow) => void;
   onReserve: (item: ItemRow) => void;
   onRelease: (item: ItemRow) => void;
+  locale: Locale;
 }
 
 export default function ItemsList({
@@ -28,6 +30,7 @@ export default function ItemsList({
   onDelete,
   onReserve,
   onRelease,
+  locale,
 }: Props) {
   if (items.length === 0) {
     return <p className="text-muted-foreground text-sm">No items yet. Add your first below.</p>;
@@ -53,7 +56,9 @@ export default function ItemsList({
               )}
             </div>
             {item.price_cents !== null && item.currency !== null && (
-              <span className="text-muted-foreground text-sm">{formatPrice(item.price_cents, item.currency)}</span>
+              <span className="text-muted-foreground text-sm">
+                {formatPrice(item.price_cents, item.currency, locale)}
+              </span>
             )}
             {item.link && (
               <a

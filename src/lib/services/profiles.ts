@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 import { SYSTEM_DEFAULT_CURRENCY, type ProfileUpdateInput } from "@/lib/currency";
+import { isLocale, type Locale } from "@/lib/i18n/config";
 
 export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
@@ -36,4 +37,15 @@ export async function updateDefaultCurrency(client: Client, input: ProfileUpdate
     .single();
   if (error) throw error;
   return data;
+}
+
+export async function getLanguage(client: Client, userId: string): Promise<Locale | null> {
+  const { data, error } = await client.from("profiles").select("language").eq("id", userId).maybeSingle();
+  if (error) throw error;
+  return isLocale(data?.language) ? data.language : null;
+}
+
+export async function updateLanguage(client: Client, userId: string, locale: Locale): Promise<void> {
+  const { error } = await client.from("profiles").update({ language: locale }).eq("id", userId);
+  if (error) throw error;
 }

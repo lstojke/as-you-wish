@@ -68,7 +68,9 @@ if (!list) {
                     <h2 class="font-medium break-words">{item.title}</h2>
                     {item.notes && <p class="text-sm break-words whitespace-pre-wrap">{item.notes}</p>}
                     {item.price_cents !== null && item.currency !== null && (
-                      <p class="text-muted-foreground text-sm">{formatPrice(item.price_cents, item.currency)}</p>
+                      <p class="text-muted-foreground text-sm">
+                        {formatPrice(item.price_cents, item.currency, Astro.locals.locale)}
+                      </p>
                     )}
                     {safeLink.success ? (
                       <a

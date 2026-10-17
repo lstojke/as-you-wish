@@ -15,6 +15,7 @@ import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
 import RenameListDialog from "@/components/dashboard/RenameListDialog";
 import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
 import { Button } from "@/components/ui/button";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
   list: ListRow;
@@ -24,6 +25,7 @@ interface Props {
   initialInvitations: InvitationRow[];
   currentUserId: string;
   defaultCurrency: string;
+  locale: Locale;
 }
 
 export default function ListDetail({
@@ -34,6 +36,7 @@ export default function ListDetail({
   initialInvitations,
   currentUserId,
   defaultCurrency,
+  locale,
 }: Props) {
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
@@ -145,6 +148,7 @@ export default function ListDetail({
         </div>
       </div>
       <ItemsList
+        locale={locale}
         items={items}
         reservedItemIds={reserved}
         myReservedItemIds={myReserved}

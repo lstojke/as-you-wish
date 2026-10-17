@@ -14,7 +14,7 @@ const { title = "AsYouWish", privatePage = false, showToaster = true } = Astro.p
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={Astro.locals.locale}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />

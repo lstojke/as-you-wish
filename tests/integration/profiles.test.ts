@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { adminClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
 import { createItem, updateItem } from "@/lib/services/items";
 import { createList } from "@/lib/services/lists";
-import { getDefaultCurrency, updateDefaultCurrency } from "@/lib/services/profiles";
+import { getDefaultCurrency, getLanguage, updateDefaultCurrency, updateLanguage } from "@/lib/services/profiles";
 
 interface Member {
   id: string;
@@ -81,6 +81,23 @@ describe("profiles", () => {
   it("rejects inserting a profile for another user", async () => {
     const { error } = await alice.client.from("profiles").insert({ id: bob.id });
     expect(error?.code).toBe("42501");
+  });
+
+  it("defaults language to Polish and lets a user change only their own", async () => {
+    expect(await getLanguage(alice.client, alice.id)).toBe("pl");
+
+    await updateLanguage(alice.client, alice.id, "en");
+    expect(await getLanguage(alice.client, alice.id)).toBe("en");
+
+    // RLS silently filters the other user's row; their language stays untouched.
+    await updateLanguage(alice.client, bob.id, "en");
+    const bobRow = await admin.from("profiles").select("language").eq("id", bob.id).single();
+    expect(bobRow.data?.language).toBe("pl");
+  });
+
+  it("rejects unsupported language values", async () => {
+    const { error } = await alice.client.from("profiles").update({ language: "de" }).eq("id", alice.id);
+    expect(error?.code).toBe("23514");
   });
 
   it("stamps new priced items with the profile default and preserves stored currency on edit", async () => {
