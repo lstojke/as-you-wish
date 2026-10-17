@@ -3,7 +3,7 @@ import ItemActionsMenu from "@/components/lists/ItemActionsMenu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format-price";
-import type { Locale } from "@/lib/i18n/config";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   items: ItemRow[];
@@ -16,7 +16,6 @@ interface Props {
   onDelete: (item: ItemRow) => void;
   onReserve: (item: ItemRow) => void;
   onRelease: (item: ItemRow) => void;
-  locale: Locale;
 }
 
 export default function ItemsList({
@@ -30,10 +29,10 @@ export default function ItemsList({
   onDelete,
   onReserve,
   onRelease,
-  locale,
 }: Props) {
+  const { locale, t } = useT();
   if (items.length === 0) {
-    return <p className="text-muted-foreground text-sm">No items yet. Add your first below.</p>;
+    return <p className="text-muted-foreground text-sm">{t("itemForm.noItems")}</p>;
   }
 
   const reserved = new Set(reservedItemIds);
@@ -48,11 +47,11 @@ export default function ItemsList({
             <div className="flex items-center gap-2">
               <span className="font-medium">{item.title}</span>
               {myReserved.has(item.id) ? (
-                <Badge>Reserved by you</Badge>
+                <Badge>{t("itemForm.reservedByYou")}</Badge>
               ) : reserved.has(item.id) ? (
-                <Badge variant="secondary">Reserved</Badge>
+                <Badge variant="secondary">{t("itemForm.reserved")}</Badge>
               ) : (
-                <Badge variant="outline">Available</Badge>
+                <Badge variant="outline">{t("itemForm.available")}</Badge>
               )}
             </div>
             {item.price_cents !== null && item.currency !== null && (
@@ -93,7 +92,7 @@ export default function ItemsList({
                   onRelease(item);
                 }}
               >
-                {pending.has(item.id) ? "Cancelling…" : "Cancel"}
+                {pending.has(item.id) ? t("itemForm.cancelling") : t("itemForm.cancelReservation")}
               </Button>
             ) : reserved.has(item.id) ? null : (
               <Button
@@ -104,7 +103,7 @@ export default function ItemsList({
                   onReserve(item);
                 }}
               >
-                {pending.has(item.id) ? "Reserving…" : "Reserve"}
+                {pending.has(item.id) ? t("itemForm.reserving") : t("itemForm.reserve")}
               </Button>
             ))}
         </li>

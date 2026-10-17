@@ -16,6 +16,8 @@ import RenameListDialog from "@/components/dashboard/RenameListDialog";
 import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/lib/i18n/config";
+import { I18nProvider } from "@/components/I18nProvider";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   list: ListRow;
@@ -28,7 +30,7 @@ interface Props {
   locale: Locale;
 }
 
-export default function ListDetail({
+function ListDetailInner({
   list: initialList,
   initialItems,
   reservedItemIds,
@@ -36,8 +38,8 @@ export default function ListDetail({
   initialInvitations,
   currentUserId,
   defaultCurrency,
-  locale,
-}: Props) {
+}: Omit<Props, "locale">) {
+  const { t } = useT();
   const [list, setList] = useState<ListRow>(initialList);
   const [items, setItems] = useState<ItemRow[]>(initialItems);
   const [invitations, setInvitations] = useState<InvitationRow[]>(initialInvitations);
@@ -61,15 +63,15 @@ export default function ListDetail({
       // Lost the race: the item is now taken by someone else — reflect that truthfully.
       if (error.code === "CONFLICT") {
         setReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
-        toast.error("Someone just reserved this item first");
+        toast.error(t("listDetail.reserveConflict"));
         return;
       }
-      toast.error(error.message || "Could not reserve item");
+      toast.error(error.message || t("errors.reserveFailed"));
       return;
     }
     setReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
     setMyReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
-    toast.success("Item reserved");
+    toast.success(t("listDetail.reserved"));
   }
 
   async function handleRelease(item: ItemRow) {
@@ -77,12 +79,12 @@ export default function ListDetail({
     const { error } = await actions.reservations.release({ itemId: item.id });
     setPendingItemIds((prev) => prev.filter((id) => id !== item.id));
     if (error) {
-      toast.error(error.message || "Could not cancel reservation");
+      toast.error(error.message || t("errors.releaseFailed"));
       return;
     }
     setReserved((prev) => prev.filter((id) => id !== item.id));
     setMyReserved((prev) => prev.filter((id) => id !== item.id));
-    toast.success("Reservation cancelled");
+    toast.success(t("listDetail.released"));
   }
 
   function handleOptimisticAdd(placeholder: ItemRow) {
@@ -108,7 +110,7 @@ export default function ListDetail({
           href="/dashboard"
           className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline"
         >
-          ← Back to lists
+          {t("common.backToLists")}
         </a>
         <div className="mt-2 flex items-start justify-between gap-2">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
@@ -122,7 +124,7 @@ export default function ListDetail({
                   setShareOpen(true);
                 }}
               >
-                Share link
+                {t("listDetail.shareLink")}
               </Button>
               <Button
                 type="button"
@@ -132,7 +134,7 @@ export default function ListDetail({
                   setInviteOpen(true);
                 }}
               >
-                Invite
+                {t("listDetail.invite")}
               </Button>
               <ListActionsMenu
                 listTitle={list.title}
@@ -148,7 +150,6 @@ export default function ListDetail({
         </div>
       </div>
       <ItemsList
-        locale={locale}
         items={items}
         reservedItemIds={reserved}
         myReservedItemIds={myReserved}
@@ -245,5 +246,13 @@ export default function ListDetail({
         </>
       )}
     </div>
+  );
+}
+
+export default function ListDetail({ locale, ...props }: Props) {
+  return (
+    <I18nProvider locale={locale}>
+      <ListDetailInner {...props} />
+    </I18nProvider>
   );
 }

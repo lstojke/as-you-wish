@@ -25,6 +25,6 @@ const defaultCurrency = await getDefaultCurrency(supabase);
       <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{t(locale, "settings.heading")}</h1>
     </header>
     {/* client:only — react-hook-form + Radix need the client React instance (same as DashboardLists). */}
-    <CurrencySettingsForm client:only="react" defaultCurrency={defaultCurrency} />
+    <CurrencySettingsForm client:only="react" locale={locale} defaultCurrency={defaultCurrency} />
   </main>
 </Layout>

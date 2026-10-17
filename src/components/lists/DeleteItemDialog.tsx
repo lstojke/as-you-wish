@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { ItemRow } from "@/lib/services/items";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   item: ItemRow | null;
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function DeleteItemDialog({ item, open, onOpenChange, onOptimisticDelete, onDeleted }: Props) {
+  const { t } = useT();
   const [submitting, setSubmitting] = useState(false);
 
   async function handleConfirm(e: React.MouseEvent<HTMLButtonElement>) {
@@ -37,26 +39,28 @@ export default function DeleteItemDialog({ item, open, onOpenChange, onOptimisti
 
     if (error) {
       if (typeof rollback === "function") rollback();
-      toast.error(error.message || "Could not delete item");
+      toast.error(error.message || t("errors.itemDelete"));
       return;
     }
 
     onDeleted();
     onOpenChange(false);
-    toast.success("Item deleted");
+    toast.success(t("itemForm.deleted"));
   }
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete &ldquo;{item?.title ?? "this item"}&rdquo;?</AlertDialogTitle>
-          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+          <AlertDialogTitle>
+            {t("itemForm.deleteTitle", { title: item?.title ?? t("itemForm.thisItem") })}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{t("itemForm.deleteDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={submitting}>{t("itemForm.cancel")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" disabled={submitting} onClick={handleConfirm}>
-            {submitting ? "Deleting…" : "Delete"}
+            {submitting ? t("itemForm.deleting") : t("itemForm.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

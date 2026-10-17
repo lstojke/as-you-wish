@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { InvitationRow } from "@/lib/services/invitations";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   invitations: InvitationRow[];
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function PendingInvitations({ invitations, onRevoked }: Props) {
+  const { t } = useT();
   const [revokeTarget, setRevokeTarget] = useState<InvitationRow | null>(null);
   const [submitting, setSubmitting] = useState(false);
   // Optimistically hide a row while its revoke is in flight; reveal on error.
@@ -47,16 +49,16 @@ export default function PendingInvitations({ invitations, onRevoked }: Props) {
         next.delete(removed.id);
         return next;
       });
-      toast.error(error.message || "Could not revoke invitation");
+      toast.error(error.message || t("errors.inviteRevoke"));
       return;
     }
     onRevoked(removed.id);
-    toast.success("Invitation revoked");
+    toast.success(t("invite.revoked"));
   }
 
   return (
     <section className="space-y-3">
-      <h2 className="text-muted-foreground text-sm font-medium">Invitations</h2>
+      <h2 className="text-muted-foreground text-sm font-medium">{t("invite.invitations")}</h2>
       <ul className="divide-border divide-y rounded-md border">
         {visible.map((inv) => {
           const accepted = inv.accepted_at !== null;
@@ -64,7 +66,9 @@ export default function PendingInvitations({ invitations, onRevoked }: Props) {
             <li key={inv.id} className="flex items-center justify-between gap-3 px-4 py-3">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate text-sm">{inv.email}</span>
-                <Badge variant={accepted ? "secondary" : "outline"}>{accepted ? "Accepted" : "Pending"}</Badge>
+                <Badge variant={accepted ? "secondary" : "outline"}>
+                  {accepted ? t("invite.accepted") : t("invite.pending")}
+                </Badge>
               </div>
               {!accepted && (
                 <Button
@@ -75,7 +79,7 @@ export default function PendingInvitations({ invitations, onRevoked }: Props) {
                     setRevokeTarget(inv);
                   }}
                 >
-                  Revoke
+                  {t("invite.revoke")}
                 </Button>
               )}
             </li>
@@ -91,15 +95,15 @@ export default function PendingInvitations({ invitations, onRevoked }: Props) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Revoke invitation to {revokeTarget?.email ?? "this address"}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              They will no longer be able to accept this invitation. You can invite them again later.
-            </AlertDialogDescription>
+            <AlertDialogTitle>
+              {t("invite.revokeTitle", { email: revokeTarget?.email ?? t("invite.thisAddress") })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>{t("invite.revokeDescription")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={submitting}>{t("invite.cancel")}</AlertDialogCancel>
             <AlertDialogAction variant="destructive" disabled={submitting} onClick={handleConfirm}>
-              {submitting ? "Revoking…" : "Revoke"}
+              {submitting ? t("invite.revoking") : t("invite.revoke")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

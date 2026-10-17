@@ -13,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { ListRow } from "@/lib/services/lists";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   list: ListRow | null;
@@ -25,11 +26,10 @@ interface Props {
   onDeleted: () => void;
 }
 
-function describeImpact(itemCount: number | undefined): string {
-  if (itemCount === undefined) return "This action cannot be undone.";
-  if (itemCount === 0) return "This list has no items. This action cannot be undone.";
-  const noun = itemCount === 1 ? "item" : "items";
-  return `This will also delete ${itemCount} ${noun}. This cannot be undone.`;
+function describeImpact(itemCount: number | undefined, t: ReturnType<typeof useT>["t"]): string {
+  if (itemCount === undefined) return t("dashboardLists.deleteListUnknownCount");
+  if (itemCount === 0) return t("dashboardLists.deleteListNoItems");
+  return t("dashboardLists.deleteListWithItems", { count: itemCount });
 }
 
 export default function DeleteListDialog({
@@ -40,6 +40,7 @@ export default function DeleteListDialog({
   onOptimisticDelete,
   onDeleted,
 }: Props) {
+  const { t } = useT();
   const [submitting, setSubmitting] = useState(false);
 
   async function handleConfirm(e: React.MouseEvent<HTMLButtonElement>) {
@@ -52,26 +53,28 @@ export default function DeleteListDialog({
 
     if (error) {
       if (typeof rollback === "function") rollback();
-      toast.error(error.message || "Could not delete list");
+      toast.error(error.message || t("errors.listDelete"));
       return;
     }
 
     onDeleted();
     onOpenChange(false);
-    toast.success("List deleted");
+    toast.success(t("dashboardLists.deleted"));
   }
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete &ldquo;{list?.title ?? "this list"}&rdquo;?</AlertDialogTitle>
-          <AlertDialogDescription>{describeImpact(itemCount)}</AlertDialogDescription>
+          <AlertDialogTitle>
+            {t("dashboardLists.deleteTitle", { title: list?.title ?? t("dashboardLists.thisList") })}
+          </AlertDialogTitle>
+          <AlertDialogDescription>{describeImpact(itemCount, t)}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={submitting}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={submitting}>{t("dashboardLists.cancel")}</AlertDialogCancel>
           <AlertDialogAction variant="destructive" disabled={submitting} onClick={handleConfirm}>
-            {submitting ? "Deleting…" : "Delete"}
+            {submitting ? t("dashboardLists.deleting") : t("dashboardLists.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

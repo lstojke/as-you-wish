@@ -17,6 +17,7 @@ import { Form } from "@/components/ui/form";
 import ItemFormFields from "@/components/lists/ItemFormFields";
 import { itemFormSchema, mapItemFormToUpdate, type ItemFormValues } from "@/lib/schemas/wishlist";
 import type { ItemRow } from "@/lib/services/items";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   item: ItemRow | null;
@@ -36,6 +37,7 @@ function itemRowToFormValues(item: ItemRow | null, defaultCurrency: string): Ite
 }
 
 export default function EditItemForm({ item, open, onOpenChange, onUpdated, defaultCurrency }: Props) {
+  const { t, tm } = useT();
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: itemRowToFormValues(item, defaultCurrency),
@@ -61,26 +63,26 @@ export default function EditItemForm({ item, open, onOpenChange, onUpdated, defa
     if (error) {
       if (isInputError(error)) {
         const titleMsg = error.fields.title?.[0];
-        if (titleMsg) form.setError("title", { message: titleMsg });
+        if (titleMsg) form.setError("title", { message: tm(titleMsg) });
         const linkMsg = error.fields.link?.[0];
-        if (linkMsg) form.setError("link", { message: linkMsg });
+        if (linkMsg) form.setError("link", { message: tm(linkMsg) });
         return;
       }
-      toast.error(error.message || "Could not update item");
+      toast.error(error.message || t("errors.itemUpdate"));
       return;
     }
 
     onUpdated(data);
     onOpenChange(false);
-    toast.success("Item updated");
+    toast.success(t("itemForm.updated"));
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit item</DialogTitle>
-          <DialogDescription>Update the details for this item.</DialogDescription>
+          <DialogTitle>{t("itemForm.editTitle")}</DialogTitle>
+          <DialogDescription>{t("itemForm.editDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -94,10 +96,10 @@ export default function EditItemForm({ item, open, onOpenChange, onUpdated, defa
                 }}
                 disabled={form.formState.isSubmitting}
               >
-                Cancel
+                {t("itemForm.cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving…" : "Save"}
+                {form.formState.isSubmitting ? t("itemForm.saving") : t("itemForm.save")}
               </Button>
             </DialogFooter>
           </form>

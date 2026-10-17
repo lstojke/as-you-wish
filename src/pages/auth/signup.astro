@@ -12,7 +12,7 @@ const error = authErrorMessage(locale, Astro.url.searchParams.get("error"));
   <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
     <div class="border-border bg-card text-card-foreground w-full max-w-sm rounded-2xl border p-8 backdrop-blur-xl">
       <h1 class="text-foreground mb-6 text-center text-2xl font-bold">{t(locale, "auth.signUpTitle")}</h1>
-      <SignUpForm serverError={error} client:load />
+      <SignUpForm locale={locale} serverError={error} client:load />
       <p class="text-muted-foreground mt-4 text-center text-sm">
         {t(locale, "auth.haveAccount")}
         <a

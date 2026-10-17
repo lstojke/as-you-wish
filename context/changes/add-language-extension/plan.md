@@ -361,25 +361,25 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [x] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
+- [x] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit` — 3e9ba2d
+- [x] 2.2 Type checking passes: `npx astro check` — 3e9ba2d
+- [x] 2.3 Linting passes: `npm run lint` — 3e9ba2d
 
 #### Manual
 
-- [x] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page
+- [x] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page — 3e9ba2d
 - [ ] 2.5 Profile-menu language persists across browsers via profile
-- [x] 2.6 Wrong password shows Polish message; URL carries only a code
+- [x] 2.6 Wrong password shows Polish message; URL carries only a code — 3e9ba2d
 
 ### Phase 3: React Islands, Validation & Action Messages
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm run test:unit`
-- [ ] 3.2 Integration tests pass: `npm run test:integration`
-- [ ] 3.3 Type checking passes: `npx astro check`
-- [ ] 3.4 Linting passes: `npm run lint`
-- [ ] 3.5 No English leftovers in `src/components` per grep
+- [x] 3.1 Unit tests pass: `npm run test:unit`
+- [x] 3.2 Integration tests pass: `npm run test:integration`
+- [x] 3.3 Type checking passes: `npx astro check`
+- [x] 3.4 Linting passes: `npm run lint`
+- [x] 3.5 No English leftovers in `src/components` per grep
 
 #### Manual
 

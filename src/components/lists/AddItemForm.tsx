@@ -8,6 +8,7 @@ import { Form } from "@/components/ui/form";
 import ItemFormFields from "@/components/lists/ItemFormFields";
 import { itemFormSchema, mapItemFormToCreate, type ItemFormValues } from "@/lib/schemas/wishlist";
 import type { ItemRow } from "@/lib/services/items";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   listId: string;
@@ -24,6 +25,7 @@ export default function AddItemForm({
   onOptimisticReplace,
   onOptimisticRemove,
 }: Props) {
+  const { t, tm } = useT();
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
     defaultValues: { title: "", priceInput: "", link: "", currency: defaultCurrency },
@@ -53,28 +55,28 @@ export default function AddItemForm({
       onOptimisticRemove(placeholderId);
       if (isInputError(error)) {
         const titleMsg = error.fields.title?.[0];
-        if (titleMsg) form.setError("title", { message: titleMsg });
+        if (titleMsg) form.setError("title", { message: tm(titleMsg) });
         const linkMsg = error.fields.link?.[0];
-        if (linkMsg) form.setError("link", { message: linkMsg });
+        if (linkMsg) form.setError("link", { message: tm(linkMsg) });
         return;
       }
-      toast.error(error.message || "Could not add item");
+      toast.error(error.message || t("errors.itemCreate"));
       return;
     }
 
     onOptimisticReplace(placeholderId, data);
     form.reset();
-    toast.success("Item added");
+    toast.success(t("itemForm.created"));
   }
 
   return (
     <div>
-      <h2 className="mb-4 text-lg font-semibold">Add an item</h2>
+      <h2 className="mb-4 text-lg font-semibold">{t("itemForm.addHeading")}</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <ItemFormFields control={form.control} />
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Adding…" : "Add item"}
+            {form.formState.isSubmitting ? t("itemForm.adding") : t("itemForm.add")}
           </Button>
         </form>
       </Form>

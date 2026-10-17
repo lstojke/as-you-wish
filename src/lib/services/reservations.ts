@@ -12,12 +12,12 @@ type Client = SupabaseClient<Database>;
 // else is an opaque server error. Pure so it can be unit-tested without Astro.
 export function reserveErrorPayload(err: unknown): {
   code: "CONFLICT" | "INTERNAL_SERVER_ERROR";
-  message: string;
+  message: "errors.reserveConflict" | "errors.reserveFailed";
 } {
   if (typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505") {
-    return { code: "CONFLICT", message: "Someone just reserved this item first" };
+    return { code: "CONFLICT", message: "errors.reserveConflict" };
   }
-  return { code: "INTERNAL_SERVER_ERROR", message: "Could not reserve item" };
+  return { code: "INTERNAL_SERVER_ERROR", message: "errors.reserveFailed" };
 }
 
 // Exclusivity is enforced by the unique partial index reservations_one_active_per_item

@@ -7,14 +7,19 @@ import ListActionsMenu from "@/components/dashboard/ListActionsMenu";
 import RenameListDialog from "@/components/dashboard/RenameListDialog";
 import DeleteListDialog from "@/components/dashboard/DeleteListDialog";
 import type { ListRow } from "@/lib/services/lists";
+import { I18nProvider } from "@/components/I18nProvider";
+import { useT } from "@/components/hooks/useT";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
+  locale: Locale;
   owned: ListRow[];
   shared: ListRow[];
   loadError: boolean;
 }
 
-export default function DashboardLists({ owned: initialOwned, shared, loadError }: Props) {
+function DashboardListsInner({ owned: initialOwned, shared, loadError }: Omit<Props, "locale">) {
+  const { t } = useT();
   const [owned, setOwned] = useState<ListRow[]>(initialOwned);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<ListRow | null>(null);
@@ -48,11 +53,9 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
       >
         <div>
           <h2 id="lists-load-error-heading" className="font-semibold">
-            Your wish lists couldn’t be loaded
+            {t("dashboardLists.loadErrorTitle")}
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Please try again. If the problem continues, refresh the page in a moment.
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{t("dashboardLists.loadErrorBody")}</p>
         </div>
         <Button
           onClick={() => {
@@ -60,7 +63,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
           }}
           size="sm"
         >
-          Try again
+          {t("dashboardLists.retry")}
         </Button>
       </section>
     );
@@ -71,7 +74,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
       <section aria-labelledby="my-lists-heading">
         <div className="mb-4 flex items-center justify-between">
           <h2 id="my-lists-heading" className="text-xl font-semibold tracking-tight">
-            My lists
+            {t("dashboardLists.myLists")}
           </h2>
           {hasOwned && (
             <Button
@@ -81,7 +84,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
               size="sm"
             >
               <Plus />
-              Create list
+              {t("dashboardLists.createList")}
             </Button>
           )}
         </div>
@@ -113,7 +116,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
       {hasShared && (
         <section aria-labelledby="shared-heading">
           <h2 id="shared-heading" className="mb-4 text-xl font-semibold tracking-tight">
-            Shared with me
+            {t("dashboardLists.sharedWithMe")}
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {shared.map((list) => (
@@ -171,12 +174,21 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
   );
 }
 
+export default function DashboardLists({ locale, ...props }: Props) {
+  return (
+    <I18nProvider locale={locale}>
+      <DashboardListsInner {...props} />
+    </I18nProvider>
+  );
+}
+
 function OwnedListCard({ list, onRename, onDelete }: { list: ListRow; onRename: () => void; onDelete: () => void }) {
+  const { t } = useT();
   return (
     <a
       href={`/lists/${list.id}`}
       className="focus-visible:ring-ring/50 block rounded-xl outline-none focus-visible:ring-[3px]"
-      aria-label={`Open list ${list.title}`}
+      aria-label={t("dashboardLists.openList", { title: list.title })}
     >
       <Card className="hover:border-foreground/20 transition-colors">
         <CardHeader className="flex flex-row items-start justify-between gap-2">
@@ -189,11 +201,12 @@ function OwnedListCard({ list, onRename, onDelete }: { list: ListRow; onRename: 
 }
 
 function SharedListCard({ list }: { list: ListRow }) {
+  const { t } = useT();
   return (
     <a
       href={`/lists/${list.id}`}
       className="focus-visible:ring-ring/50 block rounded-xl outline-none focus-visible:ring-[3px]"
-      aria-label={`Open list ${list.title}`}
+      aria-label={t("dashboardLists.openList", { title: list.title })}
     >
       <Card className="hover:border-foreground/20 transition-colors">
         <CardHeader>
@@ -205,17 +218,15 @@ function SharedListCard({ list }: { list: ListRow }) {
 }
 
 function EmptyHero({ onCreate }: { onCreate: () => void }) {
+  const { t } = useT();
   return (
     <div className="border-muted-foreground/20 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-12 text-center">
       <ListPlus className="text-muted-foreground size-10" aria-hidden="true" />
-      <h3 className="text-lg font-semibold">No lists yet</h3>
-      <p className="text-muted-foreground max-w-sm text-sm">
-        Wish lists make it easy for the people who shop for you to know what to get — without buying the same thing
-        twice.
-      </p>
+      <h3 className="text-lg font-semibold">{t("dashboardLists.emptyTitle")}</h3>
+      <p className="text-muted-foreground max-w-sm text-sm">{t("dashboardLists.emptyBody")}</p>
       <Button onClick={onCreate} className="mt-2">
         <Plus />
-        Create your first list
+        {t("dashboardLists.createFirst")}
       </Button>
     </div>
   );
