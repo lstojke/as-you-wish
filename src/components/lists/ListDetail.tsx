@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { actions } from "astro:actions";
 import { toast } from "sonner";
 import type { ListRow } from "@/lib/services/lists";
@@ -45,6 +46,8 @@ export default function ListDetail({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [addItemOpen, setAddItemOpen] = useState(false);
+  const addItemTrigger = useRef<HTMLButtonElement>(null);
   const [editTarget, setEditTarget] = useState<ItemRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
@@ -107,8 +110,8 @@ export default function ListDetail({
         >
           ← Back to lists
         </a>
-        <div className="mt-2 flex items-start justify-between gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{list.title}</h1>
+        <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
+          <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words sm:text-3xl">{list.title}</h1>
           {isOwner && (
             <div className="flex flex-wrap items-center justify-end gap-2">
               <Button
@@ -130,6 +133,21 @@ export default function ListDetail({
                 }}
               >
                 Invite
+              </Button>
+              <Button
+                ref={addItemTrigger}
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-label="Add item"
+                title="Add item"
+                aria-haspopup="dialog"
+                aria-expanded={addItemOpen}
+                onClick={() => {
+                  setAddItemOpen(true);
+                }}
+              >
+                <Plus aria-hidden="true" />
               </Button>
               <ListActionsMenu
                 listTitle={list.title}
@@ -166,6 +184,11 @@ export default function ListDetail({
           <AddItemForm
             listId={list.id}
             defaultCurrency={defaultCurrency}
+            open={addItemOpen}
+            onOpenChange={setAddItemOpen}
+            onCloseAutoFocus={() => {
+              addItemTrigger.current?.focus();
+            }}
             onOptimisticAdd={handleOptimisticAdd}
             onOptimisticReplace={handleOptimisticReplace}
             onOptimisticRemove={handleOptimisticRemove}
