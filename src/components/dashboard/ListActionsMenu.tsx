@@ -24,11 +24,6 @@ export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props
           variant="ghost"
           size="icon"
           aria-label={t("dashboardLists.actionsForList", { title: listTitle })}
-          onClick={(e) => {
-            // Prevent the wrapping <a> on dashboard ListCard from navigating.
-            e.preventDefault();
-            e.stopPropagation();
-          }}
         >
           <MoreVertical />
         </Button>
