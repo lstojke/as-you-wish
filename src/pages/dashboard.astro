@@ -30,10 +30,6 @@ for (const delayMs of [0, 250, 750]) {
 <Layout title="Dashboard">
   <AppHeader />
   <main class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-    <header class="mb-8">
-      <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">Your wish lists</h1>
-    </header>
-
     {
       /* client:only prevents Astro SSR from rendering this island — required because react-hook-form and Radix UI primitives inside the dialog resolve to a different React instance than Astro's SSR renderer, producing an "Invalid hook call" crash at runtime. SSR data is fetched above and passed as props. */
     }

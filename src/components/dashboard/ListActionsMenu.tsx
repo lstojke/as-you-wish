@@ -17,17 +17,7 @@ export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={`Actions for list ${listTitle}`}
-          onClick={(e) => {
-            // Prevent the wrapping <a> on dashboard ListCard from navigating.
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
+        <Button type="button" variant="ghost" size="icon" aria-label={`Actions for list ${listTitle}`}>
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
