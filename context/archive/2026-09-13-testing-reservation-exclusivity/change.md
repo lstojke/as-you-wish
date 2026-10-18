@@ -10,6 +10,6 @@ archived_at: 2026-09-13T19:53:32Z
 ## Notes
 
 Rollout Phase 1 of context/foundation/test-plan.md: "Bootstrap + reservation exclusivity".
-Risks covered: #1 (exclusive-claim rule fails — two simultaneous Reserve taps both succeed, so two relatives buy the same gift).
+Risks covered: #1 (exclusive-claim rule fails - two simultaneous Reserve taps both succeed, so two relatives buy the same gift).
 Test types planned: unit + integration.
-Risk response intent: prove that two concurrent reserves on one available item resolve to exactly one success, the losing caller gets a clean rejection, and the DB holds exactly one claim — exclusivity must hold at the DB boundary under real concurrency, not just single-threaded. This phase also bootstraps the Vitest runner (no test infra exists yet).
+Risk response intent: prove that two concurrent reserves on one available item resolve to exactly one success, the losing caller gets a clean rejection, and the DB holds exactly one claim - exclusivity must hold at the DB boundary under real concurrency, not just single-threaded. This phase also bootstraps the Vitest runner (no test infra exists yet).

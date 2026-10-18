@@ -12,7 +12,7 @@ export const configStatuses: ConfigStatus[] = [
   {
     name: "Supabase",
     configured: Boolean(SUPABASE_URL && SUPABASE_KEY),
-    message: "Supabase nie jest skonfigurowany — funkcje uwierzytelniania są wyłączone.",
+    message: "Supabase nie jest skonfigurowany - funkcje uwierzytelniania są wyłączone.",
     docsUrl: "https://github.com/lstojke/as-you-wish#readme",
     docsLabel: "Zobacz instrukcję konfiguracji",
   },

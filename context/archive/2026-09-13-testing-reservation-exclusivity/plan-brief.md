@@ -1,15 +1,15 @@
-# Reservation Exclusivity Testing (Vitest Bootstrap) — Plan Brief
+# Reservation Exclusivity Testing (Vitest Bootstrap) - Plan Brief
 
 > Full plan: `context/changes/testing-reservation-exclusivity/plan.md`
 > Research: `context/changes/testing-reservation-exclusivity/research.md`
 
 ## What & Why
 
-Stand up a Vitest test runner (none exists yet) and use it to prove Test Plan Risk #1: two relatives tapping Reserve on the same gift at the same time must resolve to exactly one claim — otherwise two people buy the same present. Exclusivity is enforced only by a DB unique partial index, so the proof must run a real concurrent race against real Postgres.
+Stand up a Vitest test runner (none exists yet) and use it to prove Test Plan Risk #1: two relatives tapping Reserve on the same gift at the same time must resolve to exactly one claim - otherwise two people buy the same present. Exclusivity is enforced only by a DB unique partial index, so the proof must run a real concurrent race against real Postgres.
 
 ## Starting Point
 
-The app reserves items via a direct `.insert()` on `reservations`; a lost race surfaces as Postgres `23505`, which the action maps to a `CONFLICT`. No test infrastructure exists at all (no Vitest, config, or `test` script). `vite@^7` is already pinned, and the reservation service module is free of runtime Astro imports — both make bootstrapping low-friction.
+The app reserves items via a direct `.insert()` on `reservations`; a lost race surfaces as Postgres `23505`, which the action maps to a `CONFLICT`. No test infrastructure exists at all (no Vitest, config, or `test` script). `vite@^7` is already pinned, and the reservation service module is free of runtime Astro imports - both make bootstrapping low-friction.
 
 ## Desired End State
 
@@ -52,7 +52,7 @@ Two Vitest projects. The **unit** project (env `node`, `src/**/*.test.ts`, no ex
 | --- | --- | --- |
 | 1. Bootstrap Vitest + mapping unit test | Runner works; `23505→CONFLICT` contract locked; no DB needed | Vitest/vite@7 config + alias correctness |
 | 2. Integration harness + concurrency proof | Local-stack wiring, fixtures, the Risk #1 race test | Seeding email-confirmed members through RLS; local-stack env correctness |
-| 3. Document the pattern | Cookbook §6.1/6.2/6.5 + README run-tests note | Low — prose only |
+| 3. Document the pattern | Cookbook §6.1/6.2/6.5 + README run-tests note | Low - prose only |
 
 **Prerequisites:** Docker + local Supabase (`npx supabase start`) for Phase 2; Node 22.14.
 **Estimated effort:** ~2–3 focused sessions across the three phases.
@@ -60,11 +60,11 @@ Two Vitest projects. The **unit** project (env `node`, `src/**/*.test.ts`, no ex
 ## Open Risks & Assumptions
 
 - Assumes the well-known local Supabase demo keys are stable for this CLI version; the setup file fails fast if the stack is unreachable.
-- Assumes `auth.admin.createUser({ email_confirm: true })` is sufficient to satisfy any confirmed-email gating for reserving (reserve itself gates on membership, not email-confirmation — that gate is Phase 2's invitation concern).
+- Assumes `auth.admin.createUser({ email_confirm: true })` is sufficient to satisfy any confirmed-email gating for reserving (reserve itself gates on membership, not email-confirmation - that gate is Phase 2's invitation concern).
 - Extracting the mapping helper is a minimal, behavior-preserving refactor of the action; observable codes/messages/logging stay identical.
 
 ## Success Criteria (Summary)
 
 - `npm test` runs unit + integration suites green with the local stack up.
 - The concurrency test proves exactly one of two simultaneous reserves wins, the loser gets a clean `23505`/`CONFLICT`, and the DB holds exactly one active claim.
-- Dropping the unique index makes the concurrency test fail — proving it exercises the DB guarantee, not an app-layer check.
+- Dropping the unique index makes the concurrency test fail - proving it exercises the DB guarantee, not an app-layer check.

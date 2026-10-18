@@ -28,7 +28,7 @@ export const pl = {
     heroTitle: "Trafiaj z prezentem,",
     heroTitleAccent: "za każdym razem",
     heroLead:
-      "AsYouWish pozwala rodzinie dzielić się listami życzeń i dyskretnie rezerwować prezenty — każdy dostaje coś, co pokocha, i nikt nie kupuje tego samego dwa razy.",
+      "AsYouWish pozwala rodzinie dzielić się listami życzeń i dyskretnie rezerwować prezenty - każdy dostaje coś, co pokocha, i nikt nie kupuje tego samego dwa razy.",
     getStarted: "Zacznij teraz",
     signIn: "Zaloguj się",
     howTitle: "Jak to działa",
@@ -38,12 +38,12 @@ export const pl = {
     step2Title: "Udostępnij",
     step2Body: "Zaproś rodzinę mailowo, żeby zobaczyła, na co liczysz.",
     step3Title: "Zarezerwuj",
-    step3Body: "Zarezerwuj prezent, żeby nikt go nie zdublował — wybór darczyńcy pozostaje niespodzianką.",
+    step3Body: "Zarezerwuj prezent, żeby nikt go nie zdublował - wybór darczyńcy pozostaje niespodzianką.",
     value1Title: "Żadnych zdublowanych prezentów",
     value1Body: "Zarezerwowana pozycja znika z puli dla innych, więc niespodzianki nigdy się nie pokrywają.",
     value2Title: "Rezerwujący pozostaje ukryty",
     value2Body:
-      "Właściciel listy widzi, że pozycja została zarezerwowana, ale nigdy przez kogo — niespodzianka zostaje.",
+      "Właściciel listy widzi, że pozycja została zarezerwowana, ale nigdy przez kogo - niespodzianka zostaje.",
     value3Title: "Twój prywatny krąg",
     value3Body: "Listy widzą tylko zaproszone osoby. To rodzinna przestrzeń, a nie publiczny rejestr.",
     ctaTitle: "Gotowy, by obdarowywanie było proste?",
@@ -66,7 +66,7 @@ export const pl = {
     },
     errors: {
       invalid_credentials: "Nieprawidłowy e-mail lub hasło.",
-      email_not_confirmed: "Potwierdź najpierw swój adres e-mail — sprawdź skrzynkę.",
+      email_not_confirmed: "Potwierdź najpierw swój adres e-mail - sprawdź skrzynkę.",
       user_already_exists: "Konto z tym adresem e-mail już istnieje.",
       weak_password: "Hasło jest zbyt słabe. Wybierz silniejsze.",
       email_address_invalid: "Ten adres e-mail jest nieprawidłowy.",
@@ -177,7 +177,7 @@ export const pl = {
     sharedWithMe: "Udostępnione mi",
     openList: "Otwórz listę {title}",
     emptyTitle: "Nie masz jeszcze żadnych list",
-    emptyBody: "Listy życzeń ułatwiają bliskim wybór prezentu — bez kupowania dwa razy tego samego.",
+    emptyBody: "Listy życzeń ułatwiają bliskim wybór prezentu - bez kupowania dwa razy tego samego.",
     createFirst: "Utwórz swoją pierwszą listę",
     createTitle: "Utwórz listę życzeń",
     createDescription: "Nadaj liście nazwę. Zaraz potem możesz dodać do niej pozycje.",
@@ -271,7 +271,7 @@ export const pl = {
   shareLink: {
     loadFailed: "Nie udało się wczytać statusu udostępniania. Spróbuj ponownie.",
     requestFailed:
-      "Nie udało się potwierdzić operacji. Odświeżono status udostępniania — sprawdź go przed kolejną próbą.",
+      "Nie udało się potwierdzić operacji. Odświeżono status udostępniania - sprawdź go przed kolejną próbą.",
     statusFailed: "Nie udało się potwierdzić statusu udostępniania. Wczytaj go ponownie przed kolejną zmianą.",
     copied: "Link został skopiowany.",
     copyFailed: "Nie udało się skopiować linku. Zaznacz adres powyżej i skopiuj go ręcznie.",

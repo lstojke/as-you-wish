@@ -18,7 +18,7 @@ const returnTo = Astro.url.pathname + Astro.url.search;
           <a href="/dashboard" class="text-foreground hover:text-primary transition-colors">
             {t(locale, "header.dashboard")}
           </a>
-          {/* client:only — Radix dropdown needs the client React instance (same as other islands). */}
+          {/* client:only - Radix dropdown needs the client React instance (same as other islands). */}
           <ProfileMenu client:only="react" email={user.email ?? ""} locale={locale} returnTo={returnTo}>
             <span slot="fallback" class="bg-muted block size-8 rounded-full" aria-hidden="true" />
           </ProfileMenu>

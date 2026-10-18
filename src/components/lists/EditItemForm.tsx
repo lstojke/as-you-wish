@@ -52,7 +52,7 @@ export default function EditItemForm({ item, open, onOpenChange, onUpdated, defa
   async function onSubmit(values: ItemFormValues) {
     if (!item) return;
 
-    // Nothing changed — close without hitting the server.
+    // Nothing changed - close without hitting the server.
     if (JSON.stringify(values) === JSON.stringify(itemRowToFormValues(item, defaultCurrency))) {
       onOpenChange(false);
       return;

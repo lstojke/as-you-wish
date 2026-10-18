@@ -60,7 +60,7 @@ function ListDetailInner({
     const { error } = await actions.reservations.reserve({ itemId: item.id });
     setPendingItemIds((prev) => prev.filter((id) => id !== item.id));
     if (error) {
-      // Lost the race: the item is now taken by someone else — reflect that truthfully.
+      // Lost the race: the item is now taken by someone else - reflect that truthfully.
       if (error.code === "CONFLICT") {
         setReserved((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
         toast.error(t("listDetail.reserveConflict"));

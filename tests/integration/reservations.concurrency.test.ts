@@ -16,7 +16,7 @@ describe("reservation exclusivity under concurrency", () => {
   it("resolves two simultaneous reserves on one item to exactly one winner", async () => {
     const { itemId, owner, invitee, admin } = scenario;
 
-    // Fire both reserves without awaiting the first — a genuine race exercised
+    // Fire both reserves without awaiting the first - a genuine race exercised
     // through member (publishable-key) clients so RLS is really enforced.
     const results = await Promise.allSettled([
       createReservation(owner.client, { itemId }),

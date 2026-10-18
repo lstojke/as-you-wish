@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const envPath = fileURLToPath(new URL("../../.env.test", import.meta.url));
 
 if (!existsSync(envPath)) {
-  throw new Error(".env.test not found — copy .env.test.example to .env.test and fill it from `npx supabase status`.");
+  throw new Error(".env.test not found - copy .env.test.example to .env.test and fill it from `npx supabase status`.");
 }
 
 process.loadEnvFile(envPath);
@@ -15,7 +15,7 @@ process.loadEnvFile(envPath);
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`.env.test is missing ${name} — populate it from \`npx supabase status\`.`);
+    throw new Error(`.env.test is missing ${name} - populate it from \`npx supabase status\`.`);
   }
   return value;
 }

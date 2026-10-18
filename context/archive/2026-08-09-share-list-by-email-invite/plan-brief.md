@@ -1,4 +1,4 @@
-# Share List by Email Invite (S-03) — Plan Brief
+# Share List by Email Invite (S-03) - Plan Brief
 
 > Full plan: `context/changes/share-list-by-email-invite/plan.md`
 
@@ -8,17 +8,17 @@ A list owner can share a list by emailing an invitation to a specific person (PR
 
 ## Starting Point
 
-The `invitations` table and all owner/invitee RLS already exist from F-01. What's missing is every piece of application behavior: creating invitations, sending email, revoking, and — critically — accepting them. A list only surfaces as "shared" once accepted (`is_list_invitee` checks `accepted_by_user_id`).
+The `invitations` table and all owner/invitee RLS already exist from F-01. What's missing is every piece of application behavior: creating invitations, sending email, revoking, and - critically - accepting them. A list only surfaces as "shared" once accepted (`is_list_invitee` checks `accepted_by_user_id`).
 
 ## Desired End State
 
-An owner opens a list, clicks **Invite**, enters an email, and sends. The invitee gets a Resend email, clicks the link, authenticates with that address, accepts, and lands on the shared list — which now also shows under "Shared with me" on their dashboard. The owner sees invited addresses in a **Pending invitations** list and can revoke them.
+An owner opens a list, clicks **Invite**, enters an email, and sends. The invitee gets a Resend email, clicks the link, authenticates with that address, accepts, and lands on the shared list - which now also shows under "Shared with me" on their dashboard. The owner sees invited addresses in a **Pending invitations** list and can revoke them.
 
 ## Key Decisions Made
 
 | Decision | Choice | Why (1 sentence) | Source |
 | --- | --- | --- | --- |
-| Email transport | Resend REST via `fetch` | Edge-native, repo-owned template, our own accept link, no privileged edge secret — best fit for the accept-link flow. | Plan |
+| Email transport | Resend REST via `fetch` | Edge-native, repo-owned template, our own accept link, no privileged edge secret - best fit for the accept-link flow. | Plan |
 | Acceptance mechanism | Explicit accept link in the email | Clear consent moment; the emailed link is the durable entry point. | Plan |
 | `email_verified` gotcha | `SECURITY DEFINER accept_invitation` RPC | Reads `auth.users.email_confirmed_at` directly, so acceptance doesn't depend on the often-absent JWT claim (`lessons.md`). | Plan |
 | Owner UX | Invite dialog + pending list with revoke | Owner can see/undo invites; reuses existing dialog + RLS-delete patterns. | Plan |
@@ -51,7 +51,7 @@ Bottom-up, four independently verifiable phases. The `invitations` row is create
 
 ## Open Risks & Assumptions
 
-- The `email_verified` JWT claim is unreliable — mitigated by the RPC reading `email_confirmed_at` directly; if this assumption were wrong the whole acceptance path fails, so it's verified first (Phase 1).
+- The `email_verified` JWT claim is unreliable - mitigated by the RPC reading `email_confirmed_at` directly; if this assumption were wrong the whole acceptance path fails, so it's verified first (Phase 1).
 - Brand-new signups aren't threaded through the email-confirmation gap; they re-click the emailed link after confirming (accepted UX, not a bug).
 - Real email delivery depends on Resend domain verification (SPF/DKIM); with the key unset the app degrades gracefully (`emailSent: false`).
 

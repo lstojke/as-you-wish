@@ -1,4 +1,4 @@
-# Add Polish (default) + English — Plan Brief
+# Add Polish (default) + English - Plan Brief
 
 > Full plan: `context/changes/add-language-extension/plan.md`
 

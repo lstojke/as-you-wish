@@ -16,7 +16,7 @@ if (!invite || !UUID_RE.test(invite)) {
 }
 
 // Unauthenticated invitees are bounced through sign-in and returned here.
-// The email is an untrusted prefill hint only — the RPC re-verifies from the session.
+// The email is an untrusted prefill hint only - the RPC re-verifies from the session.
 if (!user || !supabase) {
   const returnTo = `/invitations/accept?invite=${invite}`;
   const params = new URLSearchParams({ return: returnTo });

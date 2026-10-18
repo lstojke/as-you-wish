@@ -32,7 +32,7 @@ Ground rollout Phase 3 risks #4–#6 from `context/foundation/test-plan.md` in t
 
 ## Detailed Findings
 
-### Risk #4 — Reserver identity privacy
+### Risk #4 - Reserver identity privacy
 
 - `reservations` stores `claimer_id`, but the `reservations_select` policy predicates rows on `claimer_id = auth.uid()` ([initial schema migration, policy](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/supabase/migrations/20260527125732_initial_wishlist_schema.sql#L276)). An owner therefore cannot read another member's reservation row using their authenticated client.
 - The `item_reservation_status` view returns only `item_id`, `list_id`, and the boolean `is_reserved`; its helper is security-definer and does not project `claimer_id` ([initial schema migration, view](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/supabase/migrations/20260527125732_initial_wishlist_schema.sql#L312)). Generated database types likewise model the view without a claimer field ([database types](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/db/database.types.ts#L172)).
@@ -41,7 +41,7 @@ Ground rollout Phase 3 risks #4–#6 from `context/foundation/test-plan.md` in t
 - The owner cannot reserve through the UI (`canClaim={!isOwner}`), but the database insert policy permits a list member whose `claimer_id` matches their own authenticated id. If an owner calls the action directly, they receive their own id; this is a UI/server behavior mismatch, not a leak of another reserver's identity.
 - **Guidance correction**: narrow the test oracle from "no claimer id in every API payload" to "a list owner cannot read another member's claimer id through owner-facing reads; reserved status remains visible." Seed a real reservation by an invitee, assert the owner's direct reservation-table read returns no rows, and assert the owner's view reports the item reserved without exposing a claimer field. Pair with a service-role control read so an empty result cannot be a fixture failure.
 
-### Risk #5 — Server-side validation parity
+### Risk #5 - Server-side validation parity
 
 - Each list/item/invitation/reservation Astro action declares an input schema using `defineAction` ([actions: item mutations](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/actions/index.ts#L92); [actions: reservation](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/actions/index.ts#L239)). The schemas enforce required fields, UUID syntax, title bounds, integer non-negative cents, three-letter uppercase currency, HTTP(S)-only URLs, and cross-field currency/price consistency ([wishlist schemas](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/schemas/wishlist.ts#L22)).
 - Action handlers receive schema-typed `input` and pass it to services. No current test calls the schemas or the action boundary with malformed values. Existing tests exercise reservation concurrency and invitation/access RLS at the service/database level, not action parsing.
@@ -50,7 +50,7 @@ Ground rollout Phase 3 risks #4–#6 from `context/foundation/test-plan.md` in t
 - Stored link safety is already covered by a recurring lesson: persisted URLs must restrict to HTTP(S), because `z.url()` alone accepts dangerous schemes ([lessons.md](../../foundation/lessons.md)); the item create/update schemas currently include that refinement ([schema](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/lib/schemas/wishlist.ts#L31)).
 - **Recommended test split**: schema unit cases for independently specified constraints (negative/fractional price, missing/oversized title, non-HTTP URL); an action contract test for malformed payload rejection before side effects; and a member-client integration case for a valid-but-foreign resource id to prove RLS authorization. Do not use the production schema's own parsing result as the sole oracle for what business behavior is expected.
 
-### Risk #6 — Edit/delete with an active reservation
+### Risk #6 - Edit/delete with an active reservation
 
 - The reservation foreign key references `items(id) ON DELETE CASCADE` ([initial schema migration](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/supabase/migrations/20260527125732_initial_wishlist_schema.sql#L48)). Consequently, deleting an item removes its reservation history as well as its active claim; the current design cannot leave an orphaned reservation for that item.
 - `deleteItem` directly deletes by item id and relies on RLS for owner authorization ([items service](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/lib/services/items.ts#L83)). `updateItem` updates fields on the same item row and does not mutate reservation rows ([items service](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/services/items.ts#L54)). An edit therefore keeps the active claim associated with the same item id.
@@ -67,13 +67,13 @@ Ground rollout Phase 3 risks #4–#6 from `context/foundation/test-plan.md` in t
 
 ## Code References
 
-- [src/actions/index.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/actions/index.ts#L92) — item actions bind Zod input schemas; reserve returns the service result at line 246.
-- [src/lib/schemas/wishlist.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/schemas/wishlist.ts#L22) — item create/update constraints and HTTP(S) URL refinement.
-- [src/lib/services/items.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/services/items.ts#L25) — owner-safe reservation-status view read; update/delete behavior.
-- [src/lib/services/reservations.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/services/reservations.ts#L27) — reservation create returns a row; owner-safe and claimer-scoped readers are separate.
-- [supabase/migrations/20260527125732_initial_wishlist_schema.sql](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/supabase/migrations/20260527125732_initial_wishlist_schema.sql#L48) — cascade FK; RLS and boolean view are defined later in the same migration.
-- [tests/integration/reservations.concurrency.test.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/tests/integration/reservations.concurrency.test.ts#L1) — current DB integration test pattern.
-- [src/pages/api/auth/signin.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/pages/api/auth/signin.ts#L11) and [src/pages/api/auth/signup.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/pages/api/auth/signup.ts#L7) — form parsing is not Zod-validated in these routes.
+- [src/actions/index.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e327e/src/actions/index.ts#L92) - item actions bind Zod input schemas; reserve returns the service result at line 246.
+- [src/lib/schemas/wishlist.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/schemas/wishlist.ts#L22) - item create/update constraints and HTTP(S) URL refinement.
+- [src/lib/services/items.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/services/items.ts#L25) - owner-safe reservation-status view read; update/delete behavior.
+- [src/lib/services/reservations.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/lib/services/reservations.ts#L27) - reservation create returns a row; owner-safe and claimer-scoped readers are separate.
+- [supabase/migrations/20260527125732_initial_wishlist_schema.sql](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/supabase/migrations/20260527125732_initial_wishlist_schema.sql#L48) - cascade FK; RLS and boolean view are defined later in the same migration.
+- [tests/integration/reservations.concurrency.test.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/tests/integration/reservations.concurrency.test.ts#L1) - current DB integration test pattern.
+- [src/pages/api/auth/signin.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/pages/api/auth/signin.ts#L11) and [src/pages/api/auth/signup.ts](https://github.com/lstojke/as-you-wish/blob/b50a594e09a013a2c5c38c912d1927c0c79e/src/pages/api/auth/signup.ts#L7) - form parsing is not Zod-validated in these routes.
 
 ## Architecture Insights
 
@@ -90,8 +90,8 @@ Ground rollout Phase 3 risks #4–#6 from `context/foundation/test-plan.md` in t
 
 ## Related Research
 
-- [context/changes/testing-invitation-access-control/plan.md](../testing-invitation-access-control/plan.md) — prior access-control test rollout plan; no separate research artifact was present at research time.
-- [context/archive/2026-09-13-testing-reservation-exclusivity/plan.md](../../archive/2026-09-13-testing-reservation-exclusivity/plan.md) — archived implementation plan used as historical context; no separate research artifact was present.
+- [context/changes/testing-invitation-access-control/plan.md](../testing-invitation-access-control/plan.md) - prior access-control test rollout plan; no separate research artifact was present at research time.
+- [context/archive/2026-09-13-testing-reservation-exclusivity/plan.md](../../archive/2026-09-13-testing-reservation-exclusivity/plan.md) - archived implementation plan used as historical context; no separate research artifact was present.
 
 ## Open Questions
 

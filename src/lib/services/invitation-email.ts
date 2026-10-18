@@ -16,7 +16,7 @@ export interface InvitationEmail {
 // (Polish first), separated by a divider.
 export function buildInvitationEmail({ acceptUrl, listTitle, inviterEmail }: InvitationEmailInput): InvitationEmail {
   const locales: readonly Locale[] = LOCALES;
-  const subject = `${locales.map((l) => t(l, "email.invitation.subject", { inviter: inviterEmail })).join(" / ")} — AsYouWish`;
+  const subject = `${locales.map((l) => t(l, "email.invitation.subject", { inviter: inviterEmail })).join(" / ")} - AsYouWish`;
 
   const text = locales
     .map((l) =>

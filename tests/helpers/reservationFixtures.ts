@@ -19,7 +19,7 @@ export interface ReservationScenario {
 /**
  * Seeds the membership graph a reserve requires: an owner and an accepted
  * invitee (both email-confirmed) of a list that holds one item. Returns two
- * signed-in member clients plus a teardown that deletes the users — cascading
+ * signed-in member clients plus a teardown that deletes the users - cascading
  * away the list, item, invitation, and any reservations.
  */
 export async function setupReservationScenario(): Promise<ReservationScenario> {

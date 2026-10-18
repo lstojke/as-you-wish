@@ -1,4 +1,4 @@
-# Review follow-ups — manage-own-lists-and-items
+# Review follow-ups - manage-own-lists-and-items
 
 Captured during full-plan impl-review (2026-07-30).
 
@@ -11,7 +11,7 @@ Captured during full-plan impl-review (2026-07-30).
   - Profile UI to view/adjust the default.
   - Wire the default into `createItem` (replace hardcoded `DEFAULT_CURRENCY`) and `updateItem` currency resolution.
   - Decide whether to surface a per-item currency override in the item forms.
-- **Next step**: open with `/10x-new` (and likely a roadmap entry) — do not bolt onto S-02.
+- **Next step**: open with `/10x-new` (and likely a roadmap entry) - do not bolt onto S-02.
 
 ## F1 (resolved in S-02)
 

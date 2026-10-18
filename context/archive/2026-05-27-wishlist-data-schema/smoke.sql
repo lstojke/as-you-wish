@@ -1,4 +1,4 @@
--- smoke.sql — Phase 3 §3.5 production cascade probe.
+-- smoke.sql - Phase 3 §3.5 production cascade probe.
 --
 -- Run in Supabase Studio (production project) SQL editor, which executes as
 -- `postgres` and bypasses RLS. Verifies the CASCADE chain end-to-end:

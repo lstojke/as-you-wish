@@ -57,7 +57,7 @@ Intent-aligned adaptations: catch-all share route handles missing/malformed toke
   - Tradeoff: Adds migration logic and placement-specific tests.
   - Confidence: MEDIUM - implementation and compatibility tests remain necessary.
   - Blind spot: Other installed-extension configurations and permissions.
-- **Decision**: FIXED (Fix A) — documented the schema verification query and explicit database-owner prerequisite in the plan's Migration Notes.
+- **Decision**: FIXED (Fix A) - documented the schema verification query and explicit database-owner prerequisite in the plan's Migration Notes.
 
 ### F2 - HTTP smoke checks are not retained in the repository
 
@@ -67,7 +67,7 @@ Intent-aligned adaptations: catch-all share route handles missing/malformed toke
 - **Location**: `tests/integration/list-shares.test.ts`; `src/pages/share/[...token].astro`
 - **Detail**: Committed tests cover RPC/service behavior. Public SSR headers, member redirects, and sharing-action response cache controls passed temporary HTTP smoke scripts and user browser checks, but the scripts were removed during cleanup. Future CI runs cannot repeat those checks from the repository. This is a regression-coverage gap, not a confirmed route defect.
 - **Fix**: Retain a local-only HTTP smoke script using existing tooling, covering response statuses/headers and member redirects without introducing a frontend framework.
-- **Decision**: FIXED — added `tests/smoke/list-shares.mjs` for loopback-only HTTP status, privacy-header, and member-redirect checks; documented how to run it in the Phase 2 success criteria.
+- **Decision**: FIXED - added `tests/smoke/list-shares.mjs` for loopback-only HTTP status, privacy-header, and member-redirect checks; documented how to run it in the Phase 2 success criteria.
 
 ## Triage
 

@@ -14,7 +14,7 @@ Rollout Phase 2 of context/foundation/test-plan.md: "Invitation & access control
 Risks covered:
 
 - #2: invitation→accept mis-grants access, bypasses the email-confirmation gate, or a replayed accept double-grants.
-- #3: IDOR/access — a user reads or reserves items on a list they were never invited to.
+- #3: IDOR/access - a user reads or reserves items on a list they were never invited to.
 
 Test types planned: integration.
 

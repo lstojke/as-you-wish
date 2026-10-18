@@ -24,7 +24,7 @@ describe("non-member access control (#3)", () => {
     expect(itemErr).toBeNull();
     expect(items).toHaveLength(0);
 
-    // Control: the rows genuinely exist (service-role bypasses RLS) — so the
+    // Control: the rows genuinely exist (service-role bypasses RLS) - so the
     // empty reads above are RLS denial, not a seeding gap.
     const { data: ctlLists } = await admin.from("lists").select("id").eq("id", listId);
     const { data: ctlItems } = await admin.from("items").select("id").eq("id", itemId);

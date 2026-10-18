@@ -1,6 +1,6 @@
 # AsYouWish
 
-Private family wish lists with exclusive, identity-hidden reservations — so no gift gets bought twice.
+Private family wish lists with exclusive, identity-hidden reservations - so no gift gets bought twice.
 
 ## Tech Stack
 
@@ -31,7 +31,7 @@ cd as-you-wish
 npm install
 ```
 
-3. Set up Supabase and configure environment variables — see [Supabase Configuration](#supabase-configuration) below.
+3. Set up Supabase and configure environment variables - see [Supabase Configuration](#supabase-configuration) below.
 
 4. Create a `.dev.vars` file for local Cloudflare dev secrets:
 
@@ -74,7 +74,7 @@ cp .env.test.example .env.test   # then paste Project URL + publishable/secret k
 npm run test:integration         # or `npm test` for the whole suite
 ```
 
-`.env.test` is gitignored — it holds local-stack credentials only, never the
+`.env.test` is gitignored - it holds local-stack credentials only, never the
 remote project values.
 
 ## Project Structure
@@ -93,7 +93,7 @@ remote project values.
 
 ## Supabase Configuration
 
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
+This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** - they are never exposed to the client.
 
 ### First-time setup (local, no cloud project needed)
 

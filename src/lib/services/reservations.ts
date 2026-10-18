@@ -43,7 +43,7 @@ export async function createReservation(client: Client, input: ReservationCreate
 }
 
 // RLS (reservations_update gates to claimer_id = auth.uid(); only released_at is writable)
-// restricts the row to the caller's own active reservation — no app-side ownership check.
+// restricts the row to the caller's own active reservation - no app-side ownership check.
 export async function releaseReservation(client: Client, input: ReservationReleaseInput): Promise<void> {
   const { error } = await client
     .from("reservations")
@@ -54,7 +54,7 @@ export async function releaseReservation(client: Client, input: ReservationRelea
 }
 
 // Identity-safe, claimer-scoped read: reservations_select RLS returns only the caller's own
-// rows, so no join is needed (see lessons.md — rely on RLS, not an !inner join).
+// rows, so no join is needed (see lessons.md - rely on RLS, not an !inner join).
 export async function listMyReservedItemIds(client: Client, itemIds: string[]): Promise<string[]> {
   if (itemIds.length === 0) return [];
   const { data, error } = await client

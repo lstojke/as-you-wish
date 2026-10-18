@@ -1,22 +1,22 @@
-# Gift-Giver Reserves an Item Exclusively — Implementation Plan
+# Gift-Giver Reserves an Item Exclusively - Implementation Plan
 
 ## Overview
 
-Add the write path for item reservations to the existing shared-list view: a signed-in viewer of a list shared with them can **reserve** an available item (exclusive — exactly one claim wins under concurrency, and the list owner never learns who reserved) and **cancel their own reservation** (FR-015, pulled into scope). The load-bearing exclusivity invariant already lives in the database (F-01); this slice adds the service, action, and UI layers on top of it.
+Add the write path for item reservations to the existing shared-list view: a signed-in viewer of a list shared with them can **reserve** an available item (exclusive - exactly one claim wins under concurrency, and the list owner never learns who reserved) and **cancel their own reservation** (FR-015, pulled into scope). The load-bearing exclusivity invariant already lives in the database (F-01); this slice adds the service, action, and UI layers on top of it.
 
 ## Current State Analysis
 
 The reservation **read** side and the **entire DB enforcement layer** already exist. What is missing is purely the write path and the "which of these did _I_ reserve" signal.
 
-- **DB (F-01, landed):** `reservations` table with a unique partial index `reservations_one_active_per_item on (item_id) where released_at is null` — this _is_ the FR-013 exclusivity guarantee. RLS: `reservations_insert` requires `claimer_id = auth.uid()` AND `is_item_list_member(item_id)`; `reservations_select` is restricted to the claimer; `reservations_update` is gated to the claimer with only the `released_at` column writable; no delete policy. See [20260527125732_initial_wishlist_schema.sql](supabase/migrations/20260527125732_initial_wishlist_schema.sql).
-- **Read side (S-04, landed):** `listReservedItemIds(client, listId)` reads the identity-safe `item_reservation_status` view (exposes only `item_id, list_id, is_reserved`, never `claimer_id`) — [items.ts](src/lib/services/items.ts). `ItemsList` renders an Available/Reserved badge per item — [ItemsList.tsx](src/components/lists/ItemsList.tsx). `[id].astro` fetches items + reserved ids SSR and passes them through `ListDetail` (`client:only="react"`) — [[id].astro](src/pages/lists/[id].astro), [ListDetail.tsx](src/components/lists/ListDetail.tsx).
-- **Mutation pattern (established):** every mutation is an Astro action in [actions/index.ts](src/actions/index.ts) with a zod schema in [wishlist.ts](src/lib/schemas/wishlist.ts) and a per-entity service (`lists.ts`, `items.ts`, `invitations.ts`). Services obtain the user via `client.auth.getUser()` and set NOT-NULL owner columns themselves (see `createList` setting `owner_id`) — the same pattern applies to `reservations.claimer_id`.
+- **DB (F-01, landed):** `reservations` table with a unique partial index `reservations_one_active_per_item on (item_id) where released_at is null` - this _is_ the FR-013 exclusivity guarantee. RLS: `reservations_insert` requires `claimer_id = auth.uid()` AND `is_item_list_member(item_id)`; `reservations_select` is restricted to the claimer; `reservations_update` is gated to the claimer with only the `released_at` column writable; no delete policy. See [20260527125732_initial_wishlist_schema.sql](supabase/migrations/20260527125732_initial_wishlist_schema.sql).
+- **Read side (S-04, landed):** `listReservedItemIds(client, listId)` reads the identity-safe `item_reservation_status` view (exposes only `item_id, list_id, is_reserved`, never `claimer_id`) - [items.ts](src/lib/services/items.ts). `ItemsList` renders an Available/Reserved badge per item - [ItemsList.tsx](src/components/lists/ItemsList.tsx). `[id].astro` fetches items + reserved ids SSR and passes them through `ListDetail` (`client:only="react"`) - [[id].astro](src/pages/lists/[id].astro), [ListDetail.tsx](src/components/lists/ListDetail.tsx).
+- **Mutation pattern (established):** every mutation is an Astro action in [actions/index.ts](src/actions/index.ts) with a zod schema in [wishlist.ts](src/lib/schemas/wishlist.ts) and a per-entity service (`lists.ts`, `items.ts`, `invitations.ts`). Services obtain the user via `client.auth.getUser()` and set NOT-NULL owner columns themselves (see `createList` setting `owner_id`) - the same pattern applies to `reservations.claimer_id`.
 
 ### Key Discoveries:
 
-- The exclusivity race is resolved by the DB, not app code. A lost race surfaces as a Postgres unique-violation (`code === "23505"`) on insert — the plan maps this to a friendly conflict, it does **not** re-implement locking. ([20260527125732_initial_wishlist_schema.sql](supabase/migrations/20260527125732_initial_wishlist_schema.sql), index `reservations_one_active_per_item`)
+- The exclusivity race is resolved by the DB, not app code. A lost race surfaces as a Postgres unique-violation (`code === "23505"`) on insert - the plan maps this to a friendly conflict, it does **not** re-implement locking. ([20260527125732_initial_wishlist_schema.sql](supabase/migrations/20260527125732_initial_wishlist_schema.sql), index `reservations_one_active_per_item`)
 - The `item_reservation_status` view deliberately omits `claimer_id`, so it cannot answer "did I reserve this?". A separate claimer-scoped read of the `reservations` table is required; `reservations_select` RLS already scopes rows to the caller. ([database.types.ts](src/db/database.types.ts) lines 172–199 for the view shape.)
-- `reservations.claimer_id` is NOT NULL with no default — the service must set it from `client.auth.getUser()`, mirroring `createList` in [lists.ts](src/lib/services/lists.ts).
+- `reservations.claimer_id` is NOT NULL with no default - the service must set it from `client.auth.getUser()`, mirroring `createList` in [lists.ts](src/lib/services/lists.ts).
 - Releasing sets `released_at` (only writable column for the claimer); the partial index excludes released rows, so a released item becomes Available again for everyone with no extra work.
 - `reservedItemIds` is currently a plain prop into `ListDetail`. To update badges in place after reserve/cancel it must become React state.
 
@@ -37,7 +37,7 @@ Verify by: (a) `npm run build` + typecheck + lint pass; (b) a SQL/concurrency ch
 - **No schema or migration change.** The table, index, RLS, and view are all in place from F-01. If this plan finds itself writing SQL, that is a signal something is wrong.
 - **No owner-facing enforcement when an item with an active reservation is edited or deleted** (PRD Open Question 1). Behavior is unchanged from today (confirmation dialog only; CASCADE drops the reservation on item delete). Documented as a known open item, not addressed here.
 - **No owner aggregate available/reserved count** (FR-014, parked).
-- **No reserver-identity disclosure anywhere** — the owner path must never read `claimer_id`.
+- **No reserver-identity disclosure anywhere** - the owner path must never read `claimer_id`.
 - **No realtime/subscription updates.** Status reflects SSR load plus local mutations; other viewers' reservations appear on next page load (the conflict path self-heals the one case that matters).
 - **No changes to auth, invitations, or item CRUD** beyond what the reserve/cancel UI requires.
 
@@ -51,7 +51,7 @@ Two phases, backend then UI, mirroring the established action/service/schema lay
 ## Critical Implementation Details
 
 - **Conflict mapping is the crux.** The reserve service must let the Postgres error propagate; the action inspects `err.code === "23505"` (Supabase `PostgrestError`) and throws `ActionError({ code: "CONFLICT", message: "Someone just reserved this item first" })`. The client branches on `error.code === "CONFLICT"` to toast + flip the badge to Reserved rather than showing a generic failure. Astro's `ActionError` supports the `CONFLICT` code (409).
-- **"Reserved by you" read must not rely on a nested `!inner` join.** Per `context/foundation/lessons.md` ("Shared-list queries must rely on RLS, not an invitations join"), avoid a join whose RLS can silently drop rows. Fetch items first, then query `reservations` filtered by `.in("item_id", <item ids on this list>)` and `.is("released_at", null)`; `reservations_select` RLS scopes rows to the caller. An empty item list yields an empty `.in(...)` result — safe.
+- **"Reserved by you" read must not rely on a nested `!inner` join.** Per `context/foundation/lessons.md` ("Shared-list queries must rely on RLS, not an invitations join"), avoid a join whose RLS can silently drop rows. Fetch items first, then query `reservations` filtered by `.in("item_id", <item ids on this list>)` and `.is("released_at", null)`; `reservations_select` RLS scopes rows to the caller. An empty item list yields an empty `.in(...)` result - safe.
 - **Pending state gates double-submits.** A per-item pending flag disables the button and prevents a second in-flight reserve/cancel on the same row.
 
 ## Phase 1: Reservation backend (reserve + release + "mine" read)
@@ -78,9 +78,9 @@ Add the schema, service, and action layers for creating and releasing reservatio
 
 **Contract**:
 
-- `createReservation(client, input: ReservationCreateInput): Promise<ReservationRow>` — resolve the user via `client.auth.getUser()` (throw if absent, like `createList`), then `insert({ item_id: input.itemId, claimer_id: user.id }).select("*").single()`. Let any error (including the `23505` unique-violation) propagate to the action; do **not** swallow it. Add a comment naming the `reservations_one_active_per_item` index and `reservations_insert` RLS as the enforcement it depends on.
-- `releaseReservation(client, input: ReservationReleaseInput): Promise<void>` — `update({ released_at: new Date().toISOString() }).eq("item_id", input.itemId).is("released_at", null)`; RLS (`claimer_id = auth.uid()`, column grant limited to `released_at`) restricts the row to the caller's own active reservation. No app-side ownership check needed.
-- `listMyReservedItemIds(client, itemIds: string[]): Promise<string[]>` — if `itemIds` is empty return `[]`; else `from("reservations").select("item_id").in("item_id", itemIds).is("released_at", null)` and map to `item_id[]`. Comment the RLS dependency (`reservations_select` scopes rows to the claimer — no join, per lessons.md).
+- `createReservation(client, input: ReservationCreateInput): Promise<ReservationRow>` - resolve the user via `client.auth.getUser()` (throw if absent, like `createList`), then `insert({ item_id: input.itemId, claimer_id: user.id }).select("*").single()`. Let any error (including the `23505` unique-violation) propagate to the action; do **not** swallow it. Add a comment naming the `reservations_one_active_per_item` index and `reservations_insert` RLS as the enforcement it depends on.
+- `releaseReservation(client, input: ReservationReleaseInput): Promise<void>` - `update({ released_at: new Date().toISOString() }).eq("item_id", input.itemId).is("released_at", null)`; RLS (`claimer_id = auth.uid()`, column grant limited to `released_at`) restricts the row to the caller's own active reservation. No app-side ownership check needed.
+- `listMyReservedItemIds(client, itemIds: string[]): Promise<string[]>` - if `itemIds` is empty return `[]`; else `from("reservations").select("item_id").in("item_id", itemIds).is("released_at", null)` and map to `item_id[]`. Comment the RLS dependency (`reservations_select` scopes rows to the claimer - no join, per lessons.md).
 - Export `type ReservationRow = Database["public"]["Tables"]["reservations"]["Row"]`.
 
 #### 3. Reserve / release Astro actions
@@ -91,8 +91,8 @@ Add the schema, service, and action layers for creating and releasing reservatio
 
 **Contract**: Add a `reservations:` group to the `server` object with:
 
-- `reserve` — `input: reservationCreateSchema`, returns the created `ReservationRow`. In the catch block, if the error's `code === "23505"`, throw `new ActionError({ code: "CONFLICT", message: "Someone just reserved this item first" })`; otherwise the existing `INTERNAL_SERVER_ERROR` fallback ("Could not reserve item"). Re-throw existing `ActionError`s untouched (as the invitations handlers do).
-- `release` — `input: reservationReleaseSchema`, returns `{ success: true as const }`, generic `INTERNAL_SERVER_ERROR` ("Could not cancel reservation") on failure.
+- `reserve` - `input: reservationCreateSchema`, returns the created `ReservationRow`. In the catch block, if the error's `code === "23505"`, throw `new ActionError({ code: "CONFLICT", message: "Someone just reserved this item first" })`; otherwise the existing `INTERNAL_SERVER_ERROR` fallback ("Could not reserve item"). Re-throw existing `ActionError`s untouched (as the invitations handlers do).
+- `release` - `input: reservationReleaseSchema`, returns `{ success: true as const }`, generic `INTERNAL_SERVER_ERROR` ("Could not cancel reservation") on failure.
 
 Import `createReservation`, `releaseReservation` from the new service and the two new schemas.
 
@@ -103,7 +103,7 @@ Import `createReservation`, `releaseReservation` from the new service and the tw
 - Type checking passes: `npm run build` (Astro type-checks on build; there is no standalone typecheck script)
 - Linting passes: `npm run lint`
 - Formatting is clean: `npm run format` (or `npx prettier --check .`)
-- Exclusivity holds at the DB: inserting a second active reservation for an item that already has one fails with `23505` — verified via a `supabase` SQL snippet / `psql` against the local stack (`npx supabase start`), e.g. two `insert into reservations (item_id, claimer_id) ...` for the same `item_id`, second must error.
+- Exclusivity holds at the DB: inserting a second active reservation for an item that already has one fails with `23505` - verified via a `supabase` SQL snippet / `psql` against the local stack (`npx supabase start`), e.g. two `insert into reservations (item_id, claimer_id) ...` for the same `item_id`, second must error.
 - Release re-opens the item: after `update reservations set released_at = now()`, a fresh insert for the same `item_id` succeeds.
 
 #### Manual Verification:
@@ -111,7 +111,7 @@ Import `createReservation`, `releaseReservation` from the new service and the tw
 - The `reservations.reserve` and `reservations.release` actions are callable from a scratch client/REPL (or deferred to Phase 2 UI test) and return the expected shapes.
 - No existing action or query regressed (dashboard + list detail still load).
 
-**Implementation Note**: After completing this phase and all automated verification passes, pause for manual confirmation before proceeding to Phase 2. Phase blocks use plain bullets — the `- [ ]` checkboxes live in the `## Progress` section.
+**Implementation Note**: After completing this phase and all automated verification passes, pause for manual confirmation before proceeding to Phase 2. Phase blocks use plain bullets - the `- [ ]` checkboxes live in the `## Progress` section.
 
 ---
 
@@ -141,8 +141,8 @@ Wire the caller's own reservations into SSR, lift reserved-state into `ListDetai
 
 - Accept new prop `myReservedItemIds: string[]`.
 - Convert `reservedItemIds` from a passthrough prop into state (`reserved`), and add state `myReserved` (seeded from `myReservedItemIds`) and `pendingItemIds` (a `string[]` or `Set` tracked in state).
-- `handleReserve(item)` — mark item pending; `await actions.reservations.reserve({ itemId })`. On success: add id to `reserved` and `myReserved`, toast success. On `error.code === "CONFLICT"`: add id to `reserved` (badge → Reserved), toast "Someone just reserved this item first". On other errors: toast generic. Always clear pending.
-- `handleRelease(item)` — mark pending; `await actions.reservations.release({ itemId })`. On success: remove id from `reserved` and `myReserved` (badge → Available), toast. On error: toast generic. Always clear pending.
+- `handleReserve(item)` - mark item pending; `await actions.reservations.reserve({ itemId })`. On success: add id to `reserved` and `myReserved`, toast success. On `error.code === "CONFLICT"`: add id to `reserved` (badge → Reserved), toast "Someone just reserved this item first". On other errors: toast generic. Always clear pending.
+- `handleRelease(item)` - mark pending; `await actions.reservations.release({ itemId })`. On success: remove id from `reserved` and `myReserved` (badge → Available), toast. On error: toast generic. Always clear pending.
 - Pass `reservedItemIds={reserved}`, `myReservedItemIds={myReserved}`, `pendingItemIds`, `canClaim={!isOwner}`, `onReserve`, `onRelease` to `ItemsList`. (Owner-only UI stays behind the existing `isOwner` block; `canClaim` is simply `!isOwner`.)
 
 #### 3. Reserve / cancel rendering in ItemsList
@@ -157,7 +157,7 @@ Wire the caller's own reservations into SSR, lift reserved-state into `ListDetai
 - else in `reserved` → "Reserved" badge, no button.
 - else → "Available" badge + a `Reserve` button calling `onReserve(item)`, disabled while pending, showing "Reserving…" text while pending.
 
-When `canClaim` is false (owner's own list) the buttons are omitted entirely — badge-only, exactly as today. Use the existing `Button` from `@/components/ui/button`.
+When `canClaim` is false (owner's own list) the buttons are omitted entirely - badge-only, exactly as today. Use the existing `Button` from `@/components/ui/button`.
 
 ### Success Criteria:
 
@@ -172,7 +172,7 @@ When `canClaim` is false (owner's own list) the buttons are omitted entirely —
 - As an **invited non-owner**: an Available item shows Reserve; tapping it flips to "Reserved by you" with a Cancel button and a success toast.
 - Tapping Cancel returns the item to Available.
 - A second browser/user viewing the same list sees the item as "Reserved" (no button) and cannot reserve it; the item's claimer is never shown.
-- **Concurrency:** two users tapping Reserve near-simultaneously — exactly one gets "Reserved by you"; the other gets the conflict toast and sees the badge flip to "Reserved".
+- **Concurrency:** two users tapping Reserve near-simultaneously - exactly one gets "Reserved by you"; the other gets the conflict toast and sees the badge flip to "Reserved".
 - As the **list owner** viewing their own list: badges render but **no** Reserve/Cancel controls appear, and no reserver identity is visible anywhere.
 - Response feels under ~2s (NFR) for reserve/cancel on the local/preview stack.
 
@@ -191,7 +191,7 @@ When `canClaim` is false (owner's own list) the buttons are omitted entirely —
 
 - Unique index rejects a second active reservation for the same item (`23505`).
 - Releasing (`released_at = now()`) allows a subsequent reservation to succeed.
-- Owner cannot select `claimer_id` for any reservation (RLS) — confirm via a query as the owner returns no reservation rows.
+- Owner cannot select `claimer_id` for any reservation (RLS) - confirm via a query as the owner returns no reservation rows.
 
 ### Manual (two users):
 
@@ -215,21 +215,21 @@ None. No schema, RLS, or view changes. The generated `Database` types already in
 - DB foundation: [20260527125732_initial_wishlist_schema.sql](supabase/migrations/20260527125732_initial_wishlist_schema.sql)
 - Read-side precedent (S-04): `context/archive/2026-09-13-view-shared-list/plan.md`; [items.ts](src/lib/services/items.ts) `listReservedItemIds`
 - Mutation precedent: [actions/index.ts](src/actions/index.ts), [lists.ts](src/lib/services/lists.ts) `createList` (claimer/owner-id pattern)
-- Lessons: `context/foundation/lessons.md` (RLS-not-join; http(s) URL rule — no URL field here)
+- Lessons: `context/foundation/lessons.md` (RLS-not-join; http(s) URL rule - no URL field here)
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Reservation backend (reserve + release + "mine" read)
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run build` — 99cd921
-- [x] 1.2 Linting passes: `npm run lint` — 99cd921
-- [x] 1.3 Formatting is clean: `npm run format` — 99cd921
-- [x] 1.4 Exclusivity holds at the DB: second active reservation for an item fails with `23505` — 99cd921
-- [x] 1.5 Release re-opens the item: fresh insert after `released_at = now()` succeeds — 99cd921
+- [x] 1.1 Type checking passes: `npm run build` - 99cd921
+- [x] 1.2 Linting passes: `npm run lint` - 99cd921
+- [x] 1.3 Formatting is clean: `npm run format` - 99cd921
+- [x] 1.4 Exclusivity holds at the DB: second active reservation for an item fails with `23505` - 99cd921
+- [x] 1.5 Release re-opens the item: fresh insert after `released_at = now()` succeeds - 99cd921
 
 #### Manual
 
@@ -240,9 +240,9 @@ None. No schema, RLS, or view changes. The generated `Database` types already in
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run build` — cec82e6
-- [x] 2.2 Linting passes: `npm run lint` — cec82e6
-- [x] 2.3 Formatting is clean: `npm run format` — cec82e6
+- [x] 2.1 Type checking passes: `npm run build` - cec82e6
+- [x] 2.2 Linting passes: `npm run lint` - cec82e6
+- [x] 2.3 Formatting is clean: `npm run format` - cec82e6
 
 #### Manual
 

@@ -1,14 +1,14 @@
-# Invitation & Access-Control Integration Tests — Plan Brief
+# Invitation & Access-Control Integration Tests - Plan Brief
 
 > Full plan: `context/changes/testing-invitation-access-control/plan.md`
 
 ## What & Why
 
-Rollout Phase 2 of the test plan protects two High-impact risks with integration tests against local Supabase: the invitation → accept flow must grant access only to the correct, email-confirmed user (replay a no-op), and a non-invited user must be denied read and reserve at the data layer. These are the team's lowest-confidence area (interview Q3) and the core access-control guarantee — worth locking behind tests before further change.
+Rollout Phase 2 of the test plan protects two High-impact risks with integration tests against local Supabase: the invitation → accept flow must grant access only to the correct, email-confirmed user (replay a no-op), and a non-invited user must be denied read and reserve at the data layer. These are the team's lowest-confidence area (interview Q3) and the core access-control guarantee - worth locking behind tests before further change.
 
 ## Starting Point
 
-The data layer is done and is the ground truth: the `accept_invitation` SECURITY DEFINER RPC (idempotent, gates on `email_confirmed_at`, raises `P0001`/`P0003`) and RLS policies (`lists_select`, `items_select`, `reservations_insert` via `is_list_member`/`is_item_list_member`). Phase 1 already stood up Vitest with a proven integration harness — `reservationFixtures.ts` + `reservations.concurrency.test.ts` — but that fixture only seeds an *already-accepted* invitee.
+The data layer is done and is the ground truth: the `accept_invitation` SECURITY DEFINER RPC (idempotent, gates on `email_confirmed_at`, raises `P0001`/`P0003`) and RLS policies (`lists_select`, `items_select`, `reservations_insert` via `is_list_member`/`is_item_list_member`). Phase 1 already stood up Vitest with a proven integration harness - `reservationFixtures.ts` + `reservations.concurrency.test.ts` - but that fixture only seeds an *already-accepted* invitee.
 
 ## Desired End State
 
@@ -22,7 +22,7 @@ The data layer is done and is the ground truth: the `accept_invitation` SECURITY
 | Fixtures location | New `invitationFixtures.ts` + shared primitives module | Purpose-built seed for accept/IDOR is clearer than overloading the reservation fixture | Plan |
 | #2 scope | happy + mismatch + unconfirmed + replay | Exactly the four behaviors the test-plan names as proof | Plan / test-plan |
 | #3 assertions | read (empty) + reserve (error) only | Matches the risk statement; skip the `is_item_reserved` probe | Plan |
-| Denial semantics | read = empty result, reserve = error | True PostgREST/RLS behavior — SELECT filters, WITH CHECK errors | Research |
+| Denial semantics | read = empty result, reserve = error | True PostgREST/RLS behavior - SELECT filters, WITH CHECK errors | Research |
 | Negative control | Documented manual one-off, not automated | Same assurance as §6.5 without a destructive stateful DB toggle | Plan |
 
 ## Scope
@@ -48,8 +48,8 @@ Service-role client seeds the membership graph (owner, list, item, a pending inv
 
 ## Open Risks & Assumptions
 
-- Assumes local `enable_confirmations = false` so an unconfirmed user can sign in and reach the `P0001` gate — verified in `supabase/config.toml`.
-- Assumes RLS SELECT denial returns an empty set (not an error) — the read-denied assertion depends on it; paired with a service-role control read to avoid false positives.
+- Assumes local `enable_confirmations = false` so an unconfirmed user can sign in and reach the `P0001` gate - verified in `supabase/config.toml`.
+- Assumes RLS SELECT denial returns an empty set (not an error) - the read-denied assertion depends on it; paired with a service-role control read to avoid false positives.
 - Extracting shared primitives touches the passing reservation fixture; its re-run is the regression guard.
 
 ## Success Criteria (Summary)

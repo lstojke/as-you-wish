@@ -7,7 +7,7 @@ interface SendInvitationEmailInput extends InvitationEmailInput {
 
 // Edge-compatible (fetch-based) Resend transport. Returns false and never
 // throws so a delivery failure never rolls back the already-persisted
-// invitation row — the caller surfaces emailSent to warn the owner.
+// invitation row - the caller surfaces emailSent to warn the owner.
 export async function sendInvitationEmail(input: SendInvitationEmailInput): Promise<boolean> {
   if (!RESEND_API_KEY || !RESEND_FROM) {
     // eslint-disable-next-line no-console -- surface missing config in Wrangler tail

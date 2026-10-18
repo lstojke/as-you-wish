@@ -8,11 +8,11 @@ S-01 lands the first product UI on top of the F-01 schema: a signed-in user can 
 
 - **F-01 schema is live** (commits `4f6153b` → `93809dd`): tables `lists`, `items`, `invitations`, `reservations`, the `item_reservation_status` view, and the `SECURITY DEFINER` helpers (`is_list_owner`, `is_list_member`, `is_item_list_member`, `is_item_reserved`) are applied to the production Supabase project.
 - **`items` is missing a price column.** F-01 stored `title`, `notes`, `link` only. Roadmap S-01 and PRD FR-009 both require estimated price. S-01 closes this gap with a follow-on migration.
-- **No data layer exists yet**: no `src/db/database.types.ts`, no `src/lib/services/`, no JSON or Action endpoints. Auth endpoints use `formData` + redirects (`src/pages/api/auth/{signin,signup,signout}.ts`), but AGENTS.md mandates zod on `/api/**` for any new endpoint — and S-01 sidesteps `/api/**` entirely by using Astro Actions.
+- **No data layer exists yet**: no `src/db/database.types.ts`, no `src/lib/services/`, no JSON or Action endpoints. Auth endpoints use `formData` + redirects (`src/pages/api/auth/{signin,signup,signout}.ts`), but AGENTS.md mandates zod on `/api/**` for any new endpoint - and S-01 sidesteps `/api/**` entirely by using Astro Actions.
 - **shadcn/ui is barely seeded**: only `src/components/ui/button.tsx` exists. Every other primitive S-01 needs (`form`, `input`, `label`, `dialog`, `card`, `skeleton`, `sonner`) must be added via `npx shadcn@latest add`.
 - **Routing baseline**: `src/middleware.ts` gates `PROTECTED_ROUTES = ["/dashboard"]`. `src/pages/dashboard.astro` is a stub that just greets the user. `src/pages/index.astro` is the public welcome.
 - **React island pattern** (`src/components/auth/*`): forms use `useState` + native `<form action>` POST to `/api/auth/*` redirects. S-01 introduces the **Astro Actions + react-hook-form + zod** pattern for the first time; this becomes the precedent for S-02–S-05.
-- **No test infrastructure** (no vitest, no playwright). S-01 does not introduce one — verification is `npm run lint` + `astro check` + manual UI testing per phase.
+- **No test infrastructure** (no vitest, no playwright). S-01 does not introduce one - verification is `npm run lint` + `astro check` + manual UI testing per phase.
 
 ## Desired End State
 
@@ -25,18 +25,18 @@ S-01 lands the first product UI on top of the F-01 schema: a signed-in user can 
 
 ### Key Discoveries
 
-- **Astro Actions are the right fit given the roadmap's `Supabase direct` mobile strategy** (PRD Open Question 3). The web does not need a portable HTTP API — F-01's RLS is the shared contract between web and future mobile. Actions give type-safety + minimal boilerplate without locking out mobile, because mobile bypasses the web layer entirely.
-- **F-01 already enforces every authorization rule S-01 needs**. The Action handlers and SSR queries are thin: validate input, call Supabase, map errors. Any access mistake fails at the DB, not in app code — but app code must surface those failures correctly.
+- **Astro Actions are the right fit given the roadmap's `Supabase direct` mobile strategy** (PRD Open Question 3). The web does not need a portable HTTP API - F-01's RLS is the shared contract between web and future mobile. Actions give type-safety + minimal boilerplate without locking out mobile, because mobile bypasses the web layer entirely.
+- **F-01 already enforces every authorization rule S-01 needs**. The Action handlers and SSR queries are thin: validate input, call Supabase, map errors. Any access mistake fails at the DB, not in app code - but app code must surface those failures correctly.
 - **Identity-hiding invariant is inherited.** S-01 never queries `reservations` directly; the dashboard and list-detail use `item_reservation_status` for any status-display work (none yet in S-01, but the service interface should be ready).
 - **`items.title` is the canonical column name** (F-01 chose `title` over `name`). UI labels still read "Name" to match PRD wording; the storage column is `title`. No rename.
 - **`auth.users.email` case normalization** is already handled in F-01's invitation predicates; S-01 inherits this and must not re-implement.
 
 ## What We're NOT Doing
 
-- No edit or delete of lists or items — those belong to S-02. RLS already permits owner updates/deletes; S-01 simply does not expose the UI.
+- No edit or delete of lists or items - those belong to S-02. RLS already permits owner updates/deletes; S-01 simply does not expose the UI.
 - No invitation flow, no shared-list browsing for invitees beyond what already exists at the DB level (S-03/S-04).
 - No reservation UI, no `item_reservation_status` rendering yet (S-05).
-- No item images, no notes UI (F-01 has `items.notes` but S-01 leaves it unused — defer to a later slice).
+- No item images, no notes UI (F-01 has `items.notes` but S-01 leaves it unused - defer to a later slice).
 - No tests / no test infrastructure. Verification is `npm run lint`, `astro check`, and manual UI walk-throughs per phase.
 - No TanStack Query / SWR / cache layer. Optimistic updates are local React state only.
 - No JSON `/api/**` endpoints for list/item CRUD. Mutations are Astro Actions; reads are SSR via `src/lib/supabase.ts`.
@@ -77,8 +77,8 @@ Add the two missing columns to `items`, apply locally then to production, and re
 **Contract**:
 - `alter table public.items add column price_cents integer null check (price_cents is null or price_cents >= 0);`
 - `alter table public.items add column currency char(3) null check (currency is null or currency ~ '^[A-Z]{3}$');`
-- No index — price is not a query predicate at MVP scale.
-- No RLS changes — existing `items` policies already cover all CRUD with the right per-op constraints.
+- No index - price is not a query predicate at MVP scale.
+- No RLS changes - existing `items` policies already cover all CRUD with the right per-op constraints.
 
 #### 2. Apply migration locally + remotely
 
@@ -100,7 +100,7 @@ Add the two missing columns to `items`, apply locally then to production, and re
 
 **Intent**: Make every call site aware of the generated schema so misnamed columns or wrong-type values fail at compile time.
 
-**Contract**: Parameterize the `createServerClient` call with the generated `Database` type (`createServerClient<Database>(...)`). Existing call sites (middleware, auth pages) keep working — the change is additive at the type level.
+**Contract**: Parameterize the `createServerClient` call with the generated `Database` type (`createServerClient<Database>(...)`). Existing call sites (middleware, auth pages) keep working - the change is additive at the type level.
 
 ### Success Criteria
 
@@ -123,11 +123,11 @@ Add the two missing columns to `items`, apply locally then to production, and re
 
 ---
 
-## Phase 2: Foundations — shadcn, Astro Actions, services, schemas
+## Phase 2: Foundations - shadcn, Astro Actions, services, schemas
 
 ### Overview
 
-Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, define the shared zod schemas, and write the service-layer wrappers. No UI changes visible to the user yet — this is the chassis.
+Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, define the shared zod schemas, and write the service-layer wrappers. No UI changes visible to the user yet - this is the chassis.
 
 ### Changes Required
 
@@ -150,20 +150,20 @@ Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, defin
 **Intent**: One source of truth for list and item input validation, consumed by both the Astro Actions (server) and react-hook-form (client). Avoids drift between client and server validation.
 
 **Contract**:
-- Export `listCreateSchema` — `{ title: z.string().trim().min(1).max(200) }`.
-- Export `itemCreateSchema` — `{ listId: z.string().uuid(), title: z.string().trim().min(1).max(500), priceCents: z.number().int().nonnegative().optional(), currency: z.string().regex(/^[A-Z]{3}$/).optional(), link: z.string().url().max(2000).optional() }`.
+- Export `listCreateSchema` - `{ title: z.string().trim().min(1).max(200) }`.
+- Export `itemCreateSchema` - `{ listId: z.string().uuid(), title: z.string().trim().min(1).max(500), priceCents: z.number().int().nonnegative().optional(), currency: z.string().regex(/^[A-Z]{3}$/).optional(), link: z.string().url().max(2000).optional() }`.
 - Export inferred TS types (`ListCreateInput`, `ItemCreateInput`) for service consumers.
 
 #### 4. Service: lists
 
 **File**: `src/lib/services/lists.ts` (new; create `src/lib/services/` directory)
 
-**Intent**: Encapsulate every Supabase call related to lists in one module. Pages and Actions call these — they never touch the Supabase client directly.
+**Intent**: Encapsulate every Supabase call related to lists in one module. Pages and Actions call these - they never touch the Supabase client directly.
 
 **Contract**: Functions take a `SupabaseClient<Database>` as the first argument (so callers pass the SSR client from `context.locals` once it's added to `App.Locals`, or build it from `src/lib/supabase.ts`).
-- `listOwnedAndShared(client)` — returns `{ owned: ListRow[]; shared: ListRow[] }`. Two queries: one for owner-side (where `owner_id = current user`), one for invitee-side (join `invitations` where `accepted_by_user_id = current user`). RLS does the filtering; the service just structures the result.
-- `getListById(client, listId)` — returns `ListRow | null`. Returns `null` when RLS denies (Supabase returns zero rows; the service maps `data.length === 0` to `null`).
-- `createList(client, input)` — accepts `ListCreateInput`, sets `owner_id = (await client.auth.getUser()).data.user.id`, inserts, returns the created `ListRow`. Throws on Supabase error.
+- `listOwnedAndShared(client)` - returns `{ owned: ListRow[]; shared: ListRow[] }`. Two queries: one for owner-side (where `owner_id = current user`), one for invitee-side (join `invitations` where `accepted_by_user_id = current user`). RLS does the filtering; the service just structures the result.
+- `getListById(client, listId)` - returns `ListRow | null`. Returns `null` when RLS denies (Supabase returns zero rows; the service maps `data.length === 0` to `null`).
+- `createList(client, input)` - accepts `ListCreateInput`, sets `owner_id = (await client.auth.getUser()).data.user.id`, inserts, returns the created `ListRow`. Throws on Supabase error.
 
 #### 5. Service: items
 
@@ -172,8 +172,8 @@ Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, defin
 **Intent**: Symmetric to the lists service for everything item-related.
 
 **Contract**:
-- `listItems(client, listId)` — returns `ItemRow[]`. RLS-gated; outsider call returns `[]`.
-- `createItem(client, input)` — accepts `ItemCreateInput`; if `priceCents` is set but `currency` is not, defaults `currency` to `"USD"`. Inserts, returns the created `ItemRow`. Throws on Supabase error.
+- `listItems(client, listId)` - returns `ItemRow[]`. RLS-gated; outsider call returns `[]`.
+- `createItem(client, input)` - accepts `ItemCreateInput`; if `priceCents` is set but `currency` is not, defaults `currency` to `"USD"`. Inserts, returns the created `ItemRow`. Throws on Supabase error.
 
 #### 6. Expose Supabase client via `context.locals`
 
@@ -191,13 +191,13 @@ Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, defin
 
 **Contract**:
 - Export `server = { lists: { create: defineAction(...) }, items: { create: defineAction(...) } }`.
-- `lists.create` — `input: listCreateSchema`; handler reads `context.locals.supabase`, calls `listsService.createList`, returns the new list row. On Supabase error, `throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: 'Could not create list' })`. On unauthenticated session, `throw new ActionError({ code: 'UNAUTHORIZED' })`.
-- `items.create` — same shape using `itemCreateSchema` + `itemsService.createItem`.
+- `lists.create` - `input: listCreateSchema`; handler reads `context.locals.supabase`, calls `listsService.createList`, returns the new list row. On Supabase error, `throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: 'Could not create list' })`. On unauthenticated session, `throw new ActionError({ code: 'UNAUTHORIZED' })`.
+- `items.create` - same shape using `itemCreateSchema` + `itemsService.createItem`.
 - See [Astro Actions docs](https://docs.astro.build/en/guides/actions/) for `defineAction` import path and middleware wiring.
 
 #### 8. Mount Toaster in the shared layout
 
-**File**: `src/layouts/Layout.astro` (or the existing shared layout — confirm path; create if absent)
+**File**: `src/layouts/Layout.astro` (or the existing shared layout - confirm path; create if absent)
 
 **Intent**: Single `<Toaster />` instance so sonner toasts from any island work without duplicates.
 
@@ -215,14 +215,14 @@ Add every shadcn primitive S-01 needs, scaffold the Astro Actions runtime, defin
 #### Manual Verification
 
 - Existing auth pages still render and sign-in/sign-up/sign-out still work (no regression from middleware changes).
-- Importing `actions` in a temporary scratch React component compiles — verifies the Actions client surface is wired correctly.
+- Importing `actions` in a temporary scratch React component compiles - verifies the Actions client surface is wired correctly.
 - Reading `context.locals.supabase` in a temporary `dashboard.astro` log statement returns a working client (auth still flows through it).
 
 **Implementation Note**: After Phase 2, pause for manual confirmation that the auth regression checks pass before building UI on top of the new chassis.
 
 ---
 
-## Phase 3: Dashboard — owned + shared lists + create-list flow
+## Phase 3: Dashboard - owned + shared lists + create-list flow
 
 ### Overview
 
@@ -236,7 +236,7 @@ Replace the dashboard stub with the real lists home: SSR-fetched owned lists and
 
 **Intent**: Server-render the dashboard with the current user's owned and shared lists, then hand interactivity to the React island.
 
-**Contract**: `export const prerender = false;`. In the frontmatter, call `listsService.listOwnedAndShared(Astro.locals.supabase)` to get `{ owned, shared }`. Pass both arrays as props to a single `<DashboardLists client:only="react" owned={owned} shared={shared} />` (note: `client:only="react"` rather than `client:load` — required to avoid an Astro SSR React-instance mismatch with react-hook-form/Radix UI inside the dialog; see Phase 3 impl-review F1). `userEmail` is rendered in a static Astro `<header>` block, not passed as a prop to the island (static content belongs in Astro). Render inside the shared layout so the Toaster is present.
+**Contract**: `export const prerender = false;`. In the frontmatter, call `listsService.listOwnedAndShared(Astro.locals.supabase)` to get `{ owned, shared }`. Pass both arrays as props to a single `<DashboardLists client:only="react" owned={owned} shared={shared} />` (note: `client:only="react"` rather than `client:load` - required to avoid an Astro SSR React-instance mismatch with react-hook-form/Radix UI inside the dialog; see Phase 3 impl-review F1). `userEmail` is rendered in a static Astro `<header>` block, not passed as a prop to the island (static content belongs in Astro). Render inside the shared layout so the Toaster is present.
 
 #### 2. Dashboard React island
 
@@ -285,7 +285,7 @@ Replace the dashboard stub with the real lists home: SSR-fetched owned lists and
 
 ---
 
-## Phase 4: List detail — view items + add-item flow
+## Phase 4: List detail - view items + add-item flow
 
 ### Overview
 
@@ -366,7 +366,7 @@ Add the `/lists/[id]` route, SSR-fetch the list and its items, render an items l
 
 ### Unit Tests
 
-None — S-01 introduces no test infrastructure. Type safety (`astro check`) plus zod runtime validation plus RLS enforcement carry the correctness load.
+None - S-01 introduces no test infrastructure. Type safety (`astro check`) plus zod runtime validation plus RLS enforcement carry the correctness load.
 
 ### Integration Tests
 
@@ -388,88 +388,88 @@ The Cloudflare Workers runtime constrains cold-start adapter weight; sticking to
 
 ## Migration Notes
 
-- The Phase 1 migration is **additive and nullable** — production rollback is safe (drop the columns, no data loss because no rows in production yet). For any future rollback, follow AGENTS.md guidance: the prior Worker must remain compatible with the new schema, which it is (the old Worker never read the new columns).
+- The Phase 1 migration is **additive and nullable** - production rollback is safe (drop the columns, no data loss because no rows in production yet). For any future rollback, follow AGENTS.md guidance: the prior Worker must remain compatible with the new schema, which it is (the old Worker never read the new columns).
 - After Phase 1 lands, every future migration must regenerate `src/db/database.types.ts` as part of its plan.
 
 ## References
 
-- Roadmap: `context/foundation/roadmap.md` — S-01 row + Stream A
-- PRD: `context/foundation/prd.md` — FR-001..FR-009, NFRs, Access Control
-- F-01 plan: `context/changes/wishlist-data-schema/plan.md` — schema + RLS contract S-01 builds on
-- F-01 brief: `context/changes/wishlist-data-schema/plan-brief.md` — key decisions S-01 inherits
+- Roadmap: `context/foundation/roadmap.md` - S-01 row + Stream A
+- PRD: `context/foundation/prd.md` - FR-001..FR-009, NFRs, Access Control
+- F-01 plan: `context/changes/wishlist-data-schema/plan.md` - schema + RLS contract S-01 builds on
+- F-01 brief: `context/changes/wishlist-data-schema/plan-brief.md` - key decisions S-01 inherits
 - Auth wiring: `src/middleware.ts`, `src/lib/supabase.ts`
 - Existing component conventions: `src/components/auth/*`, `src/components/ui/button.tsx`
 - AGENTS.md: API conventions, shadcn rules, migration naming, Cloudflare runtime constraints
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Schema delta + generated types
 
 #### Automated
 
-- [x] 1.1 Migration file naming matches `^[0-9]{14}_[a-z0-9_]+\.sql$` — ee94b15
-- [x] 1.2 `npx supabase db reset` exits 0 with both migrations applied — ee94b15
-- [x] 1.3 `npx supabase migration list --linked` shows new migration applied to production — ee94b15
-- [x] 1.4 `astro check` passes — ee94b15
-- [x] 1.5 `npm run lint` passes — ee94b15
+- [x] 1.1 Migration file naming matches `^[0-9]{14}_[a-z0-9_]+\.sql$` - ee94b15
+- [x] 1.2 `npx supabase db reset` exits 0 with both migrations applied - ee94b15
+- [x] 1.3 `npx supabase migration list --linked` shows new migration applied to production - ee94b15
+- [x] 1.4 `astro check` passes - ee94b15
+- [x] 1.5 `npm run lint` passes - ee94b15
 
 #### Manual
 
-- [x] 1.6 `\d+ public.items` shows the two new columns with correct CHECK constraints — ee94b15
-- [x] 1.7 Negative `price_cents` insert rejected — ee94b15
-- [x] 1.8 Lowercase `currency` insert rejected; uppercase accepted — ee94b15
-- [x] 1.9 Production sign-in still works (no auth regression) — ee94b15
+- [x] 1.6 `\d+ public.items` shows the two new columns with correct CHECK constraints - ee94b15
+- [x] 1.7 Negative `price_cents` insert rejected - ee94b15
+- [x] 1.8 Lowercase `currency` insert rejected; uppercase accepted - ee94b15
+- [x] 1.9 Production sign-in still works (no auth regression) - ee94b15
 
-### Phase 2: Foundations — shadcn, Astro Actions, services, schemas
+### Phase 2: Foundations - shadcn, Astro Actions, services, schemas
 
 #### Automated
 
-- [x] 2.1 `astro check` passes — b760add
-- [x] 2.2 `npm run lint` passes — b760add
-- [x] 2.3 All seven shadcn primitives present under `src/components/ui/` — b760add
-- [x] 2.4 `src/actions/index.ts`, `src/lib/services/lists.ts`, `src/lib/services/items.ts`, `src/lib/schemas/wishlist.ts` all exist — b760add
+- [x] 2.1 `astro check` passes - b760add
+- [x] 2.2 `npm run lint` passes - b760add
+- [x] 2.3 All seven shadcn primitives present under `src/components/ui/` - b760add
+- [x] 2.4 `src/actions/index.ts`, `src/lib/services/lists.ts`, `src/lib/services/items.ts`, `src/lib/schemas/wishlist.ts` all exist - b760add
 
 #### Manual
 
-- [x] 2.5 Existing auth pages still render and sign-in/sign-up/sign-out work — b760add
-- [x] 2.6 Scratch React component importing `actions` compiles — deferred; covered implicitly by Phase 3 dashboard form — b760add
-- [x] 2.7 `context.locals.supabase` works end-to-end in a scratch page — deferred; covered implicitly by Phase 3/4 — b760add
+- [x] 2.5 Existing auth pages still render and sign-in/sign-up/sign-out work - b760add
+- [x] 2.6 Scratch React component importing `actions` compiles - deferred; covered implicitly by Phase 3 dashboard form - b760add
+- [x] 2.7 `context.locals.supabase` works end-to-end in a scratch page - deferred; covered implicitly by Phase 3/4 - b760add
 
-### Phase 3: Dashboard — owned + shared lists + create-list flow
+### Phase 3: Dashboard - owned + shared lists + create-list flow
 
 #### Automated
 
-- [x] 3.1 `astro check` passes — e7fd0fe
-- [x] 3.2 `npm run lint` passes — e7fd0fe
-- [x] 3.3 `npm run build` succeeds — e7fd0fe
+- [x] 3.1 `astro check` passes - e7fd0fe
+- [x] 3.2 `npm run lint` passes - e7fd0fe
+- [x] 3.3 `npm run build` succeeds - e7fd0fe
 
 #### Manual
 
-- [x] 3.4 Fresh user `/dashboard` shows hero empty state with CTA — e7fd0fe
-- [x] 3.5 Empty title submission shows inline validation error, no network call — e7fd0fe
-- [x] 3.6 Valid submission inserts optimistically and shows success toast — e7fd0fe
-- [x] 3.7 Simulated server error rolls back optimistic insert and shows error toast — e7fd0fe
-- [x] 3.8 No-invitations user does not see a "Shared with me" section — e7fd0fe
-- [x] 3.9 User with an accepted invitation sees the shared list under "Shared with me" — e7fd0fe
+- [x] 3.4 Fresh user `/dashboard` shows hero empty state with CTA - e7fd0fe
+- [x] 3.5 Empty title submission shows inline validation error, no network call - e7fd0fe
+- [x] 3.6 Valid submission inserts optimistically and shows success toast - e7fd0fe
+- [x] 3.7 Simulated server error rolls back optimistic insert and shows error toast - e7fd0fe
+- [x] 3.8 No-invitations user does not see a "Shared with me" section - e7fd0fe
+- [x] 3.9 User with an accepted invitation sees the shared list under "Shared with me" - e7fd0fe
 
-### Phase 4: List detail — view items + add-item flow
+### Phase 4: List detail - view items + add-item flow
 
 #### Automated
 
-- [x] 4.1 `astro check` passes — 60db976
-- [x] 4.2 `npm run lint` passes — 60db976
-- [x] 4.3 `npm run build` succeeds — 60db976
-- [x] 4.4 Signed-out `curl -I` on `/lists/<uuid>` returns redirect to sign-in — 60db976
+- [x] 4.1 `astro check` passes - 60db976
+- [x] 4.2 `npm run lint` passes - 60db976
+- [x] 4.3 `npm run build` succeeds - 60db976
+- [x] 4.4 Signed-out `curl -I` on `/lists/<uuid>` returns redirect to sign-in - 60db976
 
 #### Manual
 
-- [x] 4.5 Clicking an owned list card opens `/lists/<id>` with title + items — 60db976
-- [x] 4.6 Add item with title only → appears immediately + success toast — 60db976
-- [x] 4.7 Add item with title + price + URL → renders formatted price and link — 60db976
-- [x] 4.8 Empty title / malformed URL / negative price all rejected inline — 60db976
-- [x] 4.9 Unauthorized list UUID returns 404 — 60db976
-- [x] 4.10 Second user with accepted invitation can view the shared list's items — 60db976
-- [x] 4.11 Signed-out access to `/lists/<id>` redirects to sign-in — 60db976
+- [x] 4.5 Clicking an owned list card opens `/lists/<id>` with title + items - 60db976
+- [x] 4.6 Add item with title only → appears immediately + success toast - 60db976
+- [x] 4.7 Add item with title + price + URL → renders formatted price and link - 60db976
+- [x] 4.8 Empty title / malformed URL / negative price all rejected inline - 60db976
+- [x] 4.9 Unauthorized list UUID returns 404 - 60db976
+- [x] 4.10 Second user with accepted invitation can view the shared list's items - 60db976
+- [x] 4.11 Signed-out access to `/lists/<id>` redirects to sign-in - 60db976
 - [x] 4.12 Simulated server error rolls back optimistic insert and shows error toast

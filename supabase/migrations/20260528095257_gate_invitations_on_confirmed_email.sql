@@ -2,7 +2,7 @@
 --
 -- Closes the invitation-hijack class flagged in impl-review F1: with
 -- unconfirmed signup, an attacker can register `victim@example.com` and
--- accept any invitation addressed to that email. Defense in depth — fix
+-- accept any invitation addressed to that email. Defense in depth - fix
 -- in the policy so we don't depend on project auth settings.
 --
 -- Supabase's GoTrue emits `email_verified: true|false` as a top-level JWT
@@ -36,7 +36,7 @@ create policy invitations_update on public.invitations
 -- Defense in depth (impl-review F4): wrap is_item_reserved so that
 -- non-members get `false` instead of leaking taken/free state for an
 -- item they have no business knowing about. UUIDs are unguessable so
--- the prior risk was theoretical — this just removes the class.
+-- the prior risk was theoretical - this just removes the class.
 create or replace function public.is_item_reserved(item_uuid uuid)
 returns boolean
 language sql

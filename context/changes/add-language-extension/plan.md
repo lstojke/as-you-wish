@@ -2,18 +2,18 @@
 
 ## Overview
 
-Introduce i18n to AsYouWish: Polish becomes the default UI language, English stays available as an opt-in. Every user-visible string — Astro pages, React islands, zod validation messages, action errors, auth errors, the invitation email, and price formatting — is localized. Shipped as one release (feature branch, merged to `master` only when fully translated).
+Introduce i18n to AsYouWish: Polish becomes the default UI language, English stays available as an opt-in. Every user-visible string - Astro pages, React islands, zod validation messages, action errors, auth errors, the invitation email, and price formatting - is localized. Shipped as one release (feature branch, merged to `master` only when fully translated).
 
 ## Current State Analysis
 
 - No i18n exists. `astro.config.mjs` has no `i18n` block; `src/layouts/Layout.astro:17` hardcodes `<html lang="en">`.
 - Strings are hardcoded English across ~3.3k lines: pages (`index`, `auth/{signin,signup,confirm-email}`, `dashboard`, `lists/[id]`, `settings`, `share/[...token]`, `invitations/accept`) and components (`AppHeader`, `Welcome`, `ProfileMenu`, `auth/*`, `dashboard/*`, `lists/*`, `settings/*`).
-- ~18 zod messages in `src/lib/schemas/wishlist.ts` — schemas are **shared** by client (react-hook-form) and server (Astro Actions input validation).
+- ~18 zod messages in `src/lib/schemas/wishlist.ts` - schemas are **shared** by client (react-hook-form) and server (Astro Actions input validation).
 - ~16 `ActionError` messages in `src/actions/index.ts`, surfaced verbatim in toasts by islands.
 - Auth endpoints (`src/pages/api/auth/{signin,signup}.ts`) pass raw Supabase `error.message` through `?error=` to `SignInForm`/`SignUpForm` (`ServerError.tsx`).
 - `src/lib/services/email.ts` builds an English-only invitation email.
 - `src/lib/format-price.ts` hardcodes `en-US`; used by `ItemsList.tsx:56` and `share/[...token].astro:71`.
-- `profiles` table (migration `20261017214127`) exists with self-only RLS for select/update/insert — a natural home for a language preference.
+- `profiles` table (migration `20261017214127`) exists with self-only RLS for select/update/insert - a natural home for a language preference.
 - Islands are mounted per page as separate React roots (`client:only="react"` for RHF/Radix islands; `client:load` for `SignInForm`/`SignUpForm`), so there is no shared React tree to host a global provider.
 - `Banner` config messages in `Layout.astro` are already Polish (dev-only misconfig banner).
 
@@ -28,17 +28,17 @@ Introduce i18n to AsYouWish: Polish becomes the default UI language, English sta
 
 ### Key Discoveries:
 
-- `src/middleware.ts:6-17` already resolves `locals.supabase` + `locals.user` per request — the right place to resolve `locals.locale`.
-- `src/env.d.ts` declares `App.Locals` — extend with `locale`.
-- `src/lib/services/profiles.ts` — `getDefaultCurrency`/`updateDefaultCurrency` pattern to mirror for language.
-- `src/pages/api/auth/signin.ts:5-9` — `safeReturnPath` open-redirect guard pattern to reuse for the locale endpoint's redirect target.
+- `src/middleware.ts:6-17` already resolves `locals.supabase` + `locals.user` per request - the right place to resolve `locals.locale`.
+- `src/env.d.ts` declares `App.Locals` - extend with `locale`.
+- `src/lib/services/profiles.ts` - `getDefaultCurrency`/`updateDefaultCurrency` pattern to mirror for language.
+- `src/pages/api/auth/signin.ts:5-9` - `safeReturnPath` open-redirect guard pattern to reuse for the locale endpoint's redirect target.
 - `src/actions/index.ts` handlers receive `context` → `context.locals.locale` is available for server-side translation of `ActionError` messages.
 - Lessons: "throw on unexpected failures and map at the boundary" (services); keep URL refine rules in schemas untouched.
 
 ## What We're NOT Doing
 
 - No URL locale prefixes / Astro i18n routing (`/en/...`). Locale is cookie-driven.
-- No `Accept-Language` detection — first visit is always Polish.
+- No `Accept-Language` detection - first visit is always Polish.
 - No i18n library (i18next, paraglide); hand-rolled typed dictionaries.
 - No translation of Supabase-hosted auth emails (confirmation/reset templates live in the Supabase dashboard).
 - No translation of user content (list/item titles) or the dev-only misconfig `Banner` text.
@@ -59,25 +59,25 @@ Introduce i18n to AsYouWish: Polish becomes the default UI language, English sta
 
 - **Release gating**: `master` pushes auto-deploy to production. Implement all phases on a feature branch (e.g. `feat/i18n-pl`); merge to `master` only after Phase 4 manual verification. The Phase 1 migration is additive (`language` column with default) and backward-compatible, so `npx supabase db push` can run before the merge.
 - **Polish plurals**: Polish needs `one` / `few` / `many` forms (1 lista, 2 listy, 5 list). Use `Intl.PluralRules(locale).select(n)` to pick the form; plural dictionary entries are objects keyed by plural category, with `other` as mandatory fallback.
-- **Zod key convention**: schema messages must be dictionary keys (e.g. `"validation.titleRequired"`). The renderer translates a message only if it is a known key and otherwise shows it as-is, so third-party/default zod messages never crash the UI. Max-length messages need the limit as a param — keep separate keys per limit (e.g. `validation.titleMax200`, `validation.titleMax500`) rather than parsing.
+- **Zod key convention**: schema messages must be dictionary keys (e.g. `"validation.titleRequired"`). The renderer translates a message only if it is a known key and otherwise shows it as-is, so third-party/default zod messages never crash the UI. Max-length messages need the limit as a param - keep separate keys per limit (e.g. `validation.titleMax200`, `validation.titleMax500`) rather than parsing.
 - **Cookie**: `lang`, `Path=/`, `SameSite=Lax`, `Max-Age` 1 year, not `HttpOnly` (harmless; allows future client reads), `Secure` in production. Validate the cookie value against `LOCALES`; invalid → treat as absent.
-- **Hydration for `client:load` islands** (`SignInForm`, `SignUpForm`): SSR and client must render the same locale — pass `locale` as a prop (serialized), never read `document`/cookies inside the component.
+- **Hydration for `client:load` islands** (`SignInForm`, `SignUpForm`): SSR and client must render the same locale - pass `locale` as a prop (serialized), never read `document`/cookies inside the component.
 
 ## Phase 1: i18n Foundation
 
 ### Overview
 
-Infrastructure only: data model, dictionaries, locale resolution, switch endpoint, `<html lang>`, locale-aware `formatPrice`. UI strings still English (dictionaries seeded with the keys needed by Phase 2-4 progressively — Phase 1 only needs a minimal seed plus the plural example).
+Infrastructure only: data model, dictionaries, locale resolution, switch endpoint, `<html lang>`, locale-aware `formatPrice`. UI strings still English (dictionaries seeded with the keys needed by Phase 2-4 progressively - Phase 1 only needs a minimal seed plus the plural example).
 
 ### Changes Required:
 
-#### 1. Migration — language preference
+#### 1. Migration - language preference
 
 **File**: `supabase/migrations/<timestamp>_add_profiles_language.sql`
 
 **Intent**: Persist the signed-in user's language across devices.
 
-**Contract**: `alter table public.profiles add column language text not null default 'pl' check (language in ('pl','en'))`. Existing self-only RLS policies already cover select/update; no new policy needed. `handle_new_user()` unchanged (column default applies). Hand-insert `language: string` into the `profiles` Row/Insert/Update blocks of `src/db/database.types.ts` (do not regenerate the whole file — see per-user-default-currency notes).
+**Contract**: `alter table public.profiles add column language text not null default 'pl' check (language in ('pl','en'))`. Existing self-only RLS policies already cover select/update; no new policy needed. `handle_new_user()` unchanged (column default applies). Hand-insert `language: string` into the `profiles` Row/Insert/Update blocks of `src/db/database.types.ts` (do not regenerate the whole file - see per-user-default-currency notes).
 
 #### 2. i18n core
 
@@ -88,9 +88,9 @@ Infrastructure only: data model, dictionaries, locale resolution, switch endpoin
 **Contract**:
 
 - `export const LOCALES = ["pl", "en"] as const; export type Locale; DEFAULT_LOCALE = "pl"; LOCALE_COOKIE = "lang"; isLocale(v: unknown): v is Locale; localeSchema` (zod enum).
-- `pl.ts` exports `pl` (nested object, `as const`) — canonical; `export type Dictionary` derived with string leaves widened (so EN can differ in text but not shape). `en.ts` exports `en: Dictionary`.
-- `t(locale, key, params?)` — `key` typed as dot-path union of leaf keys; `{name}` interpolation; plural entries `{ one, few?, many?, other }` selected via `Intl.PluralRules` when `params.count` is a number.
-- `translateMessage(locale, msg)` — returns `t()` if `msg` is a known key else `msg` unchanged (for zod/action messages).
+- `pl.ts` exports `pl` (nested object, `as const`) - canonical; `export type Dictionary` derived with string leaves widened (so EN can differ in text but not shape). `en.ts` exports `en: Dictionary`.
+- `t(locale, key, params?)` - `key` typed as dot-path union of leaf keys; `{name}` interpolation; plural entries `{ one, few?, many?, other }` selected via `Intl.PluralRules` when `params.count` is a number.
+- `translateMessage(locale, msg)` - returns `t()` if `msg` is a known key else `msg` unchanged (for zod/action messages).
 - `intlLocale(locale)` → `"pl-PL" | "en-US"`.
 
 #### 3. Locale resolution
@@ -247,7 +247,7 @@ Localize all interactive UI, form validation, and toasts.
 #### Manual Verification:
 
 - Dashboard: create/rename/delete list dialogs, toasts and empty states in Polish; same in English after switching
-- List detail: add/edit/delete item, reservation, invite dialog, share link dialog — field validation errors and toasts localized
+- List detail: add/edit/delete item, reservation, invite dialog, share link dialog - field validation errors and toasts localized
 - Prices render as `1 234,50 zł` (PL) and `PLN 1,234.50` (EN)
 - Sign-in/sign-up forms hydrate without console hydration warnings in both locales
 
@@ -269,7 +269,7 @@ Localize the invitation email and verify nothing English remains in the Polish U
 
 **Intent**: Invitees can read the email regardless of their language.
 
-**Contract**: Subject combines both (`"… zaprasza Cię do listy życzeń / … invited you to a wishlist — AsYouWish"`). Text and HTML bodies: Polish block, separator, English block — both built from `t("pl", …)` / `t("en", …)` keys under `email.invitation.*`. Keep `escapeHtml` on all interpolated values. `sendInvitationEmail` signature unchanged. Add a unit test for the pure body builder (extract `buildInvitationEmail(input)` if needed) asserting both languages and escaping.
+**Contract**: Subject combines both (`"… zaprasza Cię do listy życzeń / … invited you to a wishlist - AsYouWish"`). Text and HTML bodies: Polish block, separator, English block - both built from `t("pl", …)` / `t("en", …)` keys under `email.invitation.*`. Keep `escapeHtml` on all interpolated values. `sendInvitationEmail` signature unchanged. Add a unit test for the pure body builder (extract `buildInvitationEmail(input)` if needed) asserting both languages and escaping.
 
 #### 2. Final sweep
 
@@ -325,7 +325,7 @@ Localize the invitation email and verify nothing English remains in the Polish U
 
 ## Performance Considerations
 
-Middleware adds one `profiles` select only for signed-in requests without a `lang` cookie (then cached in the cookie). Dictionaries are small TS modules; both locales are bundled into islands (~few KB) — acceptable, no lazy loading needed.
+Middleware adds one `profiles` select only for signed-in requests without a `lang` cookie (then cached in the cookie). Dictionaries are small TS modules; both locales are bundled into islands (~few KB) - acceptable, no lazy loading needed.
 
 ## Migration Notes
 
@@ -340,46 +340,46 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: i18n Foundation
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `npx supabase db reset` — 1dcc49f
-- [x] 1.2 Unit tests pass: `npm run test:unit` — 1dcc49f
-- [x] 1.3 Integration tests pass: `npm run test:integration` — 1dcc49f
-- [x] 1.4 Type checking passes: `npx astro check` — 1dcc49f
-- [x] 1.5 Linting passes: `npm run lint` — 1dcc49f
+- [x] 1.1 Migration applies cleanly: `npx supabase db reset` - 1dcc49f
+- [x] 1.2 Unit tests pass: `npm run test:unit` - 1dcc49f
+- [x] 1.3 Integration tests pass: `npm run test:integration` - 1dcc49f
+- [x] 1.4 Type checking passes: `npx astro check` - 1dcc49f
+- [x] 1.5 Linting passes: `npm run lint` - 1dcc49f
 
 #### Manual
 
-- [x] 1.6 `/api/locale` sets cookie and rejects off-site return paths — 1dcc49f
-- [x] 1.7 `<html lang>` follows the cookie (default `pl`) — 1dcc49f
+- [x] 1.6 `/api/locale` sets cookie and rejects off-site return paths - 1dcc49f
+- [x] 1.7 `<html lang>` follows the cookie (default `pl`) - 1dcc49f
 
 ### Phase 2: Astro Pages, Header Switchers, Auth Errors
 
 #### Automated
 
-- [x] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit` — 3e9ba2d
-- [x] 2.2 Type checking passes: `npx astro check` — 3e9ba2d
-- [x] 2.3 Linting passes: `npm run lint` — 3e9ba2d
+- [x] 2.1 Unit tests pass (incl. auth error mapping): `npm run test:unit` - 3e9ba2d
+- [x] 2.2 Type checking passes: `npx astro check` - 3e9ba2d
+- [x] 2.3 Linting passes: `npm run lint` - 3e9ba2d
 
 #### Manual
 
-- [x] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page — 3e9ba2d
+- [x] 2.4 Signed-out pages render Polish by default; header toggle switches and stays on page - 3e9ba2d
 - [ ] 2.5 Profile-menu language persists across browsers via profile
-- [x] 2.6 Wrong password shows Polish message; URL carries only a code — 3e9ba2d
+- [x] 2.6 Wrong password shows Polish message; URL carries only a code - 3e9ba2d
 
 ### Phase 3: React Islands, Validation & Action Messages
 
 #### Automated
 
-- [x] 3.1 Unit tests pass: `npm run test:unit` — 1f28bc1
-- [x] 3.2 Integration tests pass: `npm run test:integration` — 1f28bc1
-- [x] 3.3 Type checking passes: `npx astro check` — 1f28bc1
-- [x] 3.4 Linting passes: `npm run lint` — 1f28bc1
-- [x] 3.5 No English leftovers in `src/components` per grep — 1f28bc1
+- [x] 3.1 Unit tests pass: `npm run test:unit` - 1f28bc1
+- [x] 3.2 Integration tests pass: `npm run test:integration` - 1f28bc1
+- [x] 3.3 Type checking passes: `npx astro check` - 1f28bc1
+- [x] 3.4 Linting passes: `npm run lint` - 1f28bc1
+- [x] 3.5 No English leftovers in `src/components` per grep - 1f28bc1
 
 #### Manual
 
@@ -392,10 +392,10 @@ Additive column with default; backward-compatible with the currently deployed Wo
 
 #### Automated
 
-- [x] 4.1 Unit tests pass (incl. email builder): `npm run test:unit` — 95065ee
-- [x] 4.2 Type checking passes: `npx astro check` — 95065ee
-- [x] 4.3 Linting passes: `npm run lint` — 95065ee
-- [x] 4.4 Build passes: `npm run build` — 95065ee
+- [x] 4.1 Unit tests pass (incl. email builder): `npm run test:unit` - 95065ee
+- [x] 4.2 Type checking passes: `npx astro check` - 95065ee
+- [x] 4.3 Linting passes: `npm run lint` - 95065ee
+- [x] 4.4 Build passes: `npm run build` - 95065ee
 
 #### Manual
 

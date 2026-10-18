@@ -69,7 +69,7 @@ export async function updateList(client: Client, input: ListRenameInput): Promis
   return data;
 }
 
-// Cascade is enforced by items.list_id FK (on delete cascade) — see initial wishlist schema.
+// Cascade is enforced by items.list_id FK (on delete cascade) - see initial wishlist schema.
 export async function deleteList(client: Client, input: ListDeleteInput): Promise<void> {
   const { error } = await client.from("lists").delete().eq("id", input.listId);
   if (error) throw error;

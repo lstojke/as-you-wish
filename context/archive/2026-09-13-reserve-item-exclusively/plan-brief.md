@@ -1,10 +1,10 @@
-# Gift-Giver Reserves an Item Exclusively — Plan Brief
+# Gift-Giver Reserves an Item Exclusively - Plan Brief
 
 > Full plan: `context/changes/reserve-item-exclusively/plan.md`
 
 ## What & Why
 
-Roadmap slice **S-05** (PRD **US-01 / FR-013**): a signed-in viewer of a shared list can **reserve** an available item — the claim is exclusive (two simultaneous taps resolve to exactly one winner) and the list owner never learns who reserved. This is the load-bearing concurrency rule: without it the product's core "no duplicate gifts" promise doesn't exist. Scope also includes **FR-015** (cancel your own reservation), pulled in during planning.
+Roadmap slice **S-05** (PRD **US-01 / FR-013**): a signed-in viewer of a shared list can **reserve** an available item - the claim is exclusive (two simultaneous taps resolve to exactly one winner) and the list owner never learns who reserved. This is the load-bearing concurrency rule: without it the product's core "no duplicate gifts" promise doesn't exist. Scope also includes **FR-015** (cancel your own reservation), pulled in during planning.
 
 ## Starting Point
 
@@ -12,7 +12,7 @@ The hard part is already built. F-01 landed the `reservations` table, the exclus
 
 ## Desired End State
 
-A non-owner viewing a shared list sees, per item, one of: **Available** + Reserve button; **Reserved by you** + Cancel button; or **Reserved** (no button, claimer hidden). A lost race shows "someone just reserved this" and flips the badge to Reserved. The **owner**, on their own list, sees badges only — no Reserve/Cancel controls and no reserver identity anywhere.
+A non-owner viewing a shared list sees, per item, one of: **Available** + Reserve button; **Reserved by you** + Cancel button; or **Reserved** (no button, claimer hidden). A lost race shows "someone just reserved this" and flips the badge to Reserved. The **owner**, on their own list, sees badges only - no Reserve/Cancel controls and no reserver identity anywhere.
 
 ## Key Decisions Made
 
@@ -34,7 +34,7 @@ A non-owner viewing a shared list sees, per item, one of: **Available** + Reserv
 
 ## Architecture / Approach
 
-Follows the established action → service → schema layering. Services set `claimer_id` from `client.auth.getUser()` (same as `createList` sets `owner_id`). Exclusivity is enforced by the DB unique index; a lost race surfaces as a Postgres `23505` that the reserve action translates to `ActionError({ code: "CONFLICT" })`, which the client turns into a toast + badge flip. "Reserved by you" is read by querying `reservations` filtered with `.in("item_id", ids)` (no nested `!inner` join — per lessons.md) with RLS scoping rows to the caller. `ListDetail` holds reservation state and reserve/cancel handlers; `ItemsList` stays presentational.
+Follows the established action → service → schema layering. Services set `claimer_id` from `client.auth.getUser()` (same as `createList` sets `owner_id`). Exclusivity is enforced by the DB unique index; a lost race surfaces as a Postgres `23505` that the reserve action translates to `ActionError({ code: "CONFLICT" })`, which the client turns into a toast + badge flip. "Reserved by you" is read by querying `reservations` filtered with `.in("item_id", ids)` (no nested `!inner` join - per lessons.md) with RLS scoping rows to the caller. `ListDetail` holds reservation state and reserve/cancel handlers; `ItemsList` stays presentational.
 
 ## Phases at a Glance
 
@@ -43,12 +43,12 @@ Follows the established action → service → schema layering. Services set `cl
 | 1. Reservation backend | Schemas, `reservations.ts` service, two actions, conflict mapping            | Getting the `23505` → `CONFLICT` mapping right; not swallowing the DB error in the service     |
 | 2. Reserve / cancel UI | SSR "reserved by you", `ListDetail` state/handlers, `ItemsList` three states | Keeping `reserved`/`myReserved`/`pending` sets in sync; not leaking owner controls or identity |
 
-**Prerequisites:** S-04 done (shared-list view + badges) — complete/archived. Local Supabase (`npx supabase start`) for the concurrency check.
+**Prerequisites:** S-04 done (shared-list view + badges) - complete/archived. Local Supabase (`npx supabase start`) for the concurrency check.
 **Estimated effort:** ~2 sessions across 2 phases.
 
 ## Open Risks & Assumptions
 
-- The owner must never read `claimer_id`; the "reserved by you" read uses claimer-scoped RLS and the owner path uses only the boolean view — no code path should join reservations for owners.
+- The owner must never read `claimer_id`; the "reserved by you" read uses claimer-scoped RLS and the owner path uses only the boolean view - no code path should join reservations for owners.
 - No realtime: another viewer's reservation only appears on next load; the conflict path covers the one interactive case that matters.
 - Assumes generated `Database` types for `reservations`/`item_reservation_status` stay in sync with F-01 (verified present).
 

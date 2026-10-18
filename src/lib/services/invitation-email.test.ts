@@ -11,7 +11,7 @@ describe("buildInvitationEmail", () => {
   it("builds a bilingual subject", () => {
     const { subject } = buildInvitationEmail(input);
     expect(subject).toBe(
-      "ola@example.com zaprasza Cię do swojej listy życzeń / ola@example.com invited you to a wishlist — AsYouWish",
+      "ola@example.com zaprasza Cię do swojej listy życzeń / ola@example.com invited you to a wishlist - AsYouWish",
     );
   });
 

@@ -9,7 +9,7 @@ archived_at: 2026-09-13T09:38:48Z
 
 ## Notes
 
-Roadmap slice **S-05** (PRD **US-01**, **FR-013**) — the load-bearing concurrency rule.
+Roadmap slice **S-05** (PRD **US-01**, **FR-013**) - the load-bearing concurrency rule.
 Scope pulled to include **FR-015** (cancel your own reservation) per planning decision.
 
 - The DB foundation (F-01) already enforces exclusivity: unique partial index
