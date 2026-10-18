@@ -150,18 +150,18 @@ No database, data, environment, or API migration is needed. Reverting the UI cha
 
 #### Automated
 
-- [x] 1.1 Wishlist schema tests pass: `npm run test:unit -- src/lib/schemas/wishlist.test.ts`.
-- [x] 1.2 Lint passes for changed components: `npx eslint src/components/lists/ListDetail.tsx src/components/lists/AddItemForm.tsx`.
-- [x] 1.3 Astro sync and type checking pass: `npx astro sync && npx astro check`.
-- [x] 1.4 Production build passes with the existing required environment configuration: `npm run build`.
+- [x] 1.1 Wishlist schema tests pass: `npm run test:unit -- src/lib/schemas/wishlist.test.ts`. — 59ce6d7
+- [x] 1.2 Lint passes for changed components: `npx eslint src/components/lists/ListDetail.tsx src/components/lists/AddItemForm.tsx`. — 59ce6d7
+- [x] 1.3 Astro sync and type checking pass: `npx astro sync && npx astro check`. — 59ce6d7
+- [x] 1.4 Production build passes with the existing required environment configuration: `npm run build`. — 59ce6d7
 
 #### Manual
 
-- [x] 1.5 Owner sees an accessible plus button after Invite; inline creation is absent on both empty and populated lists; non-owner sees no creation controls.
-- [x] 1.6 Opening focuses the dialog appropriately; Tab stays inside it; Escape, overlay, close icon, and Cancel dismiss when idle and restore focus to the plus button.
-- [x] 1.7 Closing a dirty or invalid form and reopening clears all values and errors while restoring the configured default currency.
-- [x] 1.8 Successful creation shows one real item, closes the dialog, preserves the success notification, and reopens with clean defaults.
-- [x] 1.9 Failed creation removes its placeholder, retains the entered values and relevant errors/notification, stays open, and allows a successful retry.
-- [x] 1.10 During a delayed submission, repeat submit and every dismissal path are blocked; after settlement the form is usable or closed as appropriate.
-- [x] 1.11 At 320px width and in a short viewport or with a mobile keyboard, toolbar controls, dialog fields, validation errors, and actions remain reachable without horizontal overflow.
-- [x] 1.12 Share, Invite, list menu, editing, and reservation interactions still behave as before.
+- [x] 1.5 Owner sees an accessible plus button after Invite; inline creation is absent on both empty and populated lists; non-owner sees no creation controls. — 59ce6d7
+- [x] 1.6 Opening focuses the dialog appropriately; Tab stays inside it; Escape, overlay, close icon, and Cancel dismiss when idle and restore focus to the plus button. — 59ce6d7
+- [x] 1.7 Closing a dirty or invalid form and reopening clears all values and errors while restoring the configured default currency. — 59ce6d7
+- [x] 1.8 Successful creation shows one real item, closes the dialog, preserves the success notification, and reopens with clean defaults. — 59ce6d7
+- [x] 1.9 Failed creation removes its placeholder, retains the entered values and relevant errors/notification, stays open, and allows a successful retry. — 59ce6d7
+- [x] 1.10 During a delayed submission, repeat submit and every dismissal path are blocked; after settlement the form is usable or closed as appropriate. — 59ce6d7
+- [x] 1.11 At 320px width and in a short viewport or with a mobile keyboard, toolbar controls, dialog fields, validation errors, and actions remain reachable without horizontal overflow. — 59ce6d7
+- [x] 1.12 Share, Invite, list menu, editing, and reservation interactions still behave as before. — 59ce6d7
