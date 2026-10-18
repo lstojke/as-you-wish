@@ -155,18 +155,18 @@ No schema, data, environment, or API migration. Reverting the dashboard/tab chan
 
 #### Automated
 
-- [x] 1.1 Existing unit suite passes: `npm run test:unit`.
-- [x] 1.2 Focused lint passes: `npx eslint src/components/dashboard/DashboardLists.tsx src/components/ui/tabs.tsx`.
-- [x] 1.3 Astro sync and checking pass: `npx astro sync && npx astro check`.
-- [x] 1.4 Production build passes with existing local environment configuration: `npm run build`.
+- [x] 1.1 Existing unit suite passes: `npm run test:unit`. — 50d1c05
+- [x] 1.2 Focused lint passes: `npx eslint src/components/dashboard/DashboardLists.tsx src/components/ui/tabs.tsx`. — 50d1c05
+- [x] 1.3 Astro sync and checking pass: `npx astro sync && npx astro check`. — 50d1c05
+- [x] 1.4 Production build passes with existing local environment configuration: `npm run build`. — 50d1c05
 
 #### Manual
 
-- [x] 1.5 Heading precedes My lists and Shared lists tabs; My lists is initially selected on a fresh dashboard entry, and changing tabs does not reload or fetch data.
-- [x] 1.6 Both tabs remain visible for neither/owned-only/shared-only/both data combinations; each empty panel presents its appropriate message, and creation is available only within My lists.
-- [x] 1.7 Tab, Shift+Tab, arrow keys, Home/End, and screen-reader labeling work; inactive content is not focusable or exposed, and selected/focused tabs remain visually distinguishable.
-- [x] 1.8 At 320px and tablet widths, populated panels show two columns; from 1024px they show three, within the original centered width; long/unbroken titles, 200% zoom, and empty states do not cause horizontal overflow or hide controls.
-- [x] 1.9 Owned tile navigation and menu opening, Rename, and Delete work independently with pointer and keyboard; shared tiles navigate and expose no owner actions.
-- [x] 1.10 Creating prepends one list, rename updates its tile, deletion removes it, and failed operations roll back correctly; state and order survive tab switching.
-- [x] 1.11 A controlled load failure still displays the alert and retry action, not empty panels; retry behavior is unchanged.
-- [x] 1.12 Existing add-item changes and list-detail behavior remain untouched by this implementation.
+- [x] 1.5 Heading precedes My lists and Shared lists tabs; My lists is initially selected on a fresh dashboard entry, and changing tabs does not reload or fetch data. — 50d1c05
+- [x] 1.6 Both tabs remain visible for neither/owned-only/shared-only/both data combinations; each empty panel presents its appropriate message, and creation is available only within My lists. — 50d1c05
+- [x] 1.7 Tab, Shift+Tab, arrow keys, Home/End, and screen-reader labeling work; inactive content is not focusable or exposed, and selected/focused tabs remain visually distinguishable. — 50d1c05
+- [x] 1.8 At 320px and tablet widths, populated panels show two columns; from 1024px they show three, within the original centered width; long/unbroken titles, 200% zoom, and empty states do not cause horizontal overflow or hide controls. — 50d1c05
+- [x] 1.9 Owned tile navigation and menu opening, Rename, and Delete work independently with pointer and keyboard; shared tiles navigate and expose no owner actions. — 50d1c05
+- [x] 1.10 Creating prepends one list, rename updates its tile, deletion removes it, and failed operations roll back correctly; state and order survive tab switching. — 50d1c05
+- [x] 1.11 A controlled load failure still displays the alert and retry action, not empty panels; retry behavior is unchanged. — 50d1c05
+- [x] 1.12 Existing add-item changes and list-detail behavior remain untouched by this implementation. — 50d1c05

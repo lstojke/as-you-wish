@@ -1,7 +1,7 @@
 ---
 change_id: organize-lists-view
 title: Organize owned and shared lists into tabs with a tile layout
-status: implementing
+status: implemented
 created: 2026-10-18
 updated: 2026-10-18
 archived_at: null
