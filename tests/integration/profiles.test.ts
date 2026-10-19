@@ -100,6 +100,64 @@ describe("profiles", () => {
     expect(error?.code).toBe("23514");
   });
 
+  it("provisions nullable names without changing existing preference defaults", async () => {
+    const { data, error } = await alice.client
+      .from("profiles")
+      .select("first_name, last_name, default_currency, language")
+      .eq("id", alice.id)
+      .single();
+    expect(error).toBeNull();
+    expect(data).toEqual({ first_name: null, last_name: null, default_currency: "PLN", language: "pl" });
+  });
+
+  it("allows private Unicode names to be saved and cleared", async () => {
+    const updated = await alice.client
+      .from("profiles")
+      .update({ first_name: "Łukasz", last_name: "Żółć" })
+      .eq("id", alice.id)
+      .select("first_name, last_name")
+      .single();
+    expect(updated.error).toBeNull();
+    expect(updated.data).toEqual({ first_name: "Łukasz", last_name: "Żółć" });
+
+    const otherRead = await bob.client.from("profiles").select("first_name, last_name").eq("id", alice.id);
+    expect(otherRead.error).toBeNull();
+    expect(otherRead.data).toEqual([]);
+    const otherUpdate = await bob.client
+      .from("profiles")
+      .update({ first_name: "Changed" })
+      .eq("id", alice.id)
+      .select("id");
+    expect(otherUpdate.error).toBeNull();
+    expect(otherUpdate.data).toEqual([]);
+
+    const cleared = await alice.client
+      .from("profiles")
+      .update({ first_name: null, last_name: null })
+      .eq("id", alice.id)
+      .select("first_name, last_name")
+      .single();
+    expect(cleared.error).toBeNull();
+    expect(cleared.data).toEqual({ first_name: null, last_name: null });
+  });
+
+  it("enforces nonblank names and length boundaries in the database", async () => {
+    for (const column of ["first_name", "last_name"] as const) {
+      const valid = await alice.client
+        .from("profiles")
+        .update(column === "first_name" ? { first_name: "a".repeat(100) } : { last_name: "a".repeat(100) })
+        .eq("id", alice.id);
+      expect(valid.error).toBeNull();
+      for (const value of ["", " \t\n", "a".repeat(101)]) {
+        const invalid = await alice.client
+          .from("profiles")
+          .update(column === "first_name" ? { first_name: value } : { last_name: value })
+          .eq("id", alice.id);
+        expect(invalid.error?.code).toBe("23514");
+      }
+    }
+  });
+
   it("stamps new priced items with the profile default and preserves stored currency on edit", async () => {
     const client = alice.client;
     expect(await getDefaultCurrency(client)).toBe("PLN");

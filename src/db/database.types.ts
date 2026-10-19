@@ -145,27 +145,75 @@ export interface Database {
         };
         Relationships: [];
       };
+      profile_important_dates: {
+        Row: {
+          created_at: string;
+          date: string;
+          description: string | null;
+          heading: string;
+          id: string;
+          profile_id: string;
+          repeat_frequency: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          date: string;
+          description?: string | null;
+          heading: string;
+          id?: string;
+          profile_id: string;
+          repeat_frequency?: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          date?: string;
+          description?: string | null;
+          heading?: string;
+          id?: string;
+          profile_id?: string;
+          repeat_frequency?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "profile_important_dates_profile_id_fkey";
+            columns: ["profile_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           created_at: string;
           default_currency: string;
+          first_name: string | null;
           id: string;
           language: string;
+          last_name: string | null;
           updated_at: string;
         };
         ComputedFields: never;
         Insert: {
           created_at?: string;
           default_currency?: string;
+          first_name?: string | null;
           id: string;
           language?: string;
+          last_name?: string | null;
           updated_at?: string;
         };
         Update: {
           created_at?: string;
           default_currency?: string;
+          first_name?: string | null;
           id?: string;
           language?: string;
+          last_name?: string | null;
           updated_at?: string;
         };
         Relationships: [];
