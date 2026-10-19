@@ -11,7 +11,7 @@ Stand up a Vitest test runner (unit + integration projects) for this Astro + Sup
 - **Reserve path**: action `reservations.reserve` ([src/actions/index.ts](../../../src/actions/index.ts#L240-L261)) → service `createReservation` ([src/lib/services/reservations.ts](../../../src/lib/services/reservations.ts#L13-L28)) → `.insert({ item_id, claimer_id })`. The action maps `err.code === "23505"` → `ActionError({ code: "CONFLICT", message: "Someone just reserved this item first" })`, and any other error → `INTERNAL_SERVER_ERROR` (logging only in that branch).
 - **RLS requires membership**: `reservations_insert` gates on `claimer_id = auth.uid() and is_item_list_member(item_id)`. Both racers must be list members (owner or accepted invitee). Membership helpers are SECURITY DEFINER: `is_list_invitee` returns true when an `invitations` row has `accepted_by_user_id = auth.uid()` ([supabase/migrations/20260527125732_initial_wishlist_schema.sql](../../../supabase/migrations/20260527125732_initial_wishlist_schema.sql#L140-L152)).
 - **Env divergence trap**: app secrets are read via `astro:env/server`; `.env` and `.dev.vars` point at a **remote** Supabase project. Integration tests must target the **local** stack (`http://127.0.0.1:54321`, DB `54322`) and must NOT reuse the remote values.
-- **Precedent**: [context/archive/2026-05-27-wishlist-data-schema/race-test.sh](../../archive/2026-05-27-wishlist-data-schema/race-test.sh) already proved FR-013 via two concurrent inserts asserting exactly one success + one `23505` — portable as the concurrency pattern.
+- **Precedent**: [context/archive/2026-05-27-wishlist-data-schema/race-test.sh](../../archive/2026-05-27-wishlist-data-schema/race-test.sh) already proved FR-013 via two concurrent inserts asserting exactly one success + one `23505` - portable as the concurrency pattern.
 - **Import-graph fact**: [src/lib/services/reservations.ts](../../../src/lib/services/reservations.ts#L1-L4) has only type-only imports (no runtime `astro:*`), so a pure helper placed there is unit-testable without the Astro Vite plugin.
 
 ## Desired End State
@@ -26,24 +26,24 @@ Verify by running `npm test` with the local stack up (`npx supabase start`): all
 
 ### Key Discoveries:
 
-- Unique partial index is the load-bearing invariant — [supabase/migrations/20260527125732_initial_wishlist_schema.sql:69-72](../../../supabase/migrations/20260527125732_initial_wishlist_schema.sql#L69-L72).
-- The outcome is deterministic regardless of interleaving: even if the two inserts serialize, the second violates the index and returns `23505`. So "exactly one success + one `23505`" holds whether or not the calls truly overlap — no flakiness risk. Concurrency is expressed by issuing both without awaiting the first, on separate connections.
+- Unique partial index is the load-bearing invariant - [supabase/migrations/20260527125732_initial_wishlist_schema.sql:69-72](../../../supabase/migrations/20260527125732_initial_wishlist_schema.sql#L69-L72).
+- The outcome is deterministic regardless of interleaving: even if the two inserts serialize, the second violates the index and returns `23505`. So "exactly one success + one `23505`" holds whether or not the calls truly overlap - no flakiness risk. Concurrency is expressed by issuing both without awaiting the first, on separate connections.
 - The `23505 → CONFLICT` mapping is embedded in the action's catch block ([src/actions/index.ts:247-257](../../../src/actions/index.ts#L247-L257)); extracting it into a pure helper in the service module gives a testable seam without pulling `astro:actions`/`astro:env` into the unit test graph.
-- `createReservation` derives `claimer_id` from `client.auth.getUser()`, so each racer must be a **separate signed-in client** (anon key, its own session) — not the service-role client.
-- Membership fixture: insert a `lists` row (owner), an `items` row (`list_id` + `title`), and an `invitations` row with `accepted_by_user_id = <invitee uid>` — that satisfies `is_list_invitee` and thus `reservations_insert`.
+- `createReservation` derives `claimer_id` from `client.auth.getUser()`, so each racer must be a **separate signed-in client** (anon key, its own session) - not the service-role client.
+- Membership fixture: insert a `lists` row (owner), an `items` row (`list_id` + `title`), and an `invitations` row with `accepted_by_user_id = <invitee uid>` - that satisfies `is_list_invitee` and thus `reservations_insert`.
 
 ## What We're NOT Doing
 
-- Not wiring tests into CI (`.github/workflows/ci.yml`) — that is test-plan Phase 4.
-- Not testing invitation/accept, IDOR, reserver-identity privacy, or input-validation parity — those are Phases 2–3.
-- Not adding e2e/Playwright — the DB-integration test gives cheaper signal for this risk.
+- Not wiring tests into CI (`.github/workflows/ci.yml`) - that is test-plan Phase 4.
+- Not testing invitation/accept, IDOR, reserver-identity privacy, or input-validation parity - those are Phases 2–3.
+- Not adding e2e/Playwright - the DB-integration test gives cheaper signal for this risk.
 - Not changing the exclusivity mechanism, the reserve/release behavior, or any RLS policy.
-- Not adding a global `supabase/seed.sql` — fixtures are programmatic and per-run.
+- Not adding a global `supabase/seed.sql` - fixtures are programmatic and per-run.
 - Not refactoring the action beyond extracting the error-mapping helper it already contains inline.
 
 ## Implementation Approach
 
-Two test layers, split into three phases. Phase 1 stands up Vitest with a unit-only project and proves the runner using the extracted error-mapping helper — no database needed, so the runner is validated in isolation. Phase 2 adds the integration project, local-stack env wiring, and the programmatic fixture helper, then lands the concurrency proof. Phase 3 documents the patterns in the test plan. The Vitest config uses `projects` so unit and integration suites can be run and gated independently, with the shared `@/*` alias mirrored from tsconfig.
+Two test layers, split into three phases. Phase 1 stands up Vitest with a unit-only project and proves the runner using the extracted error-mapping helper - no database needed, so the runner is validated in isolation. Phase 2 adds the integration project, local-stack env wiring, and the programmatic fixture helper, then lands the concurrency proof. Phase 3 documents the patterns in the test plan. The Vitest config uses `projects` so unit and integration suites can be run and gated independently, with the shared `@/*` alias mirrored from tsconfig.
 
 ## Phase 1: Bootstrap Vitest + reserve-error mapping unit test
 
@@ -65,7 +65,7 @@ Install and configure Vitest with separate `unit` and `integration` projects, ad
 
 **File**: `vitest.config.ts` (new)
 
-**Intent**: Define two Vitest projects — `unit` (environment `node`, glob `src/**/*.test.ts`, no setup) and `integration` (environment `node`, glob `tests/integration/**/*.test.ts`, a setup file that loads `.env.test`, and a longer `testTimeout`). Mirror the `@/* → ./src/*` alias so specs can import app modules.
+**Intent**: Define two Vitest projects - `unit` (environment `node`, glob `src/**/*.test.ts`, no setup) and `integration` (environment `node`, glob `tests/integration/**/*.test.ts`, a setup file that loads `.env.test`, and a longer `testTimeout`). Mirror the `@/* → ./src/*` alias so specs can import app modules.
 
 **Contract**: Uses Vitest `test.projects`. `resolve.alias` maps `@` to `./src`. The integration project references the Phase 2 setup file and env file; the unit project pulls in `src/**/*.test.ts` only. Does not register the Astro Vite plugin (unit specs must stay free of `astro:*` virtual modules).
 
@@ -75,13 +75,13 @@ Install and configure Vitest with separate `unit` and `integration` projects, ad
 
 **Intent**: Move the inline `23505`-detection logic out of the action into a pure, exported function in the service module (which has no runtime Astro imports), returning a plain `{ code, message }` payload so it is testable without `astro:actions`.
 
-**Contract**: New export, e.g. `reserveErrorPayload(err: unknown): { code: "CONFLICT" | "INTERNAL_SERVER_ERROR"; message: string }` — returns the CONFLICT payload when `err` is an object with `code === "23505"`, otherwise the INTERNAL_SERVER_ERROR payload. Pure; no logging, no throw.
+**Contract**: New export, e.g. `reserveErrorPayload(err: unknown): { code: "CONFLICT" | "INTERNAL_SERVER_ERROR"; message: string }` - returns the CONFLICT payload when `err` is an object with `code === "23505"`, otherwise the INTERNAL_SERVER_ERROR payload. Pure; no logging, no throw.
 
 #### 4. Rewire the action to use the helper
 
 **File**: `src/actions/index.ts`
 
-**Intent**: Replace the inline 23505 check in the `reservations.reserve` catch block with a call to the new helper, preserving current behavior — rethrow existing `ActionError`, log only the generic (non-CONFLICT) branch, then throw `new ActionError(payload)`.
+**Intent**: Replace the inline 23505 check in the `reservations.reserve` catch block with a call to the new helper, preserving current behavior - rethrow existing `ActionError`, log only the generic (non-CONFLICT) branch, then throw `new ActionError(payload)`.
 
 **Contract**: The catch keeps `if (err instanceof ActionError) throw err;`, then computes `payload = reserveErrorPayload(err)`, calls `console.error("reservations.reserve failed", err)` only when `payload.code === "INTERNAL_SERVER_ERROR"`, and throws `new ActionError(payload)`. Observable behavior (codes + messages + logging) is unchanged.
 
@@ -162,7 +162,7 @@ Add local-stack env wiring, a Vitest setup file, and a programmatic fixture help
 
 #### Manual Verification:
 
-- Temporarily dropping the unique index (or pointing at a DB without it) makes `reservations.concurrency.test.ts` fail with two successes — confirming the test truly exercises the DB guarantee, not an app check.
+- Temporarily dropping the unique index (or pointing at a DB without it) makes `reservations.concurrency.test.ts` fail with two successes - confirming the test truly exercises the DB guarantee, not an app check.
 - Re-running the suite twice in a row passes without manual DB cleanup (fixture teardown isolates runs).
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause for manual confirmation before proceeding to Phase 3.
@@ -181,7 +181,7 @@ Record the now-established unit and integration patterns in the test plan cookbo
 
 **File**: [context/foundation/test-plan.md](../../foundation/test-plan.md)
 
-**Intent**: Replace the "TBD — see §3 Phase 1" placeholders in §6.1 (adding a unit test), §6.2 (adding a local-Supabase integration test), and §6.5 (reservation/claim rule) with the concrete conventions this phase established (file locations, `npm test` commands, the `.env.test`/fixture-helper approach, the concurrency assertion shape).
+**Intent**: Replace the "TBD - see §3 Phase 1" placeholders in §6.1 (adding a unit test), §6.2 (adding a local-Supabase integration test), and §6.5 (reservation/claim rule) with the concrete conventions this phase established (file locations, `npm test` commands, the `.env.test`/fixture-helper approach, the concurrency assertion shape).
 
 **Contract**: Prose edits to §6.1, §6.2, §6.5. Also flip the Phase 1 row Status in §3 to the appropriate value and update the "Last updated" note. No change to §1–§5 strategy.
 
@@ -219,9 +219,9 @@ Record the now-established unit and integration patterns in the test plan cookbo
 
 ### Manual Testing Steps:
 
-1. `npx supabase start`, then `npm test` — confirm all green.
-2. Drop `reservations_one_active_per_item` locally and re-run — the concurrency spec must fail (two successes), proving it exercises the DB invariant.
-3. Restore the index; re-run twice — passes without manual cleanup.
+1. `npx supabase start`, then `npm test` - confirm all green.
+2. Drop `reservations_one_active_per_item` locally and re-run - the concurrency spec must fail (two successes), proving it exercises the DB invariant.
+3. Restore the index; re-run twice - passes without manual cleanup.
 
 ## Performance Considerations
 
@@ -241,43 +241,43 @@ No schema or data migration. `.env.test` holds local-stack demo credentials only
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Bootstrap Vitest + reserve-error mapping unit test
 
 #### Automated
 
-- [x] 1.1 Dependencies install: `npm install` — 69c1e85
-- [x] 1.2 Unit project runs green: `npm run test:unit` — 69c1e85
-- [x] 1.3 Type checking passes: `npx astro sync && npx tsc --noEmit` — 69c1e85
-- [x] 1.4 Linting passes: `npm run lint` — 69c1e85
+- [x] 1.1 Dependencies install: `npm install` - 69c1e85
+- [x] 1.2 Unit project runs green: `npm run test:unit` - 69c1e85
+- [x] 1.3 Type checking passes: `npx astro sync && npx tsc --noEmit` - 69c1e85
+- [x] 1.4 Linting passes: `npm run lint` - 69c1e85
 
 #### Manual
 
-- [x] 1.5 `npm run test:unit` reports the mapping cases with no external services running — 69c1e85
-- [x] 1.6 Reserving still shows the CONFLICT message on a real conflict (action path unchanged) — 69c1e85
+- [x] 1.5 `npm run test:unit` reports the mapping cases with no external services running - 69c1e85
+- [x] 1.6 Reserving still shows the CONFLICT message on a real conflict (action path unchanged) - 69c1e85
 
 ### Phase 2: Integration harness + concurrency proof
 
 #### Automated
 
-- [x] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration` (2 tests) — 6573b9e
-- [x] 2.2 Full suite passes: `npm test` (6 tests) — 6573b9e
-- [x] 2.3 Type checking passes: `npm run build` green; new files add no `tsc` errors (the 3 pre-existing `InviteDialog.tsx` errors are unrelated, same as 1.3) — 6573b9e
-- [x] 2.4 Linting passes: `npm run lint` — 6573b9e
+- [x] 2.1 Integration project runs green: `npx supabase start` then `npm run test:integration` (2 tests) - 6573b9e
+- [x] 2.2 Full suite passes: `npm test` (6 tests) - 6573b9e
+- [x] 2.3 Type checking passes: `npm run build` green; new files add no `tsc` errors (the 3 pre-existing `InviteDialog.tsx` errors are unrelated, same as 1.3) - 6573b9e
+- [x] 2.4 Linting passes: `npm run lint` - 6573b9e
 
 #### Manual
 
-- [x] 2.5 Dropping `reservations_one_active_per_item` locally made the concurrency spec fail with two successes (`Expected 1, Received 2`); index restored — 6573b9e
-- [x] 2.6 Suite passes twice in a row without manual DB cleanup (fixtures self-teardown via user-delete cascade) — 6573b9e
+- [x] 2.5 Dropping `reservations_one_active_per_item` locally made the concurrency spec fail with two successes (`Expected 1, Received 2`); index restored - 6573b9e
+- [x] 2.6 Suite passes twice in a row without manual DB cleanup (fixtures self-teardown via user-delete cascade) - 6573b9e
 
 ### Phase 3: Document the pattern
 
 #### Automated
 
-- [x] 3.1 Markdown formats clean: `npx prettier --check` on the changed docs passes (repo-wide `npm run format` reformats many unrelated legacy docs, so scoped the check to Phase 3 files) — 8b762fd
+- [x] 3.1 Markdown formats clean: `npx prettier --check` on the changed docs passes (repo-wide `npm run format` reformats many unrelated legacy docs, so scoped the check to Phase 3 files) - 8b762fd
 
 #### Manual
 
-- [x] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring (env template, fixture-helper, and RLS guidance are spelled out) — 8b762fd
-- [x] 3.3 Phase 1 status in the test plan reflects completion (§3 row → `complete`, §4 Vitest → 3.2.7, §6 cookbook filled) — 8b762fd
+- [x] 3.2 A reader can follow §6.2 to add an integration test without rediscovering wiring (env template, fixture-helper, and RLS guidance are spelled out) - 8b762fd
+- [x] 3.3 Phase 1 status in the test plan reflects completion (§3 row → `complete`, §4 Vitest → 3.2.7, §6 cookbook filled) - 8b762fd

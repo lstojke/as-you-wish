@@ -12,7 +12,7 @@ archived_at: 2026-09-13T07:50:19Z
 Roadmap slice **S-04** (`view-shared-list`), PRD **FR-012**. Prereq S-03 (`share-list-by-email-invite`) is done/archived. Chain: S-03 → **S-04** → S-05 (reserve action).
 
 - **Outcome**: A signed-in user invited to a list can open it and see every item with its current status (available or reserved), without seeing who reserved which item.
-- **Key discovery**: the read-side infrastructure already exists from F-01 —
+- **Key discovery**: the read-side infrastructure already exists from F-01 -
   - RLS already lets invitees open `/lists/[id]` (`lists_select` = owner OR `is_list_invitee`; items via `is_list_member`).
   - The identity-safe read model `item_reservation_status` view (`security_invoker = true`, exposes only `item_id, list_id, is_reserved`; never `claimer_id`) exists but is **not queried anywhere yet**.
   - Its TypeScript type already exists in `src/db/database.types.ts` (Views).

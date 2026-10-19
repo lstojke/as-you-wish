@@ -10,7 +10,7 @@ date: 2026-05-20
 
 ## Hand-off
 
-- Starter: `10x-astro-starter` — 10x Astro Starter (Astro + Supabase + Cloudflare)
+- Starter: `10x-astro-starter` - 10x Astro Starter (Astro + Supabase + Cloudflare)
 - Project name: as-you-wish
 - Package manager: npm (from hand-off)
 - Language family: js
@@ -22,7 +22,7 @@ date: 2026-05-20
 ## Pre-scaffold verification
 
 - npm package check: skipped (cmd_template uses `git clone`, not a `create-*` CLI).
-- GitHub repo `przeprogramowani/10x-astro-starter` `pushed_at`: `2026-05-17T10:33:39Z` (3 days ago — fresh).
+- GitHub repo `przeprogramowani/10x-astro-starter` `pushed_at`: `2026-05-17T10:33:39Z` (3 days ago - fresh).
 - Severity: fresh.
 
 ## Scaffold log
@@ -31,7 +31,7 @@ date: 2026-05-20
 - Command: `git clone https://github.com/przeprogramowani/10x-astro-starter .bootstrap-scaffold && cd .bootstrap-scaffold && npm install`
 - Exit code: 0
 - Install: 773 packages added, audited 774 packages in 52s.
-- Conflict matrix: no conflicts — only `context/` existed in cwd (preserved verbatim); the starter does not ship a `context/` directory.
+- Conflict matrix: no conflicts - only `context/` existed in cwd (preserved verbatim); the starter does not ship a `context/` directory.
 - Files moved up: `.env.example`, `.github/`, `.gitignore`, `.husky/`, `.nvmrc`, `.prettierrc.json`, `.vscode/`, `CLAUDE.md`, `README.md`, `astro.config.mjs`, `components.json`, `eslint.config.js`, `node_modules/`, `package-lock.json`, `package.json`, `public/`, `src/`, `supabase/`, `tsconfig.json`, `wrangler.jsonc`.
 - `.bootstrap-scaffold/` removed after move.
 
@@ -40,7 +40,7 @@ date: 2026-05-20
 - Command: `npm audit --json`
 - Counts: 0 critical, 1 high, 10 moderate, 0 low (total 11).
 - Direct vs transitive: 3 direct, 8 transitive.
-- Findings: WARN-AND-CONTINUE — bootstrapper informs, the user decides. Run `npm audit` for details or `npm audit fix` for non-breaking patches.
+- Findings: WARN-AND-CONTINUE - bootstrapper informs, the user decides. Run `npm audit` for details or `npm audit fix` for non-breaking patches.
 
 ## Hints recorded but not acted on
 

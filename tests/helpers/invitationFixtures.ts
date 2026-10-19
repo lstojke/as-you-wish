@@ -37,7 +37,7 @@ async function seedPendingInvitation(admin: Client, listId: string, email: strin
 /**
  * Seeds the membership graph the accept (#2) and IDOR (#3) specs need: an owner
  * with a list + item, a confirmed invitee holding a PENDING invitation, an
- * unconfirmed invitee holding a PENDING invitation, and an unrelated outsider —
+ * unconfirmed invitee holding a PENDING invitation, and an unrelated outsider -
  * all as signed-in member clients so RLS/RPC are genuinely exercised. Teardown
  * deletes the auth users, cascading away lists/items/invitations/reservations.
  */
@@ -47,7 +47,7 @@ export async function setupInvitationScenario(): Promise<InvitationScenario> {
   const ownerUser = await createMember(admin, "owner");
   const inviteeUser = await createMember(admin, "invitee");
   // Created confirmed so a password session is obtainable, then un-confirmed at
-  // the DB layer below — GoTrue won't sign in an unconfirmed user.
+  // the DB layer below - GoTrue won't sign in an unconfirmed user.
   const unconfirmedUser = await createMember(admin, "unconfirmed");
   const outsiderUser = await createMember(admin, "outsider");
 

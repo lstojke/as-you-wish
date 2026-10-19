@@ -1,4 +1,4 @@
-# Privacy and Input Integrity Test Rollout — Plan Brief
+# Privacy and Input Integrity Test Rollout - Plan Brief
 
 > Full plan: [plan.md](plan.md)
 > Research: [research.md](research.md)

@@ -1,4 +1,5 @@
 import { ActionError, defineAction } from "astro:actions";
+import { t } from "@/lib/i18n";
 import {
   listCreateSchema,
   listRenameSchema,
@@ -26,13 +27,13 @@ function requireSupabase(locals: App.Locals) {
   if (!locals.supabase) {
     throw new ActionError({
       code: "INTERNAL_SERVER_ERROR",
-      message: "Supabase client unavailable",
+      message: t(locals.locale, "errors.unavailable"),
     });
   }
   if (!locals.user) {
     throw new ActionError({
       code: "UNAUTHORIZED",
-      message: "You must be signed in",
+      message: t(locals.locale, "errors.signedOut"),
     });
   }
   return locals.supabase;
@@ -55,7 +56,7 @@ function shareAction(operation: "status" | "create" | "disable" | "replace") {
         console.error(`listShares.${operation} failed`);
         throw new ActionError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Could not update sharing. Refresh the sharing status before trying again.",
+          message: t(context.locals.locale, "errors.shareUpdate"),
         });
       }
     },
@@ -76,7 +77,7 @@ export const server = {
           console.error("profile.updateCurrency failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not update settings",
+            message: t(context.locals.locale, "errors.settingsUpdate"),
           });
         }
       },
@@ -101,7 +102,7 @@ export const server = {
           console.error("lists.create failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not create list",
+            message: t(context.locals.locale, "errors.listCreate"),
           });
         }
       },
@@ -118,7 +119,7 @@ export const server = {
           console.error("lists.rename failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not rename list",
+            message: t(context.locals.locale, "errors.listRename"),
           });
         }
       },
@@ -136,7 +137,7 @@ export const server = {
           console.error("lists.delete failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not delete list",
+            message: t(context.locals.locale, "errors.listDelete"),
           });
         }
       },
@@ -156,7 +157,7 @@ export const server = {
           console.error("items.create failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not add item",
+            message: t(context.locals.locale, "errors.itemCreate"),
           });
         }
       },
@@ -174,7 +175,7 @@ export const server = {
           console.error("items.update failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not update item",
+            message: t(context.locals.locale, "errors.itemUpdate"),
           });
         }
       },
@@ -192,7 +193,7 @@ export const server = {
           console.error("items.delete failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not delete item",
+            message: t(context.locals.locale, "errors.itemDelete"),
           });
         }
       },
@@ -208,7 +209,7 @@ export const server = {
         if (currentEmail && currentEmail === input.email) {
           throw new ActionError({
             code: "BAD_REQUEST",
-            message: "You can't invite yourself",
+            message: t(context.locals.locale, "errors.inviteSelf"),
           });
         }
         try {
@@ -216,7 +217,7 @@ export const server = {
           if (!result.ok) {
             throw new ActionError({
               code: "BAD_REQUEST",
-              message: "That email has already been invited to this list",
+              message: t(context.locals.locale, "errors.inviteDuplicate"),
             });
           }
           const { invitation } = result;
@@ -236,7 +237,7 @@ export const server = {
           console.error("invitations.create failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not send invitation",
+            message: t(context.locals.locale, "errors.inviteSend"),
           });
         }
       },
@@ -254,7 +255,7 @@ export const server = {
           console.error("invitations.revoke failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not revoke invitation",
+            message: t(context.locals.locale, "errors.inviteRevoke"),
           });
         }
       },
@@ -269,12 +270,12 @@ export const server = {
           if (!result.ok) {
             const message =
               result.reason === "mismatch"
-                ? "This invitation was sent to a different email address"
+                ? t(context.locals.locale, "errors.inviteMismatch")
                 : result.reason === "not_confirmed"
-                  ? "Please confirm your email address first"
+                  ? t(context.locals.locale, "errors.inviteNotConfirmed")
                   : result.reason === "not_found"
-                    ? "Invitation not found"
-                    : "Could not accept invitation";
+                    ? t(context.locals.locale, "errors.inviteNotFound")
+                    : t(context.locals.locale, "errors.inviteAccept");
             const code = result.reason === "not_found" ? "NOT_FOUND" : "BAD_REQUEST";
             throw new ActionError({ code, message });
           }
@@ -285,7 +286,7 @@ export const server = {
           console.error("invitations.accept failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not accept invitation",
+            message: t(context.locals.locale, "errors.inviteAccept"),
           });
         }
       },
@@ -306,7 +307,7 @@ export const server = {
             // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
             console.error("reservations.reserve failed", err);
           }
-          throw new ActionError(payload);
+          throw new ActionError({ code: payload.code, message: t(context.locals.locale, payload.message) });
         }
       },
     }),
@@ -323,7 +324,7 @@ export const server = {
           console.error("reservations.release failed", err);
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Could not cancel reservation",
+            message: t(context.locals.locale, "errors.releaseFailed"),
           });
         }
       },

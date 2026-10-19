@@ -17,11 +17,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import type { InvitationRow } from "@/lib/services/invitations";
 import { z } from "zod";
+import { useT } from "@/components/hooks/useT";
 
 // Preprocess-free so the resolver's input type is `string`, not `unknown`; the
 // server action re-validates and normalizes via the full invitationCreateSchema.
 const inviteFormSchema = z.object({
-  email: z.email("Enter a valid email address").max(320),
+  email: z.email("validation.emailInvalid").max(320),
 });
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
@@ -33,6 +34,7 @@ interface Props {
 }
 
 export default function InviteDialog({ listId, open, onOpenChange, onInvited }: Props) {
+  const { t, tm } = useT();
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: { email: "" },
@@ -49,20 +51,20 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
       if (isInputError(error)) {
         const emailMessage = error.fields.email?.[0];
         if (emailMessage) {
-          form.setError("email", { message: emailMessage });
+          form.setError("email", { message: tm(emailMessage) });
           return;
         }
       }
-      form.setError("email", { message: error.message || "Could not send invitation" });
+      form.setError("email", { message: error.message || t("errors.inviteSend") });
       return;
     }
 
     onInvited(data.invitation);
     onOpenChange(false);
     if (data.emailSent) {
-      toast.success("Invitation sent");
+      toast.success(t("invite.sent"));
     } else {
-      toast.warning("Invitation created, but the email couldn't be sent");
+      toast.warning(t("invite.createdEmailFailed"));
     }
   }
 
@@ -70,8 +72,8 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite someone</DialogTitle>
-          <DialogDescription>They&rsquo;ll get an email with a link to accept and view this list.</DialogDescription>
+          <DialogTitle>{t("invite.title")}</DialogTitle>
+          <DialogDescription>{t("invite.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -80,11 +82,11 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("invite.email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="name@example.com"
+                      placeholder={t("invite.emailPlaceholder")}
                       autoFocus
                       autoComplete="off"
                       maxLength={320}
@@ -104,10 +106,10 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
                 }}
                 disabled={form.formState.isSubmitting}
               >
-                Cancel
+                {t("invite.cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Sending…" : "Send invite"}
+                {form.formState.isSubmitting ? t("invite.sending") : t("invite.send")}
               </Button>
             </DialogFooter>
           </form>

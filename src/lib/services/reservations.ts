@@ -12,12 +12,12 @@ type Client = SupabaseClient<Database>;
 // else is an opaque server error. Pure so it can be unit-tested without Astro.
 export function reserveErrorPayload(err: unknown): {
   code: "CONFLICT" | "INTERNAL_SERVER_ERROR";
-  message: string;
+  message: "errors.reserveConflict" | "errors.reserveFailed";
 } {
   if (typeof err === "object" && err !== null && "code" in err && (err as { code?: string }).code === "23505") {
-    return { code: "CONFLICT", message: "Someone just reserved this item first" };
+    return { code: "CONFLICT", message: "errors.reserveConflict" };
   }
-  return { code: "INTERNAL_SERVER_ERROR", message: "Could not reserve item" };
+  return { code: "INTERNAL_SERVER_ERROR", message: "errors.reserveFailed" };
 }
 
 // Exclusivity is enforced by the unique partial index reservations_one_active_per_item
@@ -43,7 +43,7 @@ export async function createReservation(client: Client, input: ReservationCreate
 }
 
 // RLS (reservations_update gates to claimer_id = auth.uid(); only released_at is writable)
-// restricts the row to the caller's own active reservation — no app-side ownership check.
+// restricts the row to the caller's own active reservation - no app-side ownership check.
 export async function releaseReservation(client: Client, input: ReservationReleaseInput): Promise<void> {
   const { error } = await client
     .from("reservations")
@@ -54,7 +54,7 @@ export async function releaseReservation(client: Client, input: ReservationRelea
 }
 
 // Identity-safe, claimer-scoped read: reservations_select RLS returns only the caller's own
-// rows, so no join is needed (see lessons.md — rely on RLS, not an !inner join).
+// rows, so no join is needed (see lessons.md - rely on RLS, not an !inner join).
 export async function listMyReservedItemIds(client: Client, itemIds: string[]): Promise<string[]> {
   if (itemIds.length === 0) return [];
   const { data, error } = await client

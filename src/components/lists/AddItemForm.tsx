@@ -17,6 +17,7 @@ import {
 import ItemFormFields from "@/components/lists/ItemFormFields";
 import { itemFormSchema, mapItemFormToCreate, type ItemFormValues } from "@/lib/schemas/wishlist";
 import type { ItemRow } from "@/lib/services/items";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   listId: string;
@@ -39,6 +40,7 @@ export default function AddItemForm({
   onOptimisticReplace,
   onOptimisticRemove,
 }: Props) {
+  const { t, tm } = useT();
   const busy = useRef(false);
   const form = useForm<ItemFormValues>({
     resolver: zodResolver(itemFormSchema),
@@ -79,7 +81,7 @@ export default function AddItemForm({
       result = await actions.items.create(input);
     } catch {
       onOptimisticRemove(placeholderId);
-      toast.error("Could not confirm whether the item was added. Refresh the list before trying again.");
+      toast.error(t("errors.itemCreateUnconfirmed"));
       return;
     } finally {
       busy.current = false;
@@ -90,18 +92,18 @@ export default function AddItemForm({
       onOptimisticRemove(placeholderId);
       if (isInputError(error)) {
         const titleMsg = error.fields.title?.[0];
-        if (titleMsg) form.setError("title", { message: titleMsg });
+        if (titleMsg) form.setError("title", { message: tm(titleMsg) });
         const linkMsg = error.fields.link?.[0];
-        if (linkMsg) form.setError("link", { message: linkMsg });
+        if (linkMsg) form.setError("link", { message: tm(linkMsg) });
         return;
       }
-      toast.error(error.message || "Could not add item");
+      toast.error(error.message || t("errors.itemCreate"));
       return;
     }
 
     onOptimisticReplace(placeholderId, data);
     onOpenChange(false);
-    toast.success("Item added");
+    toast.success(t("itemForm.created"));
   }
 
   return (
@@ -114,8 +116,8 @@ export default function AddItemForm({
         }}
       >
         <DialogHeader>
-          <DialogTitle>Add an item</DialogTitle>
-          <DialogDescription>Add a name and optional price or store link to your list.</DialogDescription>
+          <DialogTitle>{t("itemForm.addHeading")}</DialogTitle>
+          <DialogDescription>{t("itemForm.addDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -138,10 +140,10 @@ export default function AddItemForm({
                   handleOpenChange(false);
                 }}
               >
-                Cancel
+                {t("itemForm.cancel")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Adding…" : "Add item"}
+                {isSubmitting ? t("itemForm.adding") : t("itemForm.add")}
               </Button>
             </DialogFooter>
           </form>

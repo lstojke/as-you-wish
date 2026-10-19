@@ -1,4 +1,4 @@
--- verify.sql — RLS persona probes for the wishlist schema (F-01).
+-- verify.sql - RLS persona probes for the wishlist schema (F-01).
 --
 -- Run inside the local Supabase db container:
 --   docker exec -i $(docker ps -qf name=supabase_db) \

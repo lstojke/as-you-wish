@@ -161,7 +161,7 @@ $$;
 
 -- Boolean-only reservation status. Owners cannot read `reservations` rows
 -- (their RLS policy restricts to claimer), but they CAN learn taken/free
--- through this definer-side check — claimer_id never leaves the function.
+-- through this definer-side check - claimer_id never leaves the function.
 create or replace function public.is_item_reserved(item_uuid uuid)
 returns boolean
 language sql

@@ -1,4 +1,5 @@
 import { MoreVertical, Pencil, Trash2 } from "lucide-react";
+import { useT } from "@/components/hooks/useT";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,10 +15,16 @@ interface Props {
 }
 
 export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props) {
+  const { t } = useT();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon" aria-label={`Actions for list ${listTitle}`}>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          aria-label={t("dashboardLists.actionsForList", { title: listTitle })}
+        >
           <MoreVertical />
         </Button>
       </DropdownMenuTrigger>
@@ -34,7 +41,7 @@ export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props
           }}
         >
           <Pencil />
-          Rename
+          {t("dashboardLists.rename")}
         </DropdownMenuItem>
         <DropdownMenuItem
           variant="destructive"
@@ -44,7 +51,7 @@ export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props
           }}
         >
           <Trash2 />
-          Delete
+          {t("dashboardLists.delete")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

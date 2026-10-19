@@ -4,6 +4,7 @@ import { canAccessSharedList, readListShare } from "@/lib/services/list-shares";
 import { listShareTokenSchema, sharedStoreLinkSchema } from "@/lib/schemas/list-shares";
 import { formatPrice } from "@/lib/format-price";
 import type { SharedList } from "@/types";
+import { t } from "@/lib/i18n";
 
 export const prerender = false;
 
@@ -16,7 +17,7 @@ for (const [name, value] of Object.entries(privacyHeaders)) {
   Astro.response.headers.set(name, value);
 }
 
-const { user, supabase } = Astro.locals;
+const { user, supabase, locale } = Astro.locals;
 const parsedToken = listShareTokenSchema.safeParse(Astro.params.token);
 let list: SharedList | null = null;
 let member = false;
@@ -50,15 +51,15 @@ if (!list) {
 }
 ---
 
-<Layout title={list?.title ?? "Wishlist unavailable"} privatePage showToaster={false}>
+<Layout title={list?.title ?? t(locale, "share.unavailableTitle")} privatePage showToaster={false} languageSwitcher>
   <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
     {
       list ? (
         <>
           <h1 class="mb-2 text-3xl font-semibold break-words">{list.title}</h1>
-          <p class="text-muted-foreground mb-8 text-sm">Read-only wishlist</p>
+          <p class="text-muted-foreground mb-8 text-sm">{t(locale, "share.readOnly")}</p>
           {list.items.length === 0 ? (
-            <p class="text-muted-foreground text-sm">No items yet.</p>
+            <p class="text-muted-foreground text-sm">{t(locale, "share.noItems")}</p>
           ) : (
             <ul class="space-y-3">
               {list.items.map((item) => {
@@ -68,7 +69,9 @@ if (!list) {
                     <h2 class="font-medium break-words">{item.title}</h2>
                     {item.notes && <p class="text-sm break-words whitespace-pre-wrap">{item.notes}</p>}
                     {item.price_cents !== null && item.currency !== null && (
-                      <p class="text-muted-foreground text-sm">{formatPrice(item.price_cents, item.currency)}</p>
+                      <p class="text-muted-foreground text-sm">
+                        {formatPrice(item.price_cents, item.currency, locale)}
+                      </p>
                     )}
                     {safeLink.success ? (
                       <a
@@ -81,7 +84,7 @@ if (!list) {
                         {safeLink.data}
                       </a>
                     ) : item.link ? (
-                      <p class="text-muted-foreground text-sm">Store link unavailable.</p>
+                      <p class="text-muted-foreground text-sm">{t(locale, "share.linkUnavailable")}</p>
                     ) : null}
                   </li>
                 );
@@ -91,12 +94,8 @@ if (!list) {
         </>
       ) : (
         <>
-          <h1 class="mb-2 text-3xl font-semibold">Wishlist unavailable</h1>
-          <p class="text-muted-foreground">
-            {failed
-              ? "We could not load this wishlist. Please try again later."
-              : "This sharing link is unavailable. Ask the list owner for a new link."}
-          </p>
+          <h1 class="mb-2 text-3xl font-semibold">{t(locale, "share.unavailableTitle")}</h1>
+          <p class="text-muted-foreground">{failed ? t(locale, "share.loadFailed") : t(locale, "share.linkInvalid")}</p>
         </>
       )
     }

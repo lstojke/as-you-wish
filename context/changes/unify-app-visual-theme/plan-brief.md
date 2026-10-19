@@ -1,14 +1,14 @@
-# Unify App Visual Theme — Plan Brief
+# Unify App Visual Theme - Plan Brief
 
 > Full plan: `context/changes/unify-app-visual-theme/plan.md`
 
 ## What & Why
 
-The app currently reads as three different products: a cosmic dark landing page, half-cosmic auth pages, and a neutral-gray dashboard/lists area. We're promoting the landing page's "cosmic" colorway into the app's single, dark-only design-token theme and rewriting the landing page to describe AsYouWish (private family wish lists with exclusive, identity-hidden reservations) instead of the `10x-astro-starter` boilerplate — so every page looks and reads as one coherent product.
+The app currently reads as three different products: a cosmic dark landing page, half-cosmic auth pages, and a neutral-gray dashboard/lists area. We're promoting the landing page's "cosmic" colorway into the app's single, dark-only design-token theme and rewriting the landing page to describe AsYouWish (private family wish lists with exclusive, identity-hidden reservations) instead of the `10x-astro-starter` boilerplate - so every page looks and reads as one coherent product.
 
 ## Starting Point
 
-The cosmic palette lives entirely in hand-rolled utility classes and a standalone `bg-cosmic` CSS utility; it never touches the shadcn design tokens, which are stock neutral gray. Dark mode is dormant (no `ThemeProvider`, no `dark` class — the app always renders the light `:root` tokens), and the landing page still shows generic starter copy. Header markup is triplicated (landing `Topbar`, an inline dashboard header, and no header on the lists page).
+The cosmic palette lives entirely in hand-rolled utility classes and a standalone `bg-cosmic` CSS utility; it never touches the shadcn design tokens, which are stock neutral gray. Dark mode is dormant (no `ThemeProvider`, no `dark` class - the app always renders the light `:root` tokens), and the landing page still shows generic starter copy. Header markup is triplicated (landing `Topbar`, an inline dashboard header, and no header on the lists page).
 
 ## Desired End State
 
@@ -45,7 +45,7 @@ A signed-out visitor sees a real AsYouWish landing page (hero → how-it-works �
 
 ## Architecture / Approach
 
-Re-theme at the token layer first so the biggest surface flips with one file's worth of value changes and zero per-component edits (shadcn `Button`/`Card`/`Input`/`Badge` all read `--primary`, `--background`, etc.). Then unify the header, restructure the landing content, and finish with a utility-migration + accessibility sweep. Because dark mode is dormant, the palette goes directly in `:root` — no `dark` class, no toggle. `@theme inline` already maps semantic tokens to Tailwind utilities, so only raw `:root` values change.
+Re-theme at the token layer first so the biggest surface flips with one file's worth of value changes and zero per-component edits (shadcn `Button`/`Card`/`Input`/`Badge` all read `--primary`, `--background`, etc.). Then unify the header, restructure the landing content, and finish with a utility-migration + accessibility sweep. Because dark mode is dormant, the palette goes directly in `:root` - no `dark` class, no toggle. `@theme inline` already maps semantic tokens to Tailwind utilities, so only raw `:root` values change.
 
 ## Phases at a Glance
 
@@ -56,14 +56,14 @@ Re-theme at the token layer first so the biggest surface flips with one file's w
 | 3. Landing restructure          | AsYouWish hero + how-it-works + value props + CTA                                  | Copy/layout quality; keeping decorative effects legible                            |
 | 4. Token migration + a11y sweep | Auth + stray utilities tokenized; AA verified everywhere                           | Missing a mismatched surface or a failing contrast pair                            |
 
-**Prerequisites:** None — presentation-only; no schema, service, or infra dependency. Local dev + Supabase already run.
+**Prerequisites:** None - presentation-only; no schema, service, or infra dependency. Local dev + Supabase already run.
 **Estimated effort:** ~2–3 focused sessions across the four phases; Phase 1 carries the most iteration (palette + contrast).
 
 ## Open Risks & Assumptions
 
 - **Contrast vs. character tension:** the current decorative values (translucent glass, light blue text) may need to change to pass AA on real controls; assumes toning those down is acceptable.
 - **`.dark` block left dormant:** we set `:root`; if someone later adds a `dark` class/`ThemeProvider`, the `.dark` values must be aligned (Phase 1 addresses this with matched values or a comment).
-- Assumes no unit/integration test harness exists (confirmed) — verification is build/`astro check`/lint plus manual visual + contrast checks.
+- Assumes no unit/integration test harness exists (confirmed) - verification is build/`astro check`/lint plus manual visual + contrast checks.
 
 ## Success Criteria (Summary)
 

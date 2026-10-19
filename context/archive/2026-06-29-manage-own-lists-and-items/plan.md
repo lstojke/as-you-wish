@@ -1,19 +1,19 @@
-# Manage own lists and items — Implementation Plan
+# Manage own lists and items - Implementation Plan
 
 ## Overview
 
-Give a signed-in list owner the ability to rename and delete their own lists, and edit and delete items on those lists, each behind a confirmation prompt for destructive actions. This closes S-02 (FR-006, FR-007, FR-010, FR-011) by adding four new mutations (`lists.rename`, `lists.delete`, `items.update`, `items.delete`) on top of the S-01 schema + action surface. No database migration is required — owner-only RLS for `update` and `delete` on both `lists` and `items` already exists from F-01.
+Give a signed-in list owner the ability to rename and delete their own lists, and edit and delete items on those lists, each behind a confirmation prompt for destructive actions. This closes S-02 (FR-006, FR-007, FR-010, FR-011) by adding four new mutations (`lists.rename`, `lists.delete`, `items.update`, `items.delete`) on top of the S-01 schema + action surface. No database migration is required - owner-only RLS for `update` and `delete` on both `lists` and `items` already exists from F-01.
 
 ## Current State Analysis
 
 S-01 shipped the create-side surface end-to-end:
 
-- **Schemas** (`src/lib/schemas/wishlist.ts:3-29`): `listCreateSchema` (title trim/min/max) and `itemCreateSchema` (title, optional priceCents, optional currency, optional http(s) link with `.refine`) — plus a cross-field refine that ties currency to priceCents.
+- **Schemas** (`src/lib/schemas/wishlist.ts:3-29`): `listCreateSchema` (title trim/min/max) and `itemCreateSchema` (title, optional priceCents, optional currency, optional http(s) link with `.refine`) - plus a cross-field refine that ties currency to priceCents.
 - **Services** (`src/lib/services/lists.ts:9-57`, `src/lib/services/items.ts:11-38`): `createList`, `listOwnedAndShared`, `getListById`, `createItem`, `listItems`. All take `Client = SupabaseClient<Database>`, return the typed Row (or array), throw on Supabase error. `createItem` defaults currency to `"USD"` when `priceCents` is set and currency is omitted (`src/lib/services/items.ts:9,22`).
 - **Actions** (`src/actions/index.ts:6-61`): `requireSupabase` gates `locals.supabase` + `locals.user`; each action wraps the service call in `try/catch`, logs via `console.error("<action> failed", err)`, and throws `ActionError({ code: "INTERNAL_SERVER_ERROR", message })`. Field validation surfaces via `isInputError` on the client.
 - **Dashboard** (`src/components/dashboard/DashboardLists.tsx`, `CreateListDialog.tsx`): owned + shared lists rendered as `ListCard`s; `CreateListDialog` uses react-hook-form + zodResolver + sonner toast + the `crypto.randomUUID()` optimistic placeholder/replace pattern.
 - **List detail** (`src/pages/lists/[id].astro`, `src/components/lists/ListDetail.tsx`, `ItemsList.tsx`, `AddItemForm.tsx`): SSR loads list + items, hands to a `client:only="react"` island; the add-item form has a local `addItemFormSchema` that takes `priceInput` (string) and converts to `priceCents` before calling `actions.items.create`.
-- **RLS** (`supabase/migrations/20260527125732_initial_wishlist_schema.sql:191-228`): `lists` UPDATE/DELETE both gated on `owner_id = auth.uid()`; `items` UPDATE/DELETE both gated on `is_list_owner(list_id)`. **All four S-02 mutations are already authorized by these policies — no policy work in this slice.**
+- **RLS** (`supabase/migrations/20260527125732_initial_wishlist_schema.sql:191-228`): `lists` UPDATE/DELETE both gated on `owner_id = auth.uid()`; `items` UPDATE/DELETE both gated on `is_list_owner(list_id)`. **All four S-02 mutations are already authorized by these policies - no policy work in this slice.**
 - **Cascade**: `items.list_id → lists.id` is `on delete cascade` (`20260527125732_initial_wishlist_schema.sql:38-46`), so deleting a list will atomically delete its items in the database. The UI just needs to surface the blast radius.
 - **shadcn/ui installed** (`src/components/ui/`): button, card, dialog, form, input, label, skeleton, sonner. **Not installed**: `alert-dialog` (needed for destructive confirms) and `dropdown-menu` (needed for per-card and per-row action menus).
 - **Verification**: no test runner is configured. Automated verification means `npm run lint` and `astro check`; everything else is manual.
@@ -39,7 +39,7 @@ Verification:
 
 - **RLS is already complete for all four mutations** (`supabase/migrations/20260527125732_initial_wishlist_schema.sql:202-228`). The plan does not touch SQL.
 - **Cascade delete is enforced by the foreign key**, not by app code (`supabase/migrations/20260527125732_initial_wishlist_schema.sql:38-46`). The UI's only job is to surface the blast radius in the confirmation copy.
-- **`addItemFormSchema` lives locally in `AddItemForm.tsx`** (`src/components/lists/AddItemForm.tsx:12-24`) because it accepts `priceInput: string` and validates as a parseable float — the server schema takes `priceCents: number`. Phase 3 must factor a shared `ItemFormFields` component + shared form schema so the create and edit forms cannot drift (caught as F1 in the S-01 impl-review: `context/archive/2026-05-28-create-list-with-items/reviews/impl-review-phase-4.md`).
+- **`addItemFormSchema` lives locally in `AddItemForm.tsx`** (`src/components/lists/AddItemForm.tsx:12-24`) because it accepts `priceInput: string` and validates as a parseable float - the server schema takes `priceCents: number`. Phase 3 must factor a shared `ItemFormFields` component + shared form schema so the create and edit forms cannot drift (caught as F1 in the S-01 impl-review: `context/archive/2026-05-28-create-list-with-items/reviews/impl-review-phase-4.md`).
 - **Lessons priors apply**: every URL field (item edit included) must keep the `https?://` refine; every list-read service that touches non-owner lists must keep `lists_select` RLS in the loop (no impact on S-02 since this slice writes own rows only).
 - **No new protected routes**: `/dashboard` and `/lists/*` are already in `PROTECTED_ROUTES` (`src/middleware.ts:4`).
 
@@ -63,7 +63,7 @@ Three phases, in dependency order:
 2. **List rename + delete UI** consumes the Phase 1 backend on the dashboard cards and the list-detail header.
 3. **Item edit + delete UI** does the same on each item row. The first work in this phase is to extract the shared `itemFormSchema` + `ItemFormFields` component from `AddItemForm.tsx`, then both the existing `AddItemForm` and the new `EditItemForm` consume it. This closes the S-01 impl-review F1 drift risk.
 
-The optimistic-update pattern stays the same as S-01: maintain local state in the React island, mutate immediately on user action, swap to the server response on success, restore to the prior state and surface a `toast.error` on failure. Delete needs one new wrinkle — remember the original index so the row can be reinserted at the right position on rollback.
+The optimistic-update pattern stays the same as S-01: maintain local state in the React island, mutate immediately on user action, swap to the server response on success, restore to the prior state and surface a `toast.error` on failure. Delete needs one new wrinkle - remember the original index so the row can be reinserted at the right position on rollback.
 
 ## Phase 1: Backend wiring + shadcn primitives
 
@@ -75,11 +75,11 @@ Install the two missing shadcn components and add every schema, service function
 
 #### 1. shadcn primitives
 
-**Files**: `src/components/ui/alert-dialog.tsx`, `src/components/ui/dropdown-menu.tsx` (new — generated by shadcn CLI)
+**Files**: `src/components/ui/alert-dialog.tsx`, `src/components/ui/dropdown-menu.tsx` (new - generated by shadcn CLI)
 
 **Intent**: Bring in the two shadcn primitives needed by Phases 2/3. Install via the CLI rather than hand-rolling, per AGENTS.md.
 
-**Contract**: Run `npx shadcn@latest add alert-dialog dropdown-menu`. Accept whatever the generator writes — both are standard Radix wrappers in the "new-york" style this repo uses. No edits to the generated files in this phase.
+**Contract**: Run `npx shadcn@latest add alert-dialog dropdown-menu`. Accept whatever the generator writes - both are standard Radix wrappers in the "new-york" style this repo uses. No edits to the generated files in this phase.
 
 #### 2. Update & delete schemas
 
@@ -91,9 +91,9 @@ Install the two missing shadcn components and add every schema, service function
 
 - `listRenameSchema = z.object({ listId: z.uuid(), title: z.string().trim().min(1).max(200) })` plus `ListRenameInput`.
 - `listDeleteSchema = z.object({ listId: z.uuid() })` plus `ListDeleteInput`.
-- `itemUpdateSchema` — same field shape and refines as `itemCreateSchema` (title, priceCents, currency, link with `https?://` refine, currency-requires-price cross-field refine), but keyed on `itemId: z.uuid()` instead of `listId`. Export `ItemUpdateInput`.
+- `itemUpdateSchema` - same field shape and refines as `itemCreateSchema` (title, priceCents, currency, link with `https?://` refine, currency-requires-price cross-field refine), but keyed on `itemId: z.uuid()` instead of `listId`. Export `ItemUpdateInput`.
 - `itemDeleteSchema = z.object({ itemId: z.uuid() })` plus `ItemDeleteInput`.
-- **Factor a shared `itemFormSchema`** — a single zod schema describing the client-form shape (`title: string`, `priceInput: string` parseable as non-negative float, `link: string` with the `https?://` refine), plus a `mapItemFormToCreate(listId, values)` helper that produces `ItemCreateInput` and a `mapItemFormToUpdate(itemId, values)` helper that produces `ItemUpdateInput`. Export the schema and the inferred `ItemFormValues` type. Keep the existing `itemCreateSchema` shape unchanged so the action input contract stays stable.
+- **Factor a shared `itemFormSchema`** - a single zod schema describing the client-form shape (`title: string`, `priceInput: string` parseable as non-negative float, `link: string` with the `https?://` refine), plus a `mapItemFormToCreate(listId, values)` helper that produces `ItemCreateInput` and a `mapItemFormToUpdate(itemId, values)` helper that produces `ItemUpdateInput`. Export the schema and the inferred `ItemFormValues` type. Keep the existing `itemCreateSchema` shape unchanged so the action input contract stays stable.
 
 #### 3. Service functions
 
@@ -103,8 +103,8 @@ Install the two missing shadcn components and add every schema, service function
 
 **Contract**:
 
-- `updateList(client: Client, input: ListRenameInput): Promise<ListRow>` — calls `client.from("lists").update({ title: input.title }).eq("id", input.listId).select("*").single()`; throws on error. RLS denies non-owner update so no manual ownership check is needed.
-- `deleteList(client: Client, input: ListDeleteInput): Promise<void>` — calls `client.from("lists").delete().eq("id", input.listId)`; throws on error. Cascade is enforced by the FK on `items.list_id`.
+- `updateList(client: Client, input: ListRenameInput): Promise<ListRow>` - calls `client.from("lists").update({ title: input.title }).eq("id", input.listId).select("*").single()`; throws on error. RLS denies non-owner update so no manual ownership check is needed.
+- `deleteList(client: Client, input: ListDeleteInput): Promise<void>` - calls `client.from("lists").delete().eq("id", input.listId)`; throws on error. Cascade is enforced by the FK on `items.list_id`.
 
 **File**: `src/lib/services/items.ts`
 
@@ -112,8 +112,8 @@ Install the two missing shadcn components and add every schema, service function
 
 **Contract**:
 
-- `updateItem(client: Client, input: ItemUpdateInput): Promise<ItemRow>` — computes currency the same way `createItem` does (`src/lib/services/items.ts:22`): if `priceCents !== undefined` then `currency ?? DEFAULT_CURRENCY`, else `currency ?? null`. Calls `.update({...}).eq("id", input.itemId).select("*").single()`. Throws on error.
-- `deleteItem(client: Client, input: ItemDeleteInput): Promise<void>` — calls `.delete().eq("id", input.itemId)`; throws on error.
+- `updateItem(client: Client, input: ItemUpdateInput): Promise<ItemRow>` - computes currency the same way `createItem` does (`src/lib/services/items.ts:22`): if `priceCents !== undefined` then `currency ?? DEFAULT_CURRENCY`, else `currency ?? null`. Calls `.update({...}).eq("id", input.itemId).select("*").single()`. Throws on error.
+- `deleteItem(client: Client, input: ItemDeleteInput): Promise<void>` - calls `.delete().eq("id", input.itemId)`; throws on error.
 
 #### 4. Actions
 
@@ -123,10 +123,10 @@ Install the two missing shadcn components and add every schema, service function
 
 **Contract**: Add to the existing `server` export:
 
-- `lists.rename` — `input: listRenameSchema`, handler calls `updateList`, message on failure: `"Could not rename list"`.
-- `lists.delete` — `input: listDeleteSchema`, handler calls `deleteList`, message: `"Could not delete list"`.
-- `items.update` — `input: itemUpdateSchema`, handler calls `updateItem`, message: `"Could not update item"`.
-- `items.delete` — `input: itemDeleteSchema`, handler calls `deleteItem`, message: `"Could not delete item"`.
+- `lists.rename` - `input: listRenameSchema`, handler calls `updateList`, message on failure: `"Could not rename list"`.
+- `lists.delete` - `input: listDeleteSchema`, handler calls `deleteList`, message: `"Could not delete list"`.
+- `items.update` - `input: itemUpdateSchema`, handler calls `updateItem`, message: `"Could not update item"`.
+- `items.delete` - `input: itemDeleteSchema`, handler calls `deleteItem`, message: `"Could not delete item"`.
 
 Each action keeps the `console.error("<action> failed", err)` line so server-side errors surface in `npx wrangler tail`.
 
@@ -161,7 +161,7 @@ Expose rename and delete on the dashboard cards and on the list-detail header. R
 
 **Intent**: Reusable overflow (⋮) `DropdownMenu` with **Rename** and **Delete** entries, used both from `DashboardLists` cards and from the list-detail header.
 
-**Contract**: Props `{ list: ListRow; onRename: () => void; onDelete: () => void }`. Renders a `DropdownMenu` with a trigger button (icon-only, `variant="ghost"`, `aria-label="List actions"`) and two `DropdownMenuItem`s. The component does not own dialog state — it just signals which action was chosen; the parent controls the dialog visibility.
+**Contract**: Props `{ list: ListRow; onRename: () => void; onDelete: () => void }`. Renders a `DropdownMenu` with a trigger button (icon-only, `variant="ghost"`, `aria-label="List actions"`) and two `DropdownMenuItem`s. The component does not own dialog state - it just signals which action was chosen; the parent controls the dialog visibility.
 
 #### 2. Rename dialog
 
@@ -185,7 +185,7 @@ Expose rename and delete on the dashboard cards and on the list-detail header. R
 
 **Intent**: Mount `ListActionsMenu` on each owned `ListCard`, manage which dialog is open and which list it targets, and handle optimistic updates for rename (in-place title swap) and delete (optimistic remove with rollback).
 
-**Contract**: Extend `DashboardLists` state with `{ renameTarget: ListRow | null; deleteTarget: ListRow | null }`. Pass `onRename: () => setRenameTarget(list)` and `onDelete: () => setDeleteTarget(list)` from each owned `ListCard` into `ListActionsMenu`. Wire `RenameListDialog`'s `onRenamed(updated)` to map over `owned` and replace the row; wire `DeleteListDialog`'s `onDeleted` callback to optimistically filter the row, remembering its index in a closure so a `toast.error` (caught by the dialog) can re-insert it at the same position. (Implementation note: pass a rollback callback into the dialog rather than try/catching inside `DashboardLists`.) The `ListCard` link wrapper must not also be the dropdown trigger — stop click propagation on the menu trigger so the card link does not fire.
+**Contract**: Extend `DashboardLists` state with `{ renameTarget: ListRow | null; deleteTarget: ListRow | null }`. Pass `onRename: () => setRenameTarget(list)` and `onDelete: () => setDeleteTarget(list)` from each owned `ListCard` into `ListActionsMenu`. Wire `RenameListDialog`'s `onRenamed(updated)` to map over `owned` and replace the row; wire `DeleteListDialog`'s `onDeleted` callback to optimistically filter the row, remembering its index in a closure so a `toast.error` (caught by the dialog) can re-insert it at the same position. (Implementation note: pass a rollback callback into the dialog rather than try/catching inside `DashboardLists`.) The `ListCard` link wrapper must not also be the dropdown trigger - stop click propagation on the menu trigger so the card link does not fire.
 
 #### 5. List-detail header wiring
 
@@ -232,11 +232,11 @@ Expose edit and delete on each item row via an overflow menu; edit opens a modal
 
 **File**: `src/components/lists/ItemFormFields.tsx` (new) and `src/components/lists/AddItemForm.tsx`
 
-**Intent**: Extract the four form rows (title, price, link — with the implicit-USD currency behavior) from `AddItemForm` into a reusable `ItemFormFields` component driven by the shared `itemFormSchema`. Refactor `AddItemForm` to consume it. This closes S-01 impl-review F1.
+**Intent**: Extract the four form rows (title, price, link - with the implicit-USD currency behavior) from `AddItemForm` into a reusable `ItemFormFields` component driven by the shared `itemFormSchema`. Refactor `AddItemForm` to consume it. This closes S-01 impl-review F1.
 
 **Contract**:
 
-- `ItemFormFields` props `{ control: Control<ItemFormValues> }` — renders the same three `FormField` blocks currently in `AddItemForm.tsx:80-127`. No submit handling; pure form-row layout consuming a parent `useForm` control.
+- `ItemFormFields` props `{ control: Control<ItemFormValues> }` - renders the same three `FormField` blocks currently in `AddItemForm.tsx:80-127`. No submit handling; pure form-row layout consuming a parent `useForm` control.
 - `AddItemForm` refactored to import `itemFormSchema` + `ItemFormValues` + `mapItemFormToCreate` from `@/lib/schemas/wishlist`, use `zodResolver(itemFormSchema)`, render `<ItemFormFields control={form.control} />`, and call `actions.items.create(mapItemFormToCreate(list.id, values))`. All optimistic-add behavior stays unchanged. No user-visible change.
 
 #### 2. Item edit modal
@@ -245,7 +245,7 @@ Expose edit and delete on each item row via an overflow menu; edit opens a modal
 
 **Intent**: Modal form that prefills an existing item and calls `actions.items.update` on submit; short-circuits when no fields changed.
 
-**Contract**: Props `{ item: ItemRow | null; open: boolean; onOpenChange: (open: boolean) => void; onUpdated: (updated: ItemRow) => void }`. Uses `useForm<ItemFormValues>({ resolver: zodResolver(itemFormSchema), defaultValues: itemRowToFormValues(item) })` — define `itemRowToFormValues` adjacent (converts `price_cents` → dollars-string, `null`s → empty string). Reset form when `item.id` changes or dialog opens. On submit: compare the form values to the original (deep-equal via `JSON.stringify` of the normalized objects is fine for these primitive fields) — if equal, close the dialog without firing the action. Otherwise call `actions.items.update(mapItemFormToUpdate(item.id, values))`, branch on `isInputError`, `toast.error` on server error, on success call `onUpdated(data)`, close, `toast.success("Item updated")`.
+**Contract**: Props `{ item: ItemRow | null; open: boolean; onOpenChange: (open: boolean) => void; onUpdated: (updated: ItemRow) => void }`. Uses `useForm<ItemFormValues>({ resolver: zodResolver(itemFormSchema), defaultValues: itemRowToFormValues(item) })` - define `itemRowToFormValues` adjacent (converts `price_cents` → dollars-string, `null`s → empty string). Reset form when `item.id` changes or dialog opens. On submit: compare the form values to the original (deep-equal via `JSON.stringify` of the normalized objects is fine for these primitive fields) - if equal, close the dialog without firing the action. Otherwise call `actions.items.update(mapItemFormToUpdate(item.id, values))`, branch on `isInputError`, `toast.error` on server error, on success call `onUpdated(data)`, close, `toast.success("Item updated")`.
 
 #### 3. Item actions menu
 
@@ -280,7 +280,7 @@ Expose edit and delete on each item row via an overflow menu; edit opens a modal
 
 - Linting passes: `npm run lint`
 - Astro check passes: `npx astro check`
-- `AddItemForm.tsx` no longer declares a local `addItemFormSchema` — `grep -n "addItemFormSchema" src/components/lists/AddItemForm.tsx` returns no matches.
+- `AddItemForm.tsx` no longer declares a local `addItemFormSchema` - `grep -n "addItemFormSchema" src/components/lists/AddItemForm.tsx` returns no matches.
 
 #### Manual Verification
 
@@ -302,7 +302,7 @@ Expose edit and delete on each item row via an overflow menu; edit opens a modal
 
 ### Unit Tests
 
-None — no test runner is configured in this repo. Verification leans on lint + astro check + the manual walk above.
+None - no test runner is configured in this repo. Verification leans on lint + astro check + the manual walk above.
 
 ### Integration Tests
 
@@ -310,7 +310,7 @@ None for the same reason. The manual checks in each phase's Success Criteria are
 
 ### Manual Testing Steps
 
-Covered in the per-phase Manual Verification sections above. The "force a server error" steps (2.6, 3.8) require temporarily throwing from the action handler to exercise the rollback paths — revert the throw before commit.
+Covered in the per-phase Manual Verification sections above. The "force a server error" steps (2.6, 3.8) require temporarily throwing from the action handler to exercise the rollback paths - revert the throw before commit.
 
 ## Performance Considerations
 
@@ -330,55 +330,55 @@ No data migration. The schema is unchanged.
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Backend wiring + shadcn primitives
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint` — 9efe95b
-- [x] 1.2 Type/Astro check passes: `npx astro check` — 9efe95b
-- [x] 1.3 shadcn install left two new files in place: `ls src/components/ui/alert-dialog.tsx src/components/ui/dropdown-menu.tsx` — 9efe95b
+- [x] 1.1 Linting passes: `npm run lint` - 9efe95b
+- [x] 1.2 Type/Astro check passes: `npx astro check` - 9efe95b
+- [x] 1.3 shadcn install left two new files in place: `ls src/components/ui/alert-dialog.tsx src/components/ui/dropdown-menu.tsx` - 9efe95b
 
 #### Manual
 
-- [x] 1.4 Hit one new action via `POST /_actions/lists.rename` with an owned list and confirm a 200 + updated row — 9efe95b
-- [x] 1.5 Hit the same action with a UUID the signed-in user does not own and confirm an ActionError is returned (RLS blocks the write) — 9efe95b
+- [x] 1.4 Hit one new action via `POST /_actions/lists.rename` with an owned list and confirm a 200 + updated row - 9efe95b
+- [x] 1.5 Hit the same action with a UUID the signed-in user does not own and confirm an ActionError is returned (RLS blocks the write) - 9efe95b
 
 ### Phase 2: List rename + delete UI
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint` — a6bcc88
-- [x] 2.2 Astro check passes: `npx astro check` — a6bcc88
-- [x] 2.3 List-detail page still SSRs without errors for an owned list — a6bcc88
+- [x] 2.1 Linting passes: `npm run lint` - a6bcc88
+- [x] 2.2 Astro check passes: `npx astro check` - a6bcc88
+- [x] 2.3 List-detail page still SSRs without errors for an owned list - a6bcc88
 
 #### Manual
 
-- [x] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed" — a6bcc88
-- [x] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted" — a6bcc88
-- [x] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh — a6bcc88
-- [x] 2.7 Detail-page ⋮ → Rename → header title updates — a6bcc88
-- [x] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent — a6bcc88
-- [x] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …" — a6bcc88
-- [x] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped) — a6bcc88
+- [x] 2.4 Dashboard ⋮ → Rename → title updates in place without reload; toast "List renamed" - a6bcc88
+- [x] 2.5 Dashboard ⋮ → Delete on a list with 0 items → "This list has no items…" copy; confirm → card disappears; toast "List deleted" - a6bcc88
+- [x] 2.6 Dashboard ⋮ → Delete on a list with N items → "…will also delete N items…" copy; confirm → card disappears; items also gone after refresh - a6bcc88
+- [x] 2.7 Detail-page ⋮ → Rename → header title updates - a6bcc88
+- [x] 2.8 Detail-page ⋮ → Delete → confirm → browser navigates to /dashboard; deleted list absent - a6bcc88
+- [x] 2.9 Forced server-error on rename/delete rolls back optimistic state and shows toast "Could not …" - a6bcc88
+- [x] 2.10 Clicking the ⋮ trigger does NOT navigate to the list-detail page (click propagation stopped) - a6bcc88
 
 ### Phase 3: Item edit + delete UI
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint` — 947b817
-- [x] 3.2 Astro check passes: `npx astro check` — 947b817
-- [x] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches) — 947b817
+- [x] 3.1 Linting passes: `npm run lint` - 947b817
+- [x] 3.2 Astro check passes: `npx astro check` - 947b817
+- [x] 3.3 `AddItemForm.tsx` no longer declares a local `addItemFormSchema` (grep returns no matches) - 947b817
 
 #### Manual
 
-- [x] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check) — 947b817
-- [x] 3.5 ⋮ → Edit prefills all four fields correctly — 947b817
-- [x] 3.6 Change title and save → row updates in place; toast "Item updated" — 947b817
-- [x] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call — 947b817
-- [x] 3.8 Open Edit, clear the link, save → row renders without a link — 947b817
-- [x] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call — 947b817
-- [x] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted" — 947b817
-- [x] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item" — 947b817
-- [x] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships) — 947b817
+- [x] 3.4 Create-an-item flow still works after the `AddItemForm` refactor (regression check) - 947b817
+- [x] 3.5 ⋮ → Edit prefills all four fields correctly - 947b817
+- [x] 3.6 Change title and save → row updates in place; toast "Item updated" - 947b817
+- [x] 3.7 Open Edit, change nothing, click Save → modal closes silently; no network call - 947b817
+- [x] 3.8 Open Edit, clear the link, save → row renders without a link - 947b817
+- [x] 3.9 Open Edit, enter `javascript:alert(1)` as link → inline validation error; no action call - 947b817
+- [x] 3.10 ⋮ → Delete on a row → confirm → row disappears optimistically; toast "Item deleted" - 947b817
+- [x] 3.11 Forced server-error on `items.delete` rolls back to original index; toast "Could not delete item" - 947b817
+- [x] 3.12 ⋮ menu is not rendered on item rows when the viewer is not the list owner (verified by code-read until S-03 ships) - 947b817

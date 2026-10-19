@@ -18,6 +18,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { listRenameSchema } from "@/lib/schemas/wishlist";
 import type { ListRow } from "@/lib/services/lists";
+import { useT } from "@/components/hooks/useT";
 
 const renameFormSchema = listRenameSchema.pick({ title: true });
 type RenameFormValues = z.infer<typeof renameFormSchema>;
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export default function RenameListDialog({ list, open, onOpenChange, onRenamed }: Props) {
+  const { t, tm } = useT();
   const form = useForm<RenameFormValues>({
     resolver: zodResolver(renameFormSchema),
     defaultValues: { title: list?.title ?? "" },
@@ -57,25 +59,25 @@ export default function RenameListDialog({ list, open, onOpenChange, onRenamed }
       if (isInputError(error)) {
         const titleMessage = error.fields.title?.[0];
         if (titleMessage) {
-          form.setError("title", { message: titleMessage });
+          form.setError("title", { message: tm(titleMessage) });
         }
         return;
       }
-      toast.error(error.message || "Could not rename list");
+      toast.error(error.message || t("errors.listRename"));
       return;
     }
 
     onRenamed(data);
     onOpenChange(false);
-    toast.success("List renamed");
+    toast.success(t("dashboardLists.renamed"));
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Rename list</DialogTitle>
-          <DialogDescription>Give your list a new name.</DialogDescription>
+          <DialogTitle>{t("dashboardLists.renameTitle")}</DialogTitle>
+          <DialogDescription>{t("dashboardLists.renameDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -84,7 +86,7 @@ export default function RenameListDialog({ list, open, onOpenChange, onRenamed }
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("dashboardLists.name")}</FormLabel>
                   <FormControl>
                     <Input autoFocus autoComplete="off" maxLength={200} {...field} />
                   </FormControl>
@@ -101,10 +103,10 @@ export default function RenameListDialog({ list, open, onOpenChange, onRenamed }
                 }}
                 disabled={form.formState.isSubmitting}
               >
-                Cancel
+                {t("dashboardLists.cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving…" : "Save"}
+                {form.formState.isSubmitting ? t("dashboardLists.saving") : t("dashboardLists.save")}
               </Button>
             </DialogFooter>
           </form>

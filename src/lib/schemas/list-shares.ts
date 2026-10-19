@@ -27,4 +27,4 @@ export const sharedListSchema = z.strictObject({
   ),
 });
 
-export const sharedStoreLinkSchema = z.url().refine((url) => /^https?:\/\//i.test(url), "Must be an http(s) URL");
+export const sharedStoreLinkSchema = z.url().refine((url) => /^https?:\/\//i.test(url), "validation.urlHttp");

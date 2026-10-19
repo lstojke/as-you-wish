@@ -3,10 +3,11 @@ import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import DashboardLists from "@/components/dashboard/DashboardLists";
 import { listOwnedAndShared, type ListRow } from "@/lib/services/lists";
+import { t } from "@/lib/i18n";
 
 export const prerender = false;
 
-const { user, supabase } = Astro.locals;
+const { user, supabase, locale } = Astro.locals;
 if (!user || !supabase) {
   throw new Error("dashboard: middleware should have redirected unauthenticated requests");
 }
@@ -27,12 +28,12 @@ for (const delayMs of [0, 250, 750]) {
 }
 ---
 
-<Layout title="Dashboard">
+<Layout title={t(locale, "dashboard.pageTitle")}>
   <AppHeader />
   <main class="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
     {
-      /* client:only prevents Astro SSR from rendering this island — required because react-hook-form and Radix UI primitives inside the dialog resolve to a different React instance than Astro's SSR renderer, producing an "Invalid hook call" crash at runtime. SSR data is fetched above and passed as props. */
+      /* client:only prevents Astro SSR from rendering this island - required because react-hook-form and Radix UI primitives inside the dialog resolve to a different React instance than Astro's SSR renderer, producing an "Invalid hook call" crash at runtime. SSR data is fetched above and passed as props. */
     }
-    <DashboardLists client:only="react" owned={owned} shared={shared} loadError={listsLoadFailed} />
+    <DashboardLists client:only="react" locale={locale} owned={owned} shared={shared} loadError={listsLoadFailed} />
   </main>
 </Layout>

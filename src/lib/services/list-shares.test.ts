@@ -133,8 +133,8 @@ describe("shared item presentation", () => {
   });
 
   it("preserves the existing price display and fallback convention", () => {
-    expect(formatPrice(1234, "USD")).toBe("$12.34");
-    expect(formatPrice(0, "USD")).toBe("$0.00");
-    expect(formatPrice(1234, "invalid")).toBe("12.34 invalid");
+    expect(formatPrice(1234, "USD", "en")).toBe("$12.34");
+    expect(formatPrice(0, "USD", "en")).toBe("$0.00");
+    expect(formatPrice(1234, "invalid", "en")).toBe("12.34 invalid");
   });
 });

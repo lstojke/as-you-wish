@@ -7,7 +7,7 @@ export type InvitationRow = Database["public"]["Tables"]["invitations"]["Row"];
 type Client = SupabaseClient<Database>;
 
 // Convention: this service returns typed result-unions for expected outcomes
-// (e.g. duplicate invite) instead of throwing like lists.ts/items.ts — intentional, per plan.
+// (e.g. duplicate invite) instead of throwing like lists.ts/items.ts - intentional, per plan.
 export type CreateInvitationResult = { ok: true; invitation: InvitationRow } | { ok: false; reason: "already_invited" };
 
 // RLS invitations_insert gates to is_list_owner(list_id); no app-side owner check.
@@ -64,7 +64,7 @@ function mapAcceptError(error: PostgrestError): AcceptInvitationReason {
 }
 
 // Acceptance runs through the accept_invitation RPC (SECURITY DEFINER) so it
-// does not depend on the often-absent email_verified JWT claim — see the
+// does not depend on the often-absent email_verified JWT claim - see the
 // migration and lessons.md. Returns the list_id for redirect on success.
 export async function acceptInvitation(client: Client, input: InvitationAcceptInput): Promise<AcceptInvitationResult> {
   const { data, error } = await client.rpc("accept_invitation", { invite_id: input.invitationId });

@@ -1,0 +1,40 @@
+---
+import { LOCALES } from "@/lib/i18n/config";
+import { t } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+const { locale } = Astro.locals;
+const returnTo = Astro.url.pathname + Astro.url.search;
+---
+
+<form
+  method="post"
+  action="/api/locale"
+  aria-label={t(locale, "language.switcherLabel")}
+  class:list={cn("border-border flex items-center rounded-lg border p-0.5 text-xs font-medium", className)}
+>
+  <input type="hidden" name="return" value={returnTo} />
+  {
+    LOCALES.map((code) => (
+      <button
+        type="submit"
+        name="locale"
+        value={code}
+        lang={code}
+        title={t(code, `language.${code}`)}
+        aria-pressed={code === locale ? "true" : "false"}
+        class:list={cn(
+          "focus-visible:ring-ring/50 cursor-pointer rounded-md px-2 py-1 uppercase transition-colors outline-none focus-visible:ring-[3px]",
+          code === locale ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        {code}
+      </button>
+    ))
+  }
+</form>

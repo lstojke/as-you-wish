@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# race-test.sh — proves FR-013 via the unique partial index on reservations.
+# race-test.sh - proves FR-013 via the unique partial index on reservations.
 #
 # Two concurrent transactions try to insert a reservation for the same
 # item_id. With `reservations_one_active_per_item UNIQUE (item_id) WHERE

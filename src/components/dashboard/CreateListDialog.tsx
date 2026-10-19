@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { listCreateSchema, type ListCreateInput } from "@/lib/schemas/wishlist";
 import type { ListRow } from "@/lib/services/lists";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   open: boolean;
@@ -33,6 +34,7 @@ export default function CreateListDialog({
   onOptimisticReplace,
   onOptimisticRemove,
 }: Props) {
+  const { t, tm } = useT();
   const form = useForm<ListCreateInput>({
     resolver: zodResolver(listCreateSchema),
     defaultValues: { title: "" },
@@ -63,25 +65,25 @@ export default function CreateListDialog({
       if (isInputError(error)) {
         const titleMessage = error.fields.title?.[0];
         if (titleMessage) {
-          form.setError("title", { message: titleMessage });
+          form.setError("title", { message: tm(titleMessage) });
         }
         return;
       }
-      toast.error(error.message || "Could not create list");
+      toast.error(error.message || t("errors.listCreate"));
       return;
     }
 
     onOptimisticReplace(placeholderId, data);
     onOpenChange(false);
-    toast.success("List created");
+    toast.success(t("dashboardLists.created"));
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create a wish list</DialogTitle>
-          <DialogDescription>Give your list a name. You can add items right after.</DialogDescription>
+          <DialogTitle>{t("dashboardLists.createTitle")}</DialogTitle>
+          <DialogDescription>{t("dashboardLists.createDescription")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -90,10 +92,10 @@ export default function CreateListDialog({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>{t("dashboardLists.name")}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g. Birthday wish list"
+                      placeholder={t("dashboardLists.namePlaceholder")}
                       autoFocus
                       autoComplete="off"
                       maxLength={200}
@@ -113,10 +115,10 @@ export default function CreateListDialog({
                 }}
                 disabled={form.formState.isSubmitting}
               >
-                Cancel
+                {t("dashboardLists.cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Creating…" : "Create list"}
+                {form.formState.isSubmitting ? t("dashboardLists.creating") : t("dashboardLists.createList")}
               </Button>
             </DialogFooter>
           </form>

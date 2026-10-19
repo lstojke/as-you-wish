@@ -1,18 +1,18 @@
-# Create List With Items — Plan Brief
+# Create List With Items - Plan Brief
 
 > Full plan: `context/changes/create-list-with-items/plan.md`
 
 ## What & Why
 
-S-01 puts the first product UI on top of F-01's schema: a signed-in user can create a wish list, add items, and see their owned lists plus lists shared with them on `/dashboard`. This is the chosen north star — the smallest slice that proves the family coordinator will actually build a list in this app instead of staying in their existing channel.
+S-01 puts the first product UI on top of F-01's schema: a signed-in user can create a wish list, add items, and see their owned lists plus lists shared with them on `/dashboard`. This is the chosen north star - the smallest slice that proves the family coordinator will actually build a list in this app instead of staying in their existing channel.
 
 ## Starting Point
 
-F-01 landed the full data foundation in production (commits `4f6153b` → `93809dd`): `lists`, `items`, `invitations`, `reservations`, the `item_reservation_status` view, and the RLS-recursion-safe `SECURITY DEFINER` helpers. No data-layer code exists yet — no `database.types.ts`, no services, no actions. shadcn/ui is seeded with `button.tsx` only. `dashboard.astro` is a stub greeting the user.
+F-01 landed the full data foundation in production (commits `4f6153b` → `93809dd`): `lists`, `items`, `invitations`, `reservations`, the `item_reservation_status` view, and the RLS-recursion-safe `SECURITY DEFINER` helpers. No data-layer code exists yet - no `database.types.ts`, no services, no actions. shadcn/ui is seeded with `button.tsx` only. `dashboard.astro` is a stub greeting the user.
 
 ## Desired End State
 
-Signed-in users land on `/dashboard` and see two sections — **My lists** (owned, with a hero empty state on first visit) and **Shared with me** (rendered only when an accepted invitation exists). A "Create list" dialog opens from the dashboard, optimistically inserts on submit, and rolls back with a toast on server error. Clicking a list card navigates to `/lists/<id>`, SSR-rendered with the list title and its items; RLS-denied access returns 404. An inline add-item form on that page captures title, optional price, and optional store link with the same optimistic flow.
+Signed-in users land on `/dashboard` and see two sections - **My lists** (owned, with a hero empty state on first visit) and **Shared with me** (rendered only when an accepted invitation exists). A "Create list" dialog opens from the dashboard, optimistically inserts on submit, and rolls back with a toast on server error. Clicking a list card navigates to `/lists/<id>`, SSR-rendered with the list title and its items; RLS-denied access returns 404. An inline add-item form on that page captures title, optional price, and optional store link with the same optimistic flow.
 
 ## Key Decisions Made
 
@@ -22,7 +22,7 @@ Signed-in users land on `/dashboard` and see two sections — **My lists** (owne
 | Mutation pattern | Astro Actions (typed, zod-validated) | Mobile is `Supabase direct` (PRD Q3), so web doesn't need a portable HTTP API; minimal boilerplate for someone new to React | Plan |
 | Lists-home surface | `/dashboard` (replace the existing stub) | Matches existing `PROTECTED_ROUTES`; clean separation of marketing vs app surface | Plan |
 | List-detail surface | New `/lists/[id]` route | Deep-linkable for future invitation flow; clean URLs; SSR-friendly | Plan |
-| S-01 vs S-02 scope | Create-only — no edit, no delete in S-01 | Smallest slice; matches roadmap's PRD-ref list exactly; maximum speed to feedback | Plan |
+| S-01 vs S-02 scope | Create-only - no edit, no delete in S-01 | Smallest slice; matches roadmap's PRD-ref list exactly; maximum speed to feedback | Plan |
 | Form validation/error UX | react-hook-form + zod (shared schema) + shadcn `form` + sonner toasts | Zero schema duplication; standard shadcn pattern; best DX | Plan |
 | Owned vs shared on dashboard | Two labeled sections; "Shared with me" rendered conditionally on non-empty | FR-004 satisfied literally; section appears naturally when S-03 produces rows; no second pass on the dashboard | Plan |
 | Empty/error/loading UX | Hero empty state for first-time dashboard; sonner toasts for server errors; skeleton on initial nav; optimistic add with rollback | Polished onboarding; meets PRD NFR <2 s perceived latency | Plan |
@@ -63,7 +63,7 @@ Signed-in users land on `/dashboard` and see two sections — **My lists** (owne
 ```
 src/middleware.ts
   ├── context.locals.user            (existing)
-  └── context.locals.supabase        (new — typed SSR client)
+  └── context.locals.supabase        (new - typed SSR client)
        │
        ▼
 src/lib/services/{lists,items}.ts    (only place that calls Supabase)
@@ -77,16 +77,16 @@ React islands (DashboardLists, CreateListDialog, ListDetail, AddItemForm)
   + shadcn ui + react-hook-form + zod (shared schemas)
 ```
 
-Pages SSR with the service layer for reads; React islands call Astro Actions for writes; Actions also call the service layer. F-01's RLS is the single authorization surface — no app-layer access checks.
+Pages SSR with the service layer for reads; React islands call Astro Actions for writes; Actions also call the service layer. F-01's RLS is the single authorization surface - no app-layer access checks.
 
 ## Phases at a Glance
 
 | Phase | What it delivers | Key risk |
 | --- | --- | --- |
 | 1. Schema delta + generated types | `items.price_cents` + `items.currency` applied locally and to prod; `database.types.ts` generated; Supabase client re-typed | Production migration must not regress auth |
-| 2. Foundations — shadcn, Actions, services, schemas | All UI primitives, the Actions runtime, the service layer, shared zod schemas, Toaster mounted | Wiring `context.locals.supabase` in middleware without breaking existing auth |
-| 3. Dashboard — owned + shared + create-list | `/dashboard` shows real lists, hero empty state, optimistic create-list dialog | Optimistic rollback must run cleanly on server errors |
-| 4. List detail — view items + add-item | `/lists/[id]` SSR-renders the list and items; optimistic add-item form | RLS-denied access must surface as 404, not an empty page |
+| 2. Foundations - shadcn, Actions, services, schemas | All UI primitives, the Actions runtime, the service layer, shared zod schemas, Toaster mounted | Wiring `context.locals.supabase` in middleware without breaking existing auth |
+| 3. Dashboard - owned + shared + create-list | `/dashboard` shows real lists, hero empty state, optimistic create-list dialog | Optimistic rollback must run cleanly on server errors |
+| 4. List detail - view items + add-item | `/lists/[id]` SSR-renders the list and items; optimistic add-item form | RLS-denied access must surface as 404, not an empty page |
 
 **Prerequisites:** F-01 applied in production (done); Supabase CLI installed + linked; Docker for local stack.
 

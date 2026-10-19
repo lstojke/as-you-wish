@@ -9,8 +9,8 @@ A list owner can invite a specific person to one of their lists by email address
 - **Schema is already landed (F-01).** `supabase/migrations/20260527125732_initial_wishlist_schema.sql` defines the `invitations` table (`id, list_id, email, invited_at, accepted_at, accepted_by_user_id`, `unique (list_id, email)`) plus RLS: owners `insert`/`select`/`delete` via `is_list_owner`, and invitees may `update` only `accepted_at` + `accepted_by_user_id`. The follow-up `20260528095257_gate_invitations_on_confirmed_email.sql` gates invitee `select`/`update` on `email_verified = 'true'`.
 - **A list only surfaces as "shared" after acceptance.** `is_list_invitee()` (SECURITY DEFINER) checks `accepted_by_user_id = auth.uid()`; `listOwnedAndShared` (`src/lib/services/lists.ts:9`) reads shared lists via `lists_select` RLS. No app code currently creates, sends, revokes, or accepts invitations.
 - **Known gotcha (`context/foundation/lessons.md:12`).** The `email_verified` JWT claim the invitee-side RLS depends on is "often absent even for email-confirmed users," so an invitee-session `UPDATE` to accept can silently no-op. This is the load-bearing reliability risk and is neutralized in Phase 1 by the RPC.
-- **No email transport exists.** `astro.config.mjs` env schema only declares `SUPABASE_URL`/`SUPABASE_KEY`. Runtime is Cloudflare Workers — no Node mail libs; sending must be `fetch`-based.
-- **Established patterns to mirror.** zod schema (`src/lib/schemas/wishlist.ts`) → service (`src/lib/services/*.ts`) → Astro action (`src/actions/index.ts`, `requireSupabase` guard) → shadcn dialog island (`CreateListDialog.tsx`, `client:only="react"`). Owner-only UI gates on `isOwner` in `src/components/lists/ListDetail.tsx`. `/invitations` is **not** in `PROTECTED_ROUTES` (`src/middleware.ts:4`), which is correct — the accept page must handle signed-out visitors itself.
+- **No email transport exists.** `astro.config.mjs` env schema only declares `SUPABASE_URL`/`SUPABASE_KEY`. Runtime is Cloudflare Workers - no Node mail libs; sending must be `fetch`-based.
+- **Established patterns to mirror.** zod schema (`src/lib/schemas/wishlist.ts`) → service (`src/lib/services/*.ts`) → Astro action (`src/actions/index.ts`, `requireSupabase` guard) → shadcn dialog island (`CreateListDialog.tsx`, `client:only="react"`). Owner-only UI gates on `isOwner` in `src/components/lists/ListDetail.tsx`. `/invitations` is **not** in `PROTECTED_ROUTES` (`src/middleware.ts:4`), which is correct - the accept page must handle signed-out visitors itself.
 
 ## Desired End State
 
@@ -18,29 +18,29 @@ An owner opens one of their lists, clicks **Invite**, enters an email, and sends
 
 ### Key Discoveries:
 
-- Invitations table + all owner/invitee RLS already exist — no table migration needed (`supabase/migrations/20260527125732_initial_wishlist_schema.sql`).
-- `email_verified` claim is unreliable — acceptance must not depend on it (`context/foundation/lessons.md:12`).
+- Invitations table + all owner/invitee RLS already exist - no table migration needed (`supabase/migrations/20260527125732_initial_wishlist_schema.sql`).
+- `email_verified` claim is unreliable - acceptance must not depend on it (`context/foundation/lessons.md:12`).
 - Shared-list reads must rely on `lists_select` RLS, never an `invitations` join (`context/foundation/lessons.md:12`; already honored in `src/lib/services/lists.ts:20`).
-- Actions receive `context.request`, so the accept-link origin can be derived per-request — no app-URL env var needed (`src/actions/index.ts`).
-- URL fields persisted/rendered must be http(s)-restricted (`context/foundation/lessons.md:1`) — not directly triggered here (no user URL field), but the email HTML must only ever embed our own origin-built link.
+- Actions receive `context.request`, so the accept-link origin can be derived per-request - no app-URL env var needed (`src/actions/index.ts`).
+- URL fields persisted/rendered must be http(s)-restricted (`context/foundation/lessons.md:1`) - not directly triggered here (no user URL field), but the email HTML must only ever embed our own origin-built link.
 
 ## What We're NOT Doing
 
-- No viewing of a shared list's **items** with available/reserved status — that is S-04 (`view-shared-list`).
-- No **resend** button and no **bulk / multi-address** invite in one submit — owner re-invites via revoke + invite.
+- No viewing of a shared list's **items** with available/reserved status - that is S-04 (`view-shared-list`).
+- No **resend** button and no **bulk / multi-address** invite in one submit - owner re-invites via revoke + invite.
 - No in-app / push notifications; email is the only channel.
 - No new `invitations` table columns; no invite-expiry / token-secret column (the row `id` uuid is the link handle; security is the RPC's session-email check).
 - No changes to who may invite (list owner only, unchanged).
-- No email-confirmation return-URL threading for brand-new signups across the confirm gap — new users re-click the emailed link after confirming (see Phase 4).
+- No email-confirmation return-URL threading for brand-new signups across the confirm gap - new users re-click the emailed link after confirming (see Phase 4).
 
 ## Implementation Approach
 
-Build bottom-up so each phase is independently verifiable: (1) the acceptance RPC + invitation service + actions with no side effects; (2) layer Resend email onto the create action; (3) owner-facing dialog + pending list on the list page; (4) the public accept route that ties the handshake together. The `invitations` row is the source of truth throughout — it is created before the email is sent, so acceptance works even if delivery fails.
+Build bottom-up so each phase is independently verifiable: (1) the acceptance RPC + invitation service + actions with no side effects; (2) layer Resend email onto the create action; (3) owner-facing dialog + pending list on the list page; (4) the public accept route that ties the handshake together. The `invitations` row is the source of truth throughout - it is created before the email is sent, so acceptance works even if delivery fails.
 
 ## Critical Implementation Details
 
 - **Acceptance must bypass the JWT claim.** The `accept_invitation` RPC reads `auth.users.email_confirmed_at` and `email` for the calling `auth.uid()` directly (SECURITY DEFINER), so it does not depend on GoTrue emitting `email_verified`. This is the whole reason the RPC exists rather than a client-side `UPDATE`.
-- **Ordering in create action.** Insert the invitation row first, then attempt the Resend send. Never roll back the row on send failure — return an `emailSent: false` flag so the UI can warn while the invite remains acceptable.
+- **Ordering in create action.** Insert the invitation row first, then attempt the Resend send. Never roll back the row on send failure - return an `emailSent: false` flag so the UI can warn while the invite remains acceptable.
 - **The accept route is unauthenticated by design.** Do not add `/invitations` to `PROTECTED_ROUTES`; the page branches on `locals.user` itself so signed-out invitees can be bounced to auth.
 
 ## Phase 1: Invitation backend (RPC, schemas, service, actions)
@@ -57,7 +57,7 @@ Land the acceptance RPC and all server-side invitation operations (create / list
 
 **Intent**: Provide a reliable, idempotent acceptance path that does not depend on the `email_verified` JWT claim, closing the silent-no-op class from `lessons.md`.
 
-**Contract**: `public.accept_invitation(invite_id uuid) returns uuid` — `SECURITY DEFINER`, `set search_path = public`, granted to `authenticated` only (revoke from `public`/`anon`). Behavior: require `auth.uid()`; look up the caller's `email` + `email_confirmed_at` from `auth.users`; reject if not confirmed; load the invitation; reject if `lower(trim(email))` mismatches; if already accepted, return its `list_id` (idempotent); else set `accepted_at = now()`, `accepted_by_user_id = auth.uid()` and return `list_id`. Raise a distinguishable error on email mismatch vs not-found so the route can show the right message.
+**Contract**: `public.accept_invitation(invite_id uuid) returns uuid` - `SECURITY DEFINER`, `set search_path = public`, granted to `authenticated` only (revoke from `public`/`anon`). Behavior: require `auth.uid()`; look up the caller's `email` + `email_confirmed_at` from `auth.users`; reject if not confirmed; load the invitation; reject if `lower(trim(email))` mismatches; if already accepted, return its `list_id` (idempotent); else set `accepted_at = now()`, `accepted_by_user_id = auth.uid()` and return `list_id`. Raise a distinguishable error on email mismatch vs not-found so the route can show the right message.
 
 ```sql
 create or replace function public.accept_invitation(invite_id uuid)
@@ -116,7 +116,7 @@ grant  execute on function public.accept_invitation(uuid) to authenticated;
 
 **Intent**: Validate invite create / revoke / accept inputs at the action boundary, mirroring the existing list/item schema exports.
 
-**Contract**: Add `invitationCreateSchema` (`listId: z.uuid()`, `email: z.string().trim().toLowerCase().email().max(320)`), `invitationRevokeSchema` (`invitationId: z.uuid()`), `invitationAcceptSchema` (`invitationId: z.uuid()`), plus inferred `…Input` types. Self-invite is not checked here (the user's own email isn't known to the schema) — it is enforced in the action handler.
+**Contract**: Add `invitationCreateSchema` (`listId: z.uuid()`, `email: z.string().trim().toLowerCase().email().max(320)`), `invitationRevokeSchema` (`invitationId: z.uuid()`), `invitationAcceptSchema` (`invitationId: z.uuid()`), plus inferred `…Input` types. Self-invite is not checked here (the user's own email isn't known to the schema) - it is enforced in the action handler.
 
 #### 3. Invitations service
 
@@ -125,10 +125,10 @@ grant  execute on function public.accept_invitation(uuid) to authenticated;
 **Intent**: House invitation data operations behind the same service shape as `lists.ts`/`items.ts`, relying on RLS for authorization.
 
 **Contract**: Export `InvitationRow = Database["public"]["Tables"]["invitations"]["Row"]` and:
-- `createInvitation(client, input)` — insert `{ list_id, email }`; RLS `invitations_insert` enforces owner. Map a `unique (list_id, email)` violation (Postgres code `23505`) to a typed "already invited" outcome rather than a raw throw.
-- `listInvitations(client, listId)` — select invitations for a list ordered by `invited_at`; owner visibility comes from `invitations_select` RLS.
-- `deleteInvitation(client, input)` — delete by `id`; RLS `invitations_delete` gates to owner.
-- `acceptInvitation(client, input)` — call `client.rpc("accept_invitation", { invite_id })`; return the `list_id` or a typed error discriminating mismatch / not-found / not-confirmed from the RPC `errcode`.
+- `createInvitation(client, input)` - insert `{ list_id, email }`; RLS `invitations_insert` enforces owner. Map a `unique (list_id, email)` violation (Postgres code `23505`) to a typed "already invited" outcome rather than a raw throw.
+- `listInvitations(client, listId)` - select invitations for a list ordered by `invited_at`; owner visibility comes from `invitations_select` RLS.
+- `deleteInvitation(client, input)` - delete by `id`; RLS `invitations_delete` gates to owner.
+- `acceptInvitation(client, input)` - call `client.rpc("accept_invitation", { invite_id })`; return the `list_id` or a typed error discriminating mismatch / not-found / not-confirmed from the RPC `errcode`.
 
 #### 4. Astro actions
 
@@ -171,7 +171,7 @@ Layer transactional email onto `invitations.create`: build the accept link from 
 
 **Intent**: Declare the Resend credentials as server-only secrets so they're accessible via `astro:env/server`.
 
-**Contract**: Add to `env.schema`: `RESEND_API_KEY` (`envField.string({ context: "server", access: "secret", optional: true })`) and `RESEND_FROM` (`context: "server", access: "secret", optional: true`) — the verified sender address (e.g. `AsYouWish <invites@yourdomain>`). Keep `optional: true` so builds without the secret still succeed (mirrors the `SUPABASE_*` treatment); the send path degrades to `emailSent: false` when unset.
+**Contract**: Add to `env.schema`: `RESEND_API_KEY` (`envField.string({ context: "server", access: "secret", optional: true })`) and `RESEND_FROM` (`context: "server", access: "secret", optional: true`) - the verified sender address (e.g. `AsYouWish <invites@yourdomain>`). Keep `optional: true` so builds without the secret still succeed (mirrors the `SUPABASE_*` treatment); the send path degrades to `emailSent: false` when unset.
 
 #### 2. Local env + CI wiring
 
@@ -187,7 +187,7 @@ Layer transactional email onto `invitations.create`: build the accept link from 
 
 **Intent**: Provide an edge-compatible `sendInvitationEmail` that posts to Resend and returns a boolean success, isolating the transport so the action stays clean.
 
-**Contract**: `sendInvitationEmail({ to, acceptUrl, listTitle, inviterEmail }): Promise<boolean>` — `POST https://api.resend.com/emails` with `Authorization: Bearer ${RESEND_API_KEY}`, JSON body `{ from: RESEND_FROM, to, subject, html, text }`. Returns `false` (never throws) when the key/from is unset or the response is non-2xx, logging the failure. The email body embeds only the server-built `acceptUrl` (no user-supplied URL). Provide both `html` and a `text` fallback.
+**Contract**: `sendInvitationEmail({ to, acceptUrl, listTitle, inviterEmail }): Promise<boolean>` - `POST https://api.resend.com/emails` with `Authorization: Bearer ${RESEND_API_KEY}`, JSON body `{ from: RESEND_FROM, to, subject, html, text }`. Returns `false` (never throws) when the key/from is unset or the response is non-2xx, logging the failure. The email body embeds only the server-built `acceptUrl` (no user-supplied URL). Provide both `html` and a `text` fallback.
 
 #### 4. Wire email into the create action
 
@@ -195,7 +195,7 @@ Layer transactional email onto `invitations.create`: build the accept link from 
 
 **Intent**: After the row is inserted, build the accept link and send, surfacing delivery status to the caller.
 
-**Contract**: In `invitations.create`, derive `origin` from `new URL(context.request.url).origin`, build `acceptUrl = ${origin}/invitations/accept?invite=${invitation.id}&email=${encodeURIComponent(invitation.email)}` (the `email` param is an untrusted prefill hint only — the RPC re-verifies from the session), call `sendInvitationEmail`, and return `{ invitation, emailSent }`. Row creation and email send are sequential; a send failure leaves the row intact.
+**Contract**: In `invitations.create`, derive `origin` from `new URL(context.request.url).origin`, build `acceptUrl = ${origin}/invitations/accept?invite=${invitation.id}&email=${encodeURIComponent(invitation.email)}` (the `email` param is an untrusted prefill hint only - the RPC re-verifies from the session), call `sendInvitationEmail`, and return `{ invitation, emailSent }`. Row creation and email send are sequential; a send failure leaves the row intact.
 
 ### Success Criteria:
 
@@ -203,7 +203,7 @@ Layer transactional email onto `invitations.create`: build the accept link from 
 
 - Type checking passes: `npm run build`
 - Linting passes: `npm run lint`
-- `sendInvitationEmail` returns `false` (no throw) when `RESEND_API_KEY` is unset — unit test or manual invocation
+- `sendInvitationEmail` returns `false` (no throw) when `RESEND_API_KEY` is unset - unit test or manual invocation
 
 #### Manual Verification:
 
@@ -237,7 +237,7 @@ Add the owner-facing invite experience to the list-detail page: an **Invite** ac
 
 **Intent**: Collect an email and call `invitations.create`, mirroring `CreateListDialog`'s form/dialog/optimistic pattern.
 
-**Contract**: Props `{ listId, open, onOpenChange, onInvited(invitation), }`. Uses `useForm` + `zodResolver(invitationCreateSchema.pick({ email }))` (or an email-only form schema). On submit → `actions.invitations.create({ listId, email })`. On `isInputError`, set the `email` field error; on self-invite / already-invited `ActionError`, show the message inline or via `toast`. On success, call `onInvited`, close, and `toast.success` — or `toast.warning("Invited, but the email couldn't be sent")` when `emailSent === false`. Reset form on both open and close (per `lessons.md:31`).
+**Contract**: Props `{ listId, open, onOpenChange, onInvited(invitation), }`. Uses `useForm` + `zodResolver(invitationCreateSchema.pick({ email }))` (or an email-only form schema). On submit → `actions.invitations.create({ listId, email })`. On `isInputError`, set the `email` field error; on self-invite / already-invited `ActionError`, show the message inline or via `toast`. On success, call `onInvited`, close, and `toast.success` - or `toast.warning("Invited, but the email couldn't be sent")` when `emailSent === false`. Reset form on both open and close (per `lessons.md:31`).
 
 #### 3. Pending invitations list + revoke
 
@@ -253,7 +253,7 @@ Add the owner-facing invite experience to the list-detail page: an **Invite** ac
 
 **Intent**: Surface Invite + Pending invitations for owners only, holding invitation state locally.
 
-**Contract**: Add `initialInvitations: InvitationRow[]` to `Props`; hold `invitations` state seeded from it. Render an **Invite** trigger near `ListActionsMenu` and, below the items, the `PendingInvitations` section — both inside the existing `isOwner` block. Wire `onInvited` (append) and `onRevoked` (filter) to the state. Import `InvitationRow` from the service.
+**Contract**: Add `initialInvitations: InvitationRow[]` to `Props`; hold `invitations` state seeded from it. Render an **Invite** trigger near `ListActionsMenu` and, below the items, the `PendingInvitations` section - both inside the existing `isOwner` block. Wire `onInvited` (append) and `onRevoked` (filter) to the state. Import `InvitationRow` from the service.
 
 ### Success Criteria:
 
@@ -287,7 +287,7 @@ Add the `/invitations/accept` route that turns a clicked email link into an acce
 
 **Intent**: The single entry point the emailed link targets; branches on auth state and performs acceptance for signed-in, confirmed invitees.
 
-**Contract**: `export const prerender = false`. Read `invite` query param; if missing/not a uuid, return `404`. If `!locals.user`: redirect to `/auth/signin?return=<encoded accept path>&email=<hint>` (the `email` hint from the query is prefill only). If `locals.user`: call `acceptInvitation(supabase, { invitationId })`; on success redirect to `/lists/<listId>`; on **email mismatch** render a friendly page ("This invitation was sent to a different address — sign in as that address"); on **not-confirmed** render "Please confirm your email first"; on not-found return `404`. Do **not** add `/invitations` to `PROTECTED_ROUTES`.
+**Contract**: `export const prerender = false`. Read `invite` query param; if missing/not a uuid, return `404`. If `!locals.user`: redirect to `/auth/signin?return=<encoded accept path>&email=<hint>` (the `email` hint from the query is prefill only). If `locals.user`: call `acceptInvitation(supabase, { invitationId })`; on success redirect to `/lists/<listId>`; on **email mismatch** render a friendly page ("This invitation was sent to a different address - sign in as that address"); on **not-confirmed** render "Please confirm your email first"; on not-found return `404`. Do **not** add `/invitations` to `PROTECTED_ROUTES`.
 
 #### 2. Return-URL handling in sign-in
 
@@ -295,7 +295,7 @@ Add the `/invitations/accept` route that turns a clicked email link into an acce
 
 **Intent**: Let an existing invitee return to the accept route after signing in, and prefill their email.
 
-**Contract**: `signin.astro` reads optional `return` + `email` query params, prefills the email input, and includes `return` as a hidden field. `signin.ts` reads `return` from the form; after a successful `signInWithPassword`, redirect to it **only if** it is a local path matching `^/invitations/accept` (else fall back to `/`). This validation prevents open-redirect. New signups are not threaded through the email-confirmation gap — they re-click the emailed link after confirming (documented behavior, not a bug).
+**Contract**: `signin.astro` reads optional `return` + `email` query params, prefills the email input, and includes `return` as a hidden field. `signin.ts` reads `return` from the form; after a successful `signInWithPassword`, redirect to it **only if** it is a local path matching `^/invitations/accept` (else fall back to `/`). This validation prevents open-redirect. New signups are not threaded through the email-confirmation gap - they re-click the emailed link after confirming (documented behavior, not a bug).
 
 ### Success Criteria:
 
@@ -303,7 +303,7 @@ Add the `/invitations/accept` route that turns a clicked email link into an acce
 
 - Type checking passes: `npm run build`
 - Linting passes: `npm run lint`
-- `return` param is honored only for `^/invitations/accept` paths (open-redirect guard) — verified by attempting an external `return` and confirming fallback to `/`
+- `return` param is honored only for `^/invitations/accept` paths (open-redirect guard) - verified by attempting an external `return` and confirming fallback to `/`
 
 #### Manual Verification:
 
@@ -312,7 +312,7 @@ Add the `/invitations/accept` route that turns a clicked email link into an acce
 - Wrong-address path: signed in as a different address → friendly mismatch page, no acceptance
 - Owner still cannot see who reserved anything (unaffected) and the invite disappears from Pending once accepted (shows "Accepted")
 
-**Implementation Note**: After automated verification passes, pause for human confirmation of the full two-user manual run — this is the slice's acceptance gate.
+**Implementation Note**: After automated verification passes, pause for human confirmation of the full two-user manual run - this is the slice's acceptance gate.
 
 ---
 
@@ -344,7 +344,7 @@ Negligible at family scale (low QPS, small data). The only added per-request wor
 
 ## Migration Notes
 
-Only additive DB change is the `accept_invitation` function — backward-compatible with the current Worker, satisfying the `wrangler rollback` constraint in `AGENTS.md` (a rollback to the prior Worker leaves an unused function, which is harmless). No data backfill.
+Only additive DB change is the `accept_invitation` function - backward-compatible with the current Worker, satisfying the `wrangler rollback` constraint in `AGENTS.md` (a rollback to the prior Worker leaves an unused function, which is harmless). No data backfill.
 
 ## References
 
@@ -357,62 +357,62 @@ Only additive DB change is the `accept_invitation` function — backward-compati
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles. See `references/progress-format.md`.
 
 ### Phase 1: Invitation backend (RPC, schemas, service, actions)
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly against local Supabase (`npx supabase db reset`) — 97f492a
-- [x] 1.2 Type checking passes (`npm run build`) — 97f492a
-- [x] 1.3 Linting passes (`npm run lint`) — 97f492a
-- [x] 1.4 `accept_invitation` is idempotent and rejects mismatched email (SQL against local DB) — 97f492a
+- [x] 1.1 Migration applies cleanly against local Supabase (`npx supabase db reset`) - 97f492a
+- [x] 1.2 Type checking passes (`npm run build`) - 97f492a
+- [x] 1.3 Linting passes (`npm run lint`) - 97f492a
+- [x] 1.4 `accept_invitation` is idempotent and rejects mismatched email (SQL against local DB) - 97f492a
 
 #### Manual
 
-- [x] 1.5 Non-owner invitation insert is rejected by RLS — 97f492a
-- [x] 1.6 `accept_invitation` flips acceptance for a confirmed invitee even without the `email_verified` claim — 97f492a
-- [x] 1.7 Calling `accept_invitation` twice returns the same `list_id` with no error — 97f492a
+- [x] 1.5 Non-owner invitation insert is rejected by RLS - 97f492a
+- [x] 1.6 `accept_invitation` flips acceptance for a confirmed invitee even without the `email_verified` claim - 97f492a
+- [x] 1.7 Calling `accept_invitation` twice returns the same `list_id` with no error - 97f492a
 
 ### Phase 2: Email delivery via Resend
 
 #### Automated
 
-- [x] 2.1 Type checking passes (`npm run build`) — 2411187
-- [x] 2.2 Linting passes (`npm run lint`) — 2411187
-- [x] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset — 2411187
+- [x] 2.1 Type checking passes (`npm run build`) - 2411187
+- [x] 2.2 Linting passes (`npm run lint`) - 2411187
+- [x] 2.3 `sendInvitationEmail` returns `false` without throwing when `RESEND_API_KEY` is unset - 2411187
 
 #### Manual
 
-- [x] 2.4 Valid key + sender delivers an email whose link is `…/invitations/accept?invite=<uuid>&email=<addr>` — 2411187
-- [x] 2.5 With the key unset, `invitations.create` returns `emailSent: false` and the row persists — 2411187
-- [x] 2.6 The accept link points only at the app's own origin — 2411187
+- [x] 2.4 Valid key + sender delivers an email whose link is `…/invitations/accept?invite=<uuid>&email=<addr>` - 2411187
+- [x] 2.5 With the key unset, `invitations.create` returns `emailSent: false` and the row persists - 2411187
+- [x] 2.6 The accept link points only at the app's own origin - 2411187
 
 ### Phase 3: Owner invite UI (dialog + pending list with revoke)
 
 #### Automated
 
-- [x] 3.1 Type checking passes (`npm run build`) — 9c5c358
-- [x] 3.2 Linting passes (`npm run lint`) — 9c5c358
+- [x] 3.1 Type checking passes (`npm run build`) - 9c5c358
+- [x] 3.2 Linting passes (`npm run lint`) - 9c5c358
 
 #### Manual
 
-- [x] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations — 9c5c358
-- [x] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate) — 9c5c358
-- [x] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI — 9c5c358
-- [x] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning — 9c5c358
+- [x] 3.3 Invite dialog validates email, creates the invitation, and it appears in Pending invitations - 9c5c358
+- [x] 3.4 Self-invite shows a friendly message; re-inviting a pending address shows "already invited" (no duplicate) - 9c5c358
+- [x] 3.5 Revoke removes the invitation after confirmation; non-owners see no invite UI - 9c5c358
+- [x] 3.6 With the Resend key unset, invite still succeeds with a "couldn't send email" warning - 9c5c358
 
 ### Phase 4: Accept flow (public route + auth bounce)
 
 #### Automated
 
-- [x] 4.1 Type checking passes (`npm run build`) — d296c80
-- [x] 4.2 Linting passes (`npm run lint`) — d296c80
-- [x] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard) — d296c80
+- [x] 4.1 Type checking passes (`npm run build`) - d296c80
+- [x] 4.2 Linting passes (`npm run lint`) - d296c80
+- [x] 4.3 `return` param is honored only for `^/invitations/accept` paths (open-redirect guard) - d296c80
 
 #### Manual
 
-- [x] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me" — d296c80
-- [x] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list — d296c80
-- [x] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance — d296c80
-- [x] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list — d296c80
+- [x] 4.4 New-user end-to-end: invite → email → signup → confirm → re-click → accept → lands on list and it appears under "Shared with me" - d296c80
+- [x] 4.5 Existing-user path: link bounces to sign-in (email prefilled), returns to accept, lands on the list - d296c80
+- [x] 4.6 Wrong-address path shows the friendly mismatch page with no acceptance - d296c80
+- [x] 4.7 Accepted invite shows "Accepted" in the owner's Pending invitations list - d296c80

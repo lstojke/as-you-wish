@@ -8,14 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ListRow } from "@/lib/services/lists";
+import { I18nProvider } from "@/components/I18nProvider";
+import { useT } from "@/components/hooks/useT";
+import type { Locale } from "@/lib/i18n/config";
 
 interface Props {
+  locale: Locale;
   owned: ListRow[];
   shared: ListRow[];
   loadError: boolean;
 }
 
-export default function DashboardLists({ owned: initialOwned, shared, loadError }: Props) {
+function DashboardListsInner({ owned: initialOwned, shared, loadError }: Omit<Props, "locale">) {
+  const { t } = useT();
   const [owned, setOwned] = useState<ListRow[]>(initialOwned);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<ListRow | null>(null);
@@ -49,11 +54,9 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
       >
         <div>
           <h2 id="lists-load-error-heading" className="font-semibold">
-            Your wish lists couldn’t be loaded
+            {t("dashboardLists.loadErrorTitle")}
           </h2>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Please try again. If the problem continues, refresh the page in a moment.
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{t("dashboardLists.loadErrorBody")}</p>
         </div>
         <Button
           onClick={() => {
@@ -61,7 +64,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
           }}
           size="sm"
         >
-          Try again
+          {t("dashboardLists.retry")}
         </Button>
       </section>
     );
@@ -70,9 +73,9 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
   return (
     <div>
       <Tabs defaultValue="my-lists" className="w-full">
-        <TabsList aria-label="Wish lists" className="grid h-11 w-full grid-cols-2">
-          <TabsTrigger value="my-lists">My lists</TabsTrigger>
-          <TabsTrigger value="shared-lists">Shared lists</TabsTrigger>
+        <TabsList aria-label={t("dashboardLists.tabsLabel")} className="grid h-11 w-full grid-cols-2">
+          <TabsTrigger value="my-lists">{t("dashboardLists.myLists")}</TabsTrigger>
+          <TabsTrigger value="shared-lists">{t("dashboardLists.sharedWithMe")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="my-lists" className="mt-6">
@@ -85,7 +88,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
                 size="sm"
               >
                 <Plus />
-                Create list
+                {t("dashboardLists.createList")}
               </Button>
             </div>
           )}
@@ -117,7 +120,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
         <TabsContent value="shared-lists" className="mt-6">
           <section aria-labelledby="shared-heading">
             <h2 id="shared-heading" className="sr-only">
-              Shared lists
+              {t("dashboardLists.sharedWithMe")}
             </h2>
             {hasShared ? (
               <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3">
@@ -127,7 +130,7 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
               </div>
             ) : (
               <p className="text-muted-foreground rounded-xl border p-6 text-center text-sm">
-                No shared lists yet. Lists shared with you will appear here.
+                {t("dashboardLists.sharedEmpty")}
               </p>
             )}
           </section>
@@ -182,13 +185,22 @@ export default function DashboardLists({ owned: initialOwned, shared, loadError 
   );
 }
 
+export default function DashboardLists({ locale, ...props }: Props) {
+  return (
+    <I18nProvider locale={locale}>
+      <DashboardListsInner {...props} />
+    </I18nProvider>
+  );
+}
+
 function OwnedListCard({ list, onRename, onDelete }: { list: ListRow; onRename: () => void; onDelete: () => void }) {
+  const { t } = useT();
   return (
     <Card className="hover:border-foreground/20 relative min-w-0 gap-0 py-0 transition-colors">
       <a
         href={`/lists/${list.id}`}
         className="focus-visible:ring-ring/50 block min-w-0 rounded-xl p-2 pr-12 outline-none focus-visible:relative focus-visible:z-10 focus-visible:ring-[3px] sm:p-4 sm:pr-14"
-        aria-label={`Open list ${list.title}`}
+        aria-label={t("dashboardLists.openList", { title: list.title })}
       >
         <CardTitle className="text-sm leading-snug break-words whitespace-normal sm:text-base">{list.title}</CardTitle>
       </a>
@@ -200,12 +212,13 @@ function OwnedListCard({ list, onRename, onDelete }: { list: ListRow; onRename: 
 }
 
 function SharedListCard({ list }: { list: ListRow }) {
+  const { t } = useT();
   return (
     <Card className="hover:border-foreground/20 min-w-0 gap-0 py-0 transition-colors">
       <a
         href={`/lists/${list.id}`}
         className="focus-visible:ring-ring/50 block min-w-0 rounded-xl p-2 outline-none focus-visible:ring-[3px] sm:p-4"
-        aria-label={`Open list ${list.title}`}
+        aria-label={t("dashboardLists.openList", { title: list.title })}
       >
         <CardTitle className="text-sm leading-snug break-words whitespace-normal sm:text-base">{list.title}</CardTitle>
       </a>
@@ -214,17 +227,15 @@ function SharedListCard({ list }: { list: ListRow }) {
 }
 
 function EmptyHero({ onCreate }: { onCreate: () => void }) {
+  const { t } = useT();
   return (
     <div className="border-muted-foreground/20 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 text-center sm:p-12">
       <ListPlus className="text-muted-foreground size-10" aria-hidden="true" />
-      <h3 className="text-lg font-semibold">No lists yet</h3>
-      <p className="text-muted-foreground max-w-sm text-sm">
-        Wish lists make it easy for the people who shop for you to know what to get — without buying the same thing
-        twice.
-      </p>
+      <h3 className="text-lg font-semibold">{t("dashboardLists.emptyTitle")}</h3>
+      <p className="text-muted-foreground max-w-sm text-sm">{t("dashboardLists.emptyBody")}</p>
       <Button onClick={onCreate} className="mt-2">
         <Plus />
-        Create your first list
+        {t("dashboardLists.createFirst")}
       </Button>
     </div>
   );

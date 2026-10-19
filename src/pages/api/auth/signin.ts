@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
+import { authErrorCode } from "@/lib/i18n/auth-errors";
 
 // Only allow returning to the accept route; anything else falls back to "/".
 // Guards against open-redirect (e.g. "//evil.com", "https://evil.com").
@@ -16,12 +17,12 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase is not configured")}`);
+    return context.redirect(`/auth/signin?error=not_configured`);
   }
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
+    return context.redirect(`/auth/signin?error=${authErrorCode(error)}`);
   }
 
   return context.redirect(returnTo);

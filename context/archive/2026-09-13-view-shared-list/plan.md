@@ -1,18 +1,18 @@
-# View a Shared List with Reservation Status — Implementation Plan
+# View a Shared List with Reservation Status - Implementation Plan
 
 ## Overview
 
-Deliver roadmap slice **S-04** (PRD **FR-012**): let an invited (non-owner) viewer open a shared list and see each item's **available / reserved** status, without ever learning who reserved which item. The read model and access controls already exist from F-01 — this slice is UI wiring plus one read query, plus closing an owner-only UI leak.
+Deliver roadmap slice **S-04** (PRD **FR-012**): let an invited (non-owner) viewer open a shared list and see each item's **available / reserved** status, without ever learning who reserved which item. The read model and access controls already exist from F-01 - this slice is UI wiring plus one read query, plus closing an owner-only UI leak.
 
 ## Current State Analysis
 
-- **Invitees can already open the page.** `src/pages/lists/[id].astro` fetches the list via `getListById` (RLS `lists_select` = owner OR `is_list_invitee`) and items via `listItems` (RLS `items_select` = `is_list_member`). A non-owner invitee already reaches the page and sees items — no new access path is needed.
+- **Invitees can already open the page.** `src/pages/lists/[id].astro` fetches the list via `getListById` (RLS `lists_select` = owner OR `is_list_invitee`) and items via `listItems` (RLS `items_select` = `is_list_member`). A non-owner invitee already reaches the page and sees items - no new access path is needed.
 - **Mutation UI is already owner-gated.** `src/components/lists/ListDetail.tsx#L31` computes `isOwner = list.owner_id === currentUserId` and hides rename/delete/edit/invite behind it.
-- **The identity-safe read model already exists but is unused.** The `item_reservation_status` view (`security_invoker = true`) in `supabase/migrations/20260527125732_initial_wishlist_schema.sql` exposes only `item_id, list_id, is_reserved` — computed via the `is_item_reserved(uuid)` `security definer` helper, never projecting `claimer_id`. It is not queried anywhere in the app.
+- **The identity-safe read model already exists but is unused.** The `item_reservation_status` view (`security_invoker = true`) in `supabase/migrations/20260527125732_initial_wishlist_schema.sql` exposes only `item_id, list_id, is_reserved` - computed via the `is_item_reserved(uuid)` `security definer` helper, never projecting `claimer_id`. It is not queried anywhere in the app.
 - **The view's TypeScript type already exists.** `src/db/database.types.ts` → `public.Views.item_reservation_status` with `Row: { is_reserved: boolean | null; item_id: string | null; list_id: string | null }`. No `gen types` run needed.
 - **Two gaps remain:**
-  1. Reservation status is never displayed — `ItemsList.tsx` renders title/price/link only.
-  2. `AddItemForm` renders for **all** viewers (`ListDetail.tsx#L89`) with no `isOwner` gate — a shared viewer sees an "Add item" form that would fail at RLS (`items_insert` requires `is_list_owner`).
+  1. Reservation status is never displayed - `ItemsList.tsx` renders title/price/link only.
+  2. `AddItemForm` renders for **all** viewers (`ListDetail.tsx#L89`) with no `isOwner` gate - a shared viewer sees an "Add item" form that would fail at RLS (`items_insert` requires `is_list_owner`).
 
 ## Desired End State
 
@@ -23,18 +23,18 @@ Deliver roadmap slice **S-04** (PRD **FR-012**): let an invited (non-owner) view
 
 ### Key Discoveries:
 
-- `item_reservation_status` view is the load-bearing, identity-safe read model — `supabase/migrations/20260527125732_initial_wishlist_schema.sql` (view definition; `is_item_reserved` helper).
-- View type already present — `src/db/database.types.ts` (`Views.item_reservation_status`).
-- Owner-gating pattern to follow — `src/components/lists/ListDetail.tsx#L31` (`isOwner`) and `#L84` (`ownedByCurrentUser` prop into `ItemsList`).
-- Badge component available — `src/components/ui/badge.tsx` (shadcn, `variant` = default | secondary | outline | destructive).
-- `client:only="react"` on `ListDetail` means props are JSON-serialized — pass a plain `string[]` of reserved item IDs, not a `Set`/`Map`.
+- `item_reservation_status` view is the load-bearing, identity-safe read model - `supabase/migrations/20260527125732_initial_wishlist_schema.sql` (view definition; `is_item_reserved` helper).
+- View type already present - `src/db/database.types.ts` (`Views.item_reservation_status`).
+- Owner-gating pattern to follow - `src/components/lists/ListDetail.tsx#L31` (`isOwner`) and `#L84` (`ownedByCurrentUser` prop into `ItemsList`).
+- Badge component available - `src/components/ui/badge.tsx` (shadcn, `variant` = default | secondary | outline | destructive).
+- `client:only="react"` on `ListDetail` means props are JSON-serialized - pass a plain `string[]` of reserved item IDs, not a `Set`/`Map`.
 
 ## What We're NOT Doing
 
-- No reserve/release action or button — that is **S-05**.
-- No owner aggregate count ("X of Y reserved") — that is FR-014, deferred.
-- No owner "gift-surprise" toggle to hide badges — documented as a follow-up (`context/changes/view-shared-list/follow-ups/owner-hide-reservation-badges.md`).
-- No schema/migration changes — the view and RLS already exist. (Addendum: during manual verification we discovered remote↔repo drift in `is_item_reserved` and added migration `20260913081500_align_is_item_reserved_membership_guard.sql` to reconcile it — an approved exception, not new feature scope.)
+- No reserve/release action or button - that is **S-05**.
+- No owner aggregate count ("X of Y reserved") - that is FR-014, deferred.
+- No owner "gift-surprise" toggle to hide badges - documented as a follow-up (`context/changes/view-shared-list/follow-ups/owner-hide-reservation-badges.md`).
+- No schema/migration changes - the view and RLS already exist. (Addendum: during manual verification we discovered remote↔repo drift in `is_item_reserved` and added migration `20260913081500_align_is_item_reserved_membership_guard.sql` to reconcile it - an approved exception, not new feature scope.)
 - No change to the `listOwnedAndShared` shared-query behavior.
 
 ## Implementation Approach
@@ -110,7 +110,7 @@ Wire the existing `item_reservation_status` view into the item rows as an Availa
 
 ## Migration Notes
 
-None — no schema changes. The `item_reservation_status` view and all RLS policies already exist. Badges will read "Available" for every item until S-05 begins creating reservations.
+None - no schema changes. The `item_reservation_status` view and all RLS policies already exist. Badges will read "Available" for every item until S-05 begins creating reservations.
 
 ## References
 
@@ -122,18 +122,18 @@ None — no schema changes. The `item_reservation_status` view and all RLS polic
 
 ## Progress
 
-> Convention: `- [ ]` pending, `- [x]` done. Append ` — <commit sha>` when a step lands. Do not rename step titles.
+> Convention: `- [ ]` pending, `- [x]` done. Append ` - <commit sha>` when a step lands. Do not rename step titles.
 
 ### Phase 1: Shared-list reservation status display
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint` — b752ffd
-- [x] 1.2 Type checking / build passes: `npm run build` — b752ffd
+- [x] 1.1 Linting passes: `npm run lint` - b752ffd
+- [x] 1.2 Type checking / build passes: `npm run build` - b752ffd
 
 #### Manual
 
-- [x] 1.3 As an invitee, shared list shows per-item Available/Reserved badges and no add/edit/delete UI — b752ffd
-- [x] 1.4 As the owner, badges render plus all owner controls (invite, list actions, item actions, add form) — b752ffd
-- [x] 1.5 Inserting a reservation row via SQL flips that item to "Reserved" on reload — b752ffd
-- [x] 1.6 No viewer sees who reserved an item — b752ffd
+- [x] 1.3 As an invitee, shared list shows per-item Available/Reserved badges and no add/edit/delete UI - b752ffd
+- [x] 1.4 As the owner, badges render plus all owner controls (invite, list actions, item actions, add form) - b752ffd
+- [x] 1.5 Inserting a reservation row via SQL flips that item to "Reserved" on reload - b752ffd
+- [x] 1.6 No viewer sees who reserved an item - b752ffd

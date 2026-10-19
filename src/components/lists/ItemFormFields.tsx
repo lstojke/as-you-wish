@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import type { ItemFormValues } from "@/lib/schemas/wishlist";
+import { useT } from "@/components/hooks/useT";
 
 interface Props {
   control: Control<ItemFormValues>;
@@ -17,6 +18,7 @@ function currencyOptions(current: string): string[] {
 }
 
 export default function ItemFormFields({ control }: Props) {
+  const { t } = useT();
   return (
     <>
       <FormField
@@ -25,10 +27,10 @@ export default function ItemFormFields({ control }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>
-              Name <span aria-hidden="true">*</span>
+              {t("itemForm.name")} <span aria-hidden="true">*</span>
             </FormLabel>
             <FormControl>
-              <Input placeholder="e.g. Blue sneakers" autoComplete="off" maxLength={500} {...field} />
+              <Input placeholder={t("itemForm.namePlaceholder")} autoComplete="off" maxLength={500} {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -41,9 +43,14 @@ export default function ItemFormFields({ control }: Props) {
             name="priceInput"
             render={({ field }) => (
               <FormItem className="flex-1">
-                <FormLabel>Price (optional)</FormLabel>
+                <FormLabel>{t("itemForm.priceOptional")}</FormLabel>
                 <FormControl>
-                  <Input placeholder="e.g. 49.99" autoComplete="off" inputMode="decimal" {...field} />
+                  <Input
+                    placeholder={t("itemForm.pricePlaceholder")}
+                    autoComplete="off"
+                    inputMode="decimal"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -54,10 +61,10 @@ export default function ItemFormFields({ control }: Props) {
             name="currency"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Currency</FormLabel>
+                <FormLabel>{t("itemForm.currency")}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger className="w-24" aria-label="Currency">
+                    <SelectTrigger className="w-24" aria-label={t("itemForm.currency")}>
                       <SelectValue />
                     </SelectTrigger>
                   </FormControl>
@@ -79,7 +86,7 @@ export default function ItemFormFields({ control }: Props) {
           name="link"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Store link (optional)</FormLabel>
+              <FormLabel>{t("itemForm.storeLinkOptional")}</FormLabel>
               <FormControl>
                 <Input placeholder="https://…" type="url" autoComplete="off" maxLength={2000} {...field} />
               </FormControl>

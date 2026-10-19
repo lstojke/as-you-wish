@@ -20,7 +20,7 @@ describe("invitation acceptance access grant (#2)", () => {
     expect(result).toEqual({ ok: true, listId });
 
     // After accepting, the invitee's own (publishable-key) client sees the list
-    // and its items through is_list_invitee RLS — proof the grant is real.
+    // and its items through is_list_invitee RLS - proof the grant is real.
     const { data: lists, error: listErr } = await invitee.client.from("lists").select("id").eq("id", listId);
     expect(listErr).toBeNull();
     expect(lists).toHaveLength(1);
@@ -63,7 +63,7 @@ describe("invitation acceptance access grant (#2)", () => {
     expect(first).toEqual({ ok: true, listId });
     expect(second).toEqual({ ok: true, listId });
 
-    // Exactly one accepted grant exists for this invite — no double-grant.
+    // Exactly one accepted grant exists for this invite - no double-grant.
     const { data, error } = await admin
       .from("invitations")
       .select("accepted_by_user_id")

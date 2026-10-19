@@ -1,14 +1,17 @@
 import { z } from "zod";
 
+// Messages are i18n keys (see src/lib/i18n/pl.ts): these schemas run on both
+// client and server without knowing the locale; renderers translate them.
+
 export const listCreateSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(200, "Title must be 200 characters or fewer"),
+  title: z.string().trim().min(1, "validation.titleRequired").max(200, "validation.titleMax200"),
 });
 
 export type ListCreateInput = z.infer<typeof listCreateSchema>;
 
 export const listRenameSchema = z.object({
   listId: z.uuid(),
-  title: z.string().trim().min(1, "Title is required").max(200, "Title must be 200 characters or fewer"),
+  title: z.string().trim().min(1, "validation.titleRequired").max(200, "validation.titleMax200"),
 });
 
 export type ListRenameInput = z.infer<typeof listRenameSchema>;
@@ -22,20 +25,20 @@ export type ListDeleteInput = z.infer<typeof listDeleteSchema>;
 export const itemCreateSchema = z
   .object({
     listId: z.uuid(),
-    title: z.string().trim().min(1, "Title is required").max(500, "Title must be 500 characters or fewer"),
+    title: z.string().trim().min(1, "validation.titleRequired").max(500, "validation.titleMax500"),
     priceCents: z.number().int().nonnegative().optional(),
     currency: z
       .string()
-      .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code (e.g. USD)")
+      .regex(/^[A-Z]{3}$/, "validation.currencyIso")
       .optional(),
     link: z
-      .url("Must be a valid URL")
+      .url("validation.urlInvalid")
       .max(2000)
-      .refine((u) => /^https?:\/\//i.test(u), "Must be an http(s) URL")
+      .refine((u) => /^https?:\/\//i.test(u), "validation.urlHttp")
       .optional(),
   })
   .refine((v) => v.priceCents !== undefined || v.currency === undefined, {
-    message: "Currency requires a price",
+    message: "validation.currencyRequiresPrice",
     path: ["currency"],
   });
 
@@ -44,20 +47,20 @@ export type ItemCreateInput = z.infer<typeof itemCreateSchema>;
 export const itemUpdateSchema = z
   .object({
     itemId: z.uuid(),
-    title: z.string().trim().min(1, "Title is required").max(500, "Title must be 500 characters or fewer"),
+    title: z.string().trim().min(1, "validation.titleRequired").max(500, "validation.titleMax500"),
     priceCents: z.number().int().nonnegative().optional(),
     currency: z
       .string()
-      .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter ISO code (e.g. USD)")
+      .regex(/^[A-Z]{3}$/, "validation.currencyIso")
       .optional(),
     link: z
-      .url("Must be a valid URL")
+      .url("validation.urlInvalid")
       .max(2000)
-      .refine((u) => /^https?:\/\//i.test(u), "Must be an http(s) URL")
+      .refine((u) => /^https?:\/\//i.test(u), "validation.urlHttp")
       .optional(),
   })
   .refine((v) => v.priceCents !== undefined || v.currency === undefined, {
-    message: "Currency requires a price",
+    message: "validation.currencyRequiresPrice",
     path: ["currency"],
   });
 
@@ -88,7 +91,7 @@ export const invitationCreateSchema = z.object({
   listId: z.uuid(),
   email: z.preprocess(
     (v) => (typeof v === "string" ? v.trim().toLowerCase() : v),
-    z.email("Enter a valid email address").max(320),
+    z.email("validation.emailInvalid").max(320),
   ),
 });
 
@@ -110,20 +113,17 @@ export type InvitationAcceptInput = z.infer<typeof invitationAcceptSchema>;
 // the action handler maps to priceCents (integer cents) before calling either
 // items.create or items.update. AddItemForm and EditItemForm both consume this.
 export const itemFormSchema = z.object({
-  title: z.string().trim().min(1, "Title is required").max(500, "Title must be 500 characters or fewer"),
+  title: z.string().trim().min(1, "validation.titleRequired").max(500, "validation.titleMax500"),
   priceInput: z
     .string()
     .trim()
-    .refine(
-      (v) => v === "" || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) >= 0),
-      "Enter a non-negative number (max 2 decimals)",
-    ),
+    .refine((v) => v === "" || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) >= 0), "validation.priceFormat"),
   link: z
     .string()
     .trim()
-    .max(2000, "Link must be 2000 characters or fewer")
-    .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "Must be an http(s) URL"),
-  currency: z.string().regex(/^[A-Z]{3}$/, "Select a currency"),
+    .max(2000, "validation.linkMax2000")
+    .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), "validation.urlHttp"),
+  currency: z.string().regex(/^[A-Z]{3}$/, "validation.currencySelect"),
 });
 
 export type ItemFormValues = z.infer<typeof itemFormSchema>;

@@ -273,38 +273,38 @@ Bearer paths may appear in browser history and platform request logs even with a
 
 #### Automated
 
-- [x] 1.1 Migration applies to the disposable local database — d7c698b
-- [x] 1.2 Sharing and existing access-control integration tests pass — d7c698b
-- [x] 1.3 Lifecycle, concurrency, isolation, and DTO exclusion assertions pass — d7c698b
+- [x] 1.1 Migration applies to the disposable local database - d7c698b
+- [x] 1.2 Sharing and existing access-control integration tests pass - d7c698b
+- [x] 1.3 Lifecycle, concurrency, isolation, and DTO exclusion assertions pass - d7c698b
 
 #### Manual
 
-- [x] 1.4 Inspect local grants, generated types, and unchanged table access — d7c698b
+- [x] 1.4 Inspect local grants, generated types, and unchanged table access - d7c698b
 
 ### Phase 2: Public read-only SSR view
 
 #### Automated
 
-- [x] 2.1 Service unit and database sharing tests pass — 0ce1bb3
-- [x] 2.2 HTTP status, member redirect, and privacy-header smoke checks pass — 0ce1bb3
-- [x] 2.3 Type checks and touched-file lint pass — 0ce1bb3
+- [x] 2.1 Service unit and database sharing tests pass - 0ce1bb3
+- [x] 2.2 HTTP status, member redirect, and privacy-header smoke checks pass - 0ce1bb3
+- [x] 2.3 Type checks and touched-file lint pass - 0ce1bb3
 
 #### Manual
 
-- [x] 2.4 Verify private-browser display, mobile layout, and absence of reservation data — 0ce1bb3
-- [x] 2.5 Verify member redirects, outsider access, refresh freshness, and revocation — 0ce1bb3
+- [x] 2.4 Verify private-browser display, mobile layout, and absence of reservation data - 0ce1bb3
+- [x] 2.5 Verify member redirects, outsider access, refresh freshness, and revocation - 0ce1bb3
 
 ### Phase 3: Owner sharing controls
 
 #### Automated
 
-- [x] 3.1 Unit tests pass — 3df2022
-- [x] 3.2 Sharing and existing integration regression tests pass — 3df2022
-- [x] 3.3 Project lint, type checking, and build pass — 3df2022
+- [x] 3.1 Unit tests pass - 3df2022
+- [x] 3.2 Sharing and existing integration regression tests pass - 3df2022
+- [x] 3.3 Project lint, type checking, and build pass - 3df2022
 
 #### Manual
 
-- [x] 3.4 Verify stable URL persistence and clipboard failure behavior — 3df2022
-- [x] 3.5 Verify disable, replacement, and list-deletion lifecycle — 3df2022
-- [x] 3.6 Verify owner-only controls and existing invitation/editing/reservation flows — 3df2022
-- [x] 3.7 Review bearer-path logging and document platform retention limitations — 3df2022
+- [x] 3.4 Verify stable URL persistence and clipboard failure behavior - 3df2022
+- [x] 3.5 Verify disable, replacement, and list-deletion lifecycle - 3df2022
+- [x] 3.6 Verify owner-only controls and existing invitation/editing/reservation flows - 3df2022
+- [x] 3.7 Review bearer-path logging and document platform retention limitations - 3df2022
