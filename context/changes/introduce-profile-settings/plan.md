@@ -311,27 +311,27 @@ Previous Worker versions remain compatible with added nullable columns and the n
 
 #### Automated
 
-- [x] 2.1 Profile schema/service/display-name and dictionary unit tests pass.
-- [x] 2.2 Profile integration tests including atomic preferences and item-currency behavior pass.
-- [x] 2.3 Types and targeted lint pass.
+- [x] 2.1 Profile schema/service/display-name and dictionary unit tests pass. — a9e9b19
+- [x] 2.2 Profile integration tests including atomic preferences and item-currency behavior pass. — a9e9b19
+- [x] 2.3 Types and targeted lint pass. — a9e9b19
 
 #### Manual
 
-- [x] 2.4 Name save/clear and header fallback work with read-only email.
-- [x] 2.5 Currency/language saves synchronize persisted preferences and page locale.
-- [x] 2.6 Dirty-profile guard and failed preference saves preserve edits and locale.
+- [x] 2.4 Name save/clear and header fallback work with read-only email. — a9e9b19
+- [x] 2.5 Currency/language saves synchronize persisted preferences and page locale. — a9e9b19
+- [x] 2.6 Dirty-profile guard and failed preference saves preserve edits and locale. — a9e9b19
 
 ### Phase 3: Important-Date Experience and Final Verification
 
 #### Automated
 
-- [x] 3.1 Targeted profile/date schema, service, display, and dictionary unit tests pass.
-- [x] 3.2 Related profile/date integration tests pass.
-- [x] 3.3 Final lint/type/build checks pass.
+- [x] 3.1 Targeted profile/date schema, service, display, and dictionary unit tests pass. — a9e9b19
+- [x] 3.2 Related profile/date integration tests pass. — a9e9b19
+- [x] 3.3 Final lint/type/build checks pass. — a9e9b19
 
 #### Manual
 
-- [x] 3.4 Date CRUD, optional descriptions, repeat choices, duplicates, and reload persistence work.
-- [x] 3.5 Original calendar anchors and fallback help remain accurate without reminder claims.
-- [x] 3.6 Dirty-date guard, dialog resets, and unrelated drafts remain correct.
-- [x] 3.7 PL/EN accessibility, responsive UX, errors, and cross-user privacy are accepted.
+- [x] 3.4 Date CRUD, optional descriptions, repeat choices, duplicates, and reload persistence work. — a9e9b19
+- [x] 3.5 Original calendar anchors and fallback help remain accurate without reminder claims. — a9e9b19
+- [x] 3.6 Dirty-date guard, dialog resets, and unrelated drafts remain correct. — a9e9b19
+- [x] 3.7 PL/EN accessibility, responsive UX, errors, and cross-user privacy are accepted. — a9e9b19
