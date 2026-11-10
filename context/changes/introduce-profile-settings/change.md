@@ -1,7 +1,7 @@
 ---
 change_id: introduce-profile-settings
 title: Adding private profile settings and important dates
-status: implemented
+status: impl_reviewed
 created: 2026-10-19
 updated: 2026-11-10
 archived_at: null
