@@ -15,7 +15,9 @@ export type ListShareView = { state: "not_created" | "disabled"; url: null } | {
 
 export type ProfileDetailsInput = z.infer<typeof profileDetailsSchema>;
 export type ProfilePreferencesInput = z.infer<typeof profilePreferencesSchema>;
+export type ProfileSettingsData = ProfileDetailsInput & ProfilePreferencesInput;
 export type ImportantDateCreateInput = z.infer<typeof importantDateCreateSchema>;
+export type ImportantDateFormValues = z.input<typeof importantDateCreateSchema>;
 export type ImportantDateUpdateInput = z.infer<typeof importantDateUpdateSchema>;
 export type ImportantDateDeleteInput = z.infer<typeof importantDateDeleteSchema>;
 export type RepeatFrequency = z.infer<typeof repeatFrequencySchema>;

@@ -3,7 +3,7 @@ change_id: introduce-profile-settings
 title: Adding private profile settings and important dates
 status: implementing
 created: 2026-10-19
-updated: 2026-10-19
+updated: 2026-11-10
 archived_at: null
 ---
 
@@ -18,3 +18,9 @@ The original username requirement was explicitly withdrawn: retain email/passwor
 Important dates have a required full date and heading, optional description, and Off/Weekly/Monthly/Yearly repetition (Yearly by default). Missing corresponding days fall back to the last valid day of the intended month without changing the original anchor. This change stores and displays the recurrence contract; reminder delivery is a separate future feature, `notifications-introduction`.
 
 Use separate profile/preferences saves and independent date CRUD. Block preference save while other sections have unsaved changes. See [plan brief](./plan-brief.md) and [implementation plan](./plan.md) for the approved scope.
+
+### Manual acceptance (2026-11-10)
+
+User confirmed Phase 2 manual testing complete (Progress items 2.4-2.6). Phase 3 remains pending.
+
+User subsequently confirmed all Phase 3 manual checks passed (Progress items 3.4-3.7).

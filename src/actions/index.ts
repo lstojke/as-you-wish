@@ -15,13 +15,26 @@ import {
 } from "@/lib/schemas/wishlist";
 import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
-import { getDefaultCurrency, updateDefaultCurrency } from "@/lib/services/profiles";
+import {
+  getDefaultCurrency,
+  updateDefaultCurrency,
+  updateProfileDetails,
+  updateProfilePreferences,
+} from "@/lib/services/profiles";
+import { profileDetailsSchema, profilePreferencesSchema } from "@/lib/schemas/profile";
+import { setLocaleCookie } from "@/lib/i18n/cookie";
 import { profileUpdateSchema } from "@/lib/currency";
 import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
 import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
 import { listShareManageSchema } from "@/lib/schemas/list-shares";
 import { getListShareState, listShareView, manageListShare } from "@/lib/services/list-shares";
+import {
+  importantDateCreateSchema,
+  importantDateUpdateSchema,
+  importantDateDeleteSchema,
+} from "@/lib/schemas/important-dates";
+import { createImportantDate, updateImportantDate, deleteImportantDate } from "@/lib/services/important-dates";
 
 function requireSupabase(locals: App.Locals) {
   if (!locals.supabase) {
@@ -64,7 +77,101 @@ function shareAction(operation: "status" | "create" | "disable" | "replace") {
 }
 
 export const server = {
+  importantDates: {
+    create: defineAction({
+      accept: "json",
+      input: importantDateCreateSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await createImportantDate(client, input);
+        } catch {
+          // eslint-disable-next-line no-console -- never log private date contents
+          console.error("importantDates.create failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.importantDateSave"),
+          });
+        }
+      },
+    }),
+    update: defineAction({
+      accept: "json",
+      input: importantDateUpdateSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await updateImportantDate(client, input);
+        } catch {
+          // eslint-disable-next-line no-console -- never log private date contents
+          console.error("importantDates.update failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.importantDateSave"),
+          });
+        }
+      },
+    }),
+    delete: defineAction({
+      accept: "json",
+      input: importantDateDeleteSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await deleteImportantDate(client, input);
+        } catch {
+          // eslint-disable-next-line no-console -- never log private date contents
+          console.error("importantDates.delete failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.importantDateDelete"),
+          });
+        }
+      },
+    }),
+  },
   profile: {
+    updateDetails: defineAction({
+      accept: "json",
+      input: profileDetailsSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          const profile = await updateProfileDetails(client, input);
+          return { firstName: profile.first_name, lastName: profile.last_name };
+        } catch {
+          // eslint-disable-next-line no-console -- do not log private profile contents
+          console.error("profile.updateDetails failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.settingsUpdate"),
+          });
+        }
+      },
+    }),
+    updatePreferences: defineAction({
+      accept: "json",
+      input: profilePreferencesSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          const profile = await updateProfilePreferences(client, input);
+          const saved = profilePreferencesSchema.parse({
+            defaultCurrency: profile.default_currency,
+            language: profile.language,
+          });
+          setLocaleCookie(context.cookies, saved.language, context.url);
+          return saved;
+        } catch {
+          // eslint-disable-next-line no-console -- do not log private profile contents
+          console.error("profile.updatePreferences failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.settingsUpdate"),
+          });
+        }
+      },
+    }),
     updateCurrency: defineAction({
       accept: "json",
       input: profileUpdateSchema,

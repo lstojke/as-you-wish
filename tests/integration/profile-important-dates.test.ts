@@ -2,6 +2,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { adminClient, anonClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
 import type { Database } from "@/db/database.types";
 import { importantDateCreateSchema } from "@/lib/schemas/important-dates";
+import {
+  createImportantDate,
+  updateImportantDate,
+  deleteImportantDate,
+  listImportantDates,
+} from "@/lib/services/important-dates";
 
 type DateInsert = Database["public"]["Tables"]["profile_important_dates"]["Insert"];
 type DateRow = Database["public"]["Tables"]["profile_important_dates"]["Row"];
@@ -44,6 +50,53 @@ describe("private profile important dates", () => {
     if (error) throw error;
     return data;
   }
+
+  it("supports service CRUD, normalized descriptions, duplicates, and original-date ordering", async () => {
+    const input = importantDateCreateSchema.parse({ date: "2026-01-31", heading: " Anniversary ", description: " " });
+    const first = await createImportantDate(alice.client, input);
+    const duplicate = await createImportantDate(alice.client, input);
+    const earlier = await createImportantDate(alice.client, { ...input, date: "2000-02-29" });
+    expect(first).toMatchObject({ heading: "Anniversary", description: null, repeat_frequency: "yearly" });
+    expect(duplicate.id).not.toBe(first.id);
+    expect((await listImportantDates(alice.client)).map((row) => row.id)).toEqual([
+      earlier.id,
+      ...[first.id, duplicate.id].sort(),
+    ]);
+    for (const repeatFrequency of ["none", "weekly", "monthly", "yearly"] as const) {
+      const saved = await updateImportantDate(alice.client, {
+        ...input,
+        importantDateId: first.id,
+        description: "Details",
+        repeatFrequency,
+      });
+      expect(saved).toMatchObject({ date: "2026-01-31", repeat_frequency: repeatFrequency, description: "Details" });
+    }
+    const cleared = await updateImportantDate(alice.client, { ...input, importantDateId: first.id });
+    expect(cleared.description).toBeNull();
+    expect((await deleteImportantDate(alice.client, { importantDateId: first.id })).id).toBe(first.id);
+    expect((await listImportantDates(alice.client)).map((row) => row.id)).not.toContain(first.id);
+  });
+
+  it("fails explicitly for inaccessible and nonexistent service targets", async () => {
+    const row = await createDate();
+    expect(await listImportantDates(bob.client)).toEqual([]);
+    const missingId = crypto.randomUUID();
+    for (const [client, importantDateId] of [
+      [bob.client, row.id],
+      [alice.client, missingId],
+    ] as const) {
+      await expect(
+        updateImportantDate(client, {
+          ...importantDateCreateSchema.parse({ date: row.date, heading: "Changed" }),
+          importantDateId,
+        }),
+      ).rejects.toMatchObject({ code: "PGRST116" });
+      await expect(deleteImportantDate(client, { importantDateId })).rejects.toMatchObject({ code: "PGRST116" });
+    }
+    const persisted = await admin.from("profile_important_dates").select("*").eq("id", row.id).single();
+    expect(persisted.error).toBeNull();
+    expect(persisted.data).toEqual(row);
+  });
 
   it("supports own-row CRUD, yearly defaults, and optional descriptions", async () => {
     const row = await createDate();

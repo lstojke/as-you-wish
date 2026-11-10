@@ -132,11 +132,11 @@ The database schema (wish lists, items, invitations, reservations, and their RLS
 
 If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
 
-| Variable         | Description                                                       |
-| ---------------- | ----------------------------------------------------------------- |
-| `SUPABASE_URL`   | Project URL from Supabase dashboard → Settings → API              |
-| `SUPABASE_KEY`   | `anon` public key from Supabase dashboard → Settings → API        |
-| `RESEND_API_KEY` | [Resend](https://resend.com/) API key for sending list invitations |
+| Variable         | Description                                                                      |
+| ---------------- | -------------------------------------------------------------------------------- |
+| `SUPABASE_URL`   | Project URL from Supabase dashboard → Settings → API                             |
+| `SUPABASE_KEY`   | `anon` public key from Supabase dashboard → Settings → API                       |
+| `RESEND_API_KEY` | [Resend](https://resend.com/) API key for sending list invitations               |
 | `RESEND_FROM`    | From address used for invitation emails (e.g. `AsYouWish <no-reply@yourdomain>`) |
 
 ```
@@ -158,15 +158,48 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 
 ### Auth routes
 
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
+| Route                 | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `/auth/signin`        | Email/password sign-in form                                                          |
+| `/auth/signup`        | Email/password sign-up form                                                          |
+| `/auth/confirm-email` | Post-signup "check your inbox" page                                                  |
 | `/dashboard`          | Protected home for a signed-in user (redirects to `/auth/signin` if unauthenticated) |
-| `/lists/[id]`         | Protected wish-list detail page                                         |
+| `/lists/[id]`         | Protected wish-list detail page                                                      |
+| `/settings`           | Protected profile, currency/language preferences, and private important dates        |
 
-Route protection is handled in `src/middleware.ts` (`PROTECTED_ROUTES` currently covers `/dashboard` and `/lists`). Add paths to that array to require authentication.
+Route protection is handled in `src/middleware.ts` (`PROTECTED_ROUTES` currently covers `/dashboard`, `/lists`, and `/settings`). Add paths to that array to require authentication.
+
+### Profile and preferences
+
+Settings shows the account's read-only Auth email and optional private first/last
+names. Saved names appear in the header on the next navigation; empty names fall
+back to email. Signup remains email/password-based and does not require a username.
+
+Profile details and preferences have separate Save and Discard controls. Preference
+Save updates currency and language together, then synchronizes the browser's locale
+cookie. Changing language reloads settings; unsaved profile or date edits block preference
+Save until saved or discarded. The header language switch remains available outside
+settings. Changing the default currency does not rewrite existing item currencies.
+
+### Important dates
+
+Settings also supports private important dates, with independent Add/Edit/Delete
+controls and delete confirmation. Each entry has a full calendar date (including
+year), a required heading, an optional description, and Off/Weekly/Monthly/Yearly
+repetition (Yearly by default). Birthday and anniversary suggestions only fill the
+heading; they do not create records automatically. Duplicate entries are allowed.
+
+Dates are ordered by their original saved date, then ID, not by upcoming occurrence.
+Changing repetition never changes that original date. Monthly/yearly repetition's
+future contract uses the last valid day of the intended month when needed: January
+31 becomes February 28/29 and then March 31; February 29 falls back to February 28
+in non-leap years and returns to February 29 in leap years.
+
+**No reminders are sent and no next occurrences are calculated.** Scheduling and
+delivery belong to the separate future `notifications-introduction` change, which
+must preserve these original-date anchors and last-valid-day rules. Dirty date
+dialogs require confirmation before discarding; saving dates does not reload the
+page or erase unrelated profile/preference drafts.
 
 ## Deployment
 

@@ -2,10 +2,55 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 import { SYSTEM_DEFAULT_CURRENCY, type ProfileUpdateInput } from "@/lib/currency";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import type { ProfileDetailsInput, ProfilePreferencesInput } from "@/types";
 
 export type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
 
 type Client = SupabaseClient<Database>;
+
+function requireProfileRow<T extends object>(data: T | null): T {
+  if (!data) throw new Error("Profile not found");
+  return data;
+}
+
+async function requireUserId(client: Client): Promise<string> {
+  const {
+    data: { user },
+    error,
+  } = await client.auth.getUser();
+  if (error) throw error;
+  if (!user) throw new Error("Not authenticated");
+  return user.id;
+}
+
+export async function getOwnProfile(client: Client): Promise<ProfileRow> {
+  const userId = await requireUserId(client);
+  const { data, error } = await client.from("profiles").select("*").eq("id", userId).single();
+  if (error) throw error;
+  return requireProfileRow(data);
+}
+
+export async function getOwnProfileNames(client: Client): Promise<Pick<ProfileRow, "first_name" | "last_name">> {
+  const userId = await requireUserId(client);
+  const { data, error } = await client.from("profiles").select("first_name, last_name").eq("id", userId).single();
+  if (error) throw error;
+  return requireProfileRow(data);
+}
+
+async function updateOwnProfile(client: Client, values: Database["public"]["Tables"]["profiles"]["Update"]) {
+  const userId = await requireUserId(client);
+  const { data, error } = await client.from("profiles").update(values).eq("id", userId).select("*").single();
+  if (error) throw error;
+  return requireProfileRow(data);
+}
+
+export function updateProfileDetails(client: Client, input: ProfileDetailsInput): Promise<ProfileRow> {
+  return updateOwnProfile(client, { first_name: input.firstName, last_name: input.lastName });
+}
+
+export function updateProfilePreferences(client: Client, input: ProfilePreferencesInput): Promise<ProfileRow> {
+  return updateOwnProfile(client, { default_currency: input.defaultCurrency, language: input.language });
+}
 
 export async function getDefaultCurrency(client: Client): Promise<string> {
   const {

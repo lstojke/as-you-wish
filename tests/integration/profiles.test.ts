@@ -2,7 +2,17 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { adminClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
 import { createItem, updateItem } from "@/lib/services/items";
 import { createList } from "@/lib/services/lists";
-import { getDefaultCurrency, getLanguage, updateDefaultCurrency, updateLanguage } from "@/lib/services/profiles";
+import {
+  getDefaultCurrency,
+  getLanguage,
+  updateDefaultCurrency,
+  updateLanguage,
+  getOwnProfile,
+  getOwnProfileNames,
+  updateProfileDetails,
+  updateProfilePreferences,
+} from "@/lib/services/profiles";
+import { profileDetailsSchema } from "@/lib/schemas/profile";
 
 interface Member {
   id: string;
@@ -156,6 +166,43 @@ describe("profiles", () => {
         expect(invalid.error?.code).toBe("23514");
       }
     }
+  });
+
+  it("saves normalized details through the service and clears optional names", async () => {
+    const input = profileDetailsSchema.parse({ firstName: " Łukasz ", lastName: " Żółć " });
+    const saved = await updateProfileDetails(alice.client, input);
+    expect(saved).toMatchObject({ id: alice.id, first_name: "Łukasz", last_name: "Żółć" });
+    expect(await getOwnProfileNames(alice.client)).toEqual({ first_name: "Łukasz", last_name: "Żółć" });
+    const cleared = await updateProfileDetails(alice.client, profileDetailsSchema.parse({ firstName: " " }));
+    expect(cleared).toMatchObject({ first_name: null, last_name: null });
+    expect(await getOwnProfileNames(bob.client)).toEqual({ first_name: null, last_name: null });
+  });
+
+  it("saves currency and language atomically without changing names or another profile", async () => {
+    await updateProfileDetails(alice.client, { firstName: "Anna", lastName: null });
+    const saved = await updateProfilePreferences(alice.client, { defaultCurrency: "EUR", language: "en" });
+    expect(saved).toMatchObject({ default_currency: "EUR", language: "en", first_name: "Anna" });
+
+    const invalid = await alice.client
+      .from("profiles")
+      .update({ default_currency: "GBP", language: "de" })
+      .eq("id", alice.id);
+    expect(invalid.error?.code).toBe("23514");
+    expect(await getOwnProfile(alice.client)).toMatchObject({ default_currency: "EUR", language: "en" });
+    expect(await getOwnProfile(bob.client)).toMatchObject({ default_currency: "PLN", language: "pl" });
+  });
+
+  it("does not report missing profile reads or updates as successful", async () => {
+    const deletion = await admin.from("profiles").delete().eq("id", alice.id);
+    expect(deletion.error).toBeNull();
+    await expect(getOwnProfile(alice.client)).rejects.toMatchObject({ code: "PGRST116" });
+    await expect(getOwnProfileNames(alice.client)).rejects.toMatchObject({ code: "PGRST116" });
+    await expect(updateProfileDetails(alice.client, { firstName: "Anna", lastName: null })).rejects.toMatchObject({
+      code: "PGRST116",
+    });
+    await expect(
+      updateProfilePreferences(alice.client, { defaultCurrency: "EUR", language: "en" }),
+    ).rejects.toMatchObject({ code: "PGRST116" });
   });
 
   it("stamps new priced items with the profile default and preserves stored currency on edit", async () => {

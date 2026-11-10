@@ -1,8 +1,10 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
-import CurrencySettingsForm from "@/components/settings/CurrencySettingsForm";
-import { getDefaultCurrency } from "@/lib/services/profiles";
+import ProfileSettings from "@/components/settings/ProfileSettings";
+import { getOwnProfile } from "@/lib/services/profiles";
+import { listImportantDates } from "@/lib/services/important-dates";
+import { profileDetailsSchema, profilePreferencesSchema } from "@/lib/schemas/profile";
 import { t } from "@/lib/i18n";
 
 export const prerender = false;
@@ -12,11 +14,16 @@ if (!user || !supabase) {
   throw new Error("settings: middleware should have redirected unauthenticated requests");
 }
 
-const defaultCurrency = await getDefaultCurrency(supabase);
+const profile = await getOwnProfile(supabase);
+const importantDates = await listImportantDates(supabase);
+const settings = {
+  ...profileDetailsSchema.parse({ firstName: profile.first_name, lastName: profile.last_name }),
+  ...profilePreferencesSchema.parse({ defaultCurrency: profile.default_currency, language: profile.language }),
+};
 ---
 
 <Layout title={t(locale, "settings.pageTitle")}>
-  <AppHeader />
+  <AppHeader profileNames={profile} showLanguageControls={false} />
   <main class="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
     <a href="/dashboard" class="text-muted-foreground hover:text-foreground text-sm transition-colors">
       {t(locale, "common.backToLists")}
@@ -25,6 +32,12 @@ const defaultCurrency = await getDefaultCurrency(supabase);
       <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{t(locale, "settings.heading")}</h1>
     </header>
     {/* client:only - react-hook-form + Radix need the client React instance (same as DashboardLists). */}
-    <CurrencySettingsForm client:only="react" locale={locale} defaultCurrency={defaultCurrency} />
+    <ProfileSettings
+      client:only="react"
+      locale={locale}
+      email={user.email ?? ""}
+      profile={settings}
+      importantDates={importantDates}
+    />
   </main>
 </Layout>

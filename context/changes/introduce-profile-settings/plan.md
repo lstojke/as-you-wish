@@ -299,39 +299,39 @@ Previous Worker versions remain compatible with added nullable columns and the n
 
 #### Automated
 
-- [x] 1.1 Local migration applies without resetting data.
-- [x] 1.2 Schema tests pass.
-- [x] 1.3 Storage ownership/default/regression tests pass.
+- [x] 1.1 Local migration applies without resetting data. — 574d738
+- [x] 1.2 Schema tests pass. — 574d738
+- [x] 1.3 Storage ownership/default/regression tests pass. — 574d738
 
 #### Manual
 
-- [x] 1.4 Pre-migration account preferences and existing signup remain compatible.
+- [x] 1.4 Pre-migration account preferences and existing signup remain compatible. — 574d738
 
 ### Phase 2: Profile and Preference Settings
 
 #### Automated
 
-- [ ] 2.1 Profile schema/service/display-name and dictionary unit tests pass.
-- [ ] 2.2 Profile integration tests including atomic preferences and item-currency behavior pass.
-- [ ] 2.3 Types and targeted lint pass.
+- [x] 2.1 Profile schema/service/display-name and dictionary unit tests pass.
+- [x] 2.2 Profile integration tests including atomic preferences and item-currency behavior pass.
+- [x] 2.3 Types and targeted lint pass.
 
 #### Manual
 
-- [ ] 2.4 Name save/clear and header fallback work with read-only email.
-- [ ] 2.5 Currency/language saves synchronize persisted preferences and page locale.
-- [ ] 2.6 Dirty-profile guard and failed preference saves preserve edits and locale.
+- [x] 2.4 Name save/clear and header fallback work with read-only email.
+- [x] 2.5 Currency/language saves synchronize persisted preferences and page locale.
+- [x] 2.6 Dirty-profile guard and failed preference saves preserve edits and locale.
 
 ### Phase 3: Important-Date Experience and Final Verification
 
 #### Automated
 
-- [ ] 3.1 Targeted profile/date schema, service, display, and dictionary unit tests pass.
-- [ ] 3.2 Related profile/date integration tests pass.
-- [ ] 3.3 Final lint/type/build checks pass.
+- [x] 3.1 Targeted profile/date schema, service, display, and dictionary unit tests pass.
+- [x] 3.2 Related profile/date integration tests pass.
+- [x] 3.3 Final lint/type/build checks pass.
 
 #### Manual
 
-- [ ] 3.4 Date CRUD, optional descriptions, repeat choices, duplicates, and reload persistence work.
-- [ ] 3.5 Original calendar anchors and fallback help remain accurate without reminder claims.
-- [ ] 3.6 Dirty-date guard, dialog resets, and unrelated drafts remain correct.
-- [ ] 3.7 PL/EN accessibility, responsive UX, errors, and cross-user privacy are accepted.
+- [x] 3.4 Date CRUD, optional descriptions, repeat choices, duplicates, and reload persistence work.
+- [x] 3.5 Original calendar anchors and fallback help remain accurate without reminder claims.
+- [x] 3.6 Dirty-date guard, dialog resets, and unrelated drafts remain correct.
+- [x] 3.7 PL/EN accessibility, responsive UX, errors, and cross-user privacy are accepted.

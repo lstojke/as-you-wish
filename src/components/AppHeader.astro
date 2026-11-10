@@ -2,9 +2,27 @@
 import ProfileMenu from "@/components/ProfileMenu";
 import LanguageSwitcher from "@/components/LanguageSwitcher.astro";
 import { t } from "@/lib/i18n";
+import { getOwnProfileNames, type ProfileRow } from "@/lib/services/profiles";
 
-const { user, locale } = Astro.locals;
+interface Props {
+  profileNames?: Pick<ProfileRow, "first_name" | "last_name">;
+  showLanguageControls?: boolean;
+}
+
+const { profileNames, showLanguageControls = true } = Astro.props;
+const { user, locale, supabase } = Astro.locals;
 const returnTo = Astro.url.pathname + Astro.url.search;
+let names = profileNames;
+if (user && !names) {
+  if (!supabase) throw new Error("header: authenticated client unavailable");
+  try {
+    names = await getOwnProfileNames(supabase);
+  } catch (error) {
+    // eslint-disable-next-line no-console -- never log private profile data
+    console.error("header: profile lookup failed");
+    throw error;
+  }
+}
 ---
 
 <header class="border-border bg-background/60 sticky top-0 z-30 border-b backdrop-blur-sm">
@@ -19,7 +37,15 @@ const returnTo = Astro.url.pathname + Astro.url.search;
             {t(locale, "header.dashboard")}
           </a>
           {/* client:only - Radix dropdown needs the client React instance (same as other islands). */}
-          <ProfileMenu client:only="react" email={user.email ?? ""} locale={locale} returnTo={returnTo}>
+          <ProfileMenu
+            client:only="react"
+            email={user.email ?? ""}
+            firstName={names?.first_name ?? null}
+            lastName={names?.last_name ?? null}
+            locale={locale}
+            returnTo={returnTo}
+            showLanguageControls={showLanguageControls}
+          >
             <span slot="fallback" class="bg-muted block size-8 rounded-full" aria-hidden="true" />
           </ProfileMenu>
         </div>
