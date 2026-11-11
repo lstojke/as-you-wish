@@ -81,20 +81,20 @@ The migration adds only new tables and policies. Existing lists require no migra
 
 #### Automated
 
-- [x] 1.1 Run focused unit and integration tests against local Supabase.
-- [x] 1.2 Run lint and type checking.
+- [x] 1.1 Run focused unit and integration tests against local Supabase. — 13285f7
+- [x] 1.2 Run lint and type checking. — 13285f7
 
 #### Manual
 
-- [x] 1.3 Verify personal groups do not grant other users access to lists.
+- [x] 1.3 Verify personal groups do not grant other users access to lists. — 13285f7
 
 ### Phase 2: Dashboard and group views
 
 #### Automated
 
-- [x] 2.1 Run unit tests, lint, type checking and production build.
+- [x] 2.1 Run unit tests, lint, type checking and production build. — 13285f7
 
 #### Manual
 
-- [x] 2.2 Create Christmas and another group, add an owned and a shared list, open both groups, remove a list and delete a group without deleting either list.
-- [x] 2.3 Verify another account sees only its own groups and a revoked list is absent.
+- [x] 2.2 Create Christmas and another group, add an owned and a shared list, open both groups, remove a list and delete a group without deleting either list. — 13285f7
+- [x] 2.3 Verify another account sees only its own groups and a revoked list is absent. — 13285f7
