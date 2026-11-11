@@ -4,6 +4,8 @@ import AppHeader from "@/components/AppHeader.astro";
 import DashboardLists from "@/components/dashboard/DashboardLists";
 import { listOwnedAndShared, type ListRow } from "@/lib/services/lists";
 import { t } from "@/lib/i18n";
+import { listGroups, listGroupMemberships } from "@/lib/services/list-groups";
+import type { PersonalListGroup, ListGroupMembership } from "@/components/dashboard/group-types";
 
 export const prerender = false;
 
@@ -14,6 +16,9 @@ if (!user || !supabase) {
 let owned: ListRow[] = [];
 let shared: ListRow[] = [];
 let listsLoadFailed = false;
+let groups: PersonalListGroup[] = [];
+let memberships: ListGroupMembership[] = [];
+let groupsLoadFailed = false;
 for (const delayMs of [0, 250, 750]) {
   if (delayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, delayMs));
@@ -26,6 +31,14 @@ for (const delayMs of [0, 250, 750]) {
     listsLoadFailed = true;
   }
 }
+try {
+  [groups, memberships] = await Promise.all([listGroups(supabase), listGroupMemberships(supabase)]);
+  const accessibleListIds = new Set([...owned, ...shared].map((list) => list.id));
+  memberships = memberships.filter((membership) => accessibleListIds.has(membership.list_id));
+} catch {
+  groupsLoadFailed = true;
+}
+const selectedGroupId = Astro.url.searchParams.get("group");
 ---
 
 <Layout title={t(locale, "dashboard.pageTitle")}>
@@ -34,6 +47,16 @@ for (const delayMs of [0, 250, 750]) {
     {
       /* client:only prevents Astro SSR from rendering this island - required because react-hook-form and Radix UI primitives inside the dialog resolve to a different React instance than Astro's SSR renderer, producing an "Invalid hook call" crash at runtime. SSR data is fetched above and passed as props. */
     }
-    <DashboardLists client:only="react" locale={locale} owned={owned} shared={shared} loadError={listsLoadFailed} />
+    <DashboardLists
+      client:only="react"
+      locale={locale}
+      owned={owned}
+      shared={shared}
+      loadError={listsLoadFailed}
+      groups={groups}
+      memberships={memberships}
+      groupsLoadError={groupsLoadFailed}
+      selectedGroupId={selectedGroupId}
+    />
   </main>
 </Layout>

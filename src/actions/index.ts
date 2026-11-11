@@ -1,5 +1,6 @@
 import { ActionError, defineAction } from "astro:actions";
 import { t } from "@/lib/i18n";
+import type { TranslationKey } from "@/lib/i18n/types";
 import {
   listCreateSchema,
   listRenameSchema,
@@ -35,6 +36,20 @@ import {
   importantDateDeleteSchema,
 } from "@/lib/schemas/important-dates";
 import { createImportantDate, updateImportantDate, deleteImportantDate } from "@/lib/services/important-dates";
+import {
+  listGroupCreateSchema,
+  listGroupRenameSchema,
+  listGroupDeleteSchema,
+  listGroupMembershipSchema,
+} from "@/lib/schemas/list-groups";
+import {
+  createListGroup,
+  renameListGroup,
+  deleteListGroup,
+  addListToGroup,
+  removeListFromGroup,
+  ListGroupNotFoundError,
+} from "@/lib/services/list-groups";
 
 function requireSupabase(locals: App.Locals) {
   if (!locals.supabase) {
@@ -76,7 +91,81 @@ function shareAction(operation: "status" | "create" | "disable" | "replace") {
   });
 }
 
+function listGroupError(err: unknown, locale: App.Locals["locale"], name: string, failureKey: TranslationKey) {
+  if (err instanceof ListGroupNotFoundError) {
+    return new ActionError({ code: "NOT_FOUND", message: t(locale, "errors.groupNotFound") });
+  }
+  // eslint-disable-next-line no-console -- never log private group names
+  console.error(`listGroups.${name} failed`);
+  return new ActionError({ code: "INTERNAL_SERVER_ERROR", message: t(locale, failureKey) });
+}
+
 export const server = {
+  listGroups: {
+    create: defineAction({
+      accept: "json",
+      input: listGroupCreateSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await createListGroup(client, input);
+        } catch (err) {
+          throw listGroupError(err, context.locals.locale, "create", "errors.groupSave");
+        }
+      },
+    }),
+    rename: defineAction({
+      accept: "json",
+      input: listGroupRenameSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          return await renameListGroup(client, input);
+        } catch (err) {
+          throw listGroupError(err, context.locals.locale, "rename", "errors.groupSave");
+        }
+      },
+    }),
+    delete: defineAction({
+      accept: "json",
+      input: listGroupDeleteSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          await deleteListGroup(client, input);
+          return { success: true as const };
+        } catch (err) {
+          throw listGroupError(err, context.locals.locale, "delete", "errors.groupDelete");
+        }
+      },
+    }),
+    addList: defineAction({
+      accept: "json",
+      input: listGroupMembershipSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          await addListToGroup(client, input);
+          return { success: true as const };
+        } catch (err) {
+          throw listGroupError(err, context.locals.locale, "addList", "errors.groupMembership");
+        }
+      },
+    }),
+    removeList: defineAction({
+      accept: "json",
+      input: listGroupMembershipSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          await removeListFromGroup(client, input);
+          return { success: true as const };
+        } catch (err) {
+          throw listGroupError(err, context.locals.locale, "removeList", "errors.groupMembership");
+        }
+      },
+    }),
+  },
   importantDates: {
     create: defineAction({
       accept: "json",

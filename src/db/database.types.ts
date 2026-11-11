@@ -93,6 +93,68 @@ export interface Database {
           },
         ];
       };
+      list_group_members: {
+        Row: {
+          created_at: string;
+          group_id: string;
+          list_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          group_id: string;
+          list_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          group_id?: string;
+          list_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "list_group_members_group_id_user_id_fkey";
+            columns: ["group_id", "user_id"];
+            isOneToOne: false;
+            referencedRelation: "list_groups";
+            referencedColumns: ["id", "user_id"];
+          },
+          {
+            foreignKeyName: "list_group_members_list_id_fkey";
+            columns: ["list_id"];
+            isOneToOne: false;
+            referencedRelation: "lists";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      list_groups: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          updated_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       list_share_links: {
         Row: {
           disabled_at: string | null;
@@ -298,6 +360,7 @@ export interface Database {
       is_list_member: { Args: { list_uuid: string }; Returns: boolean };
       is_list_owner: { Args: { list_uuid: string }; Returns: boolean };
       read_list_share: { Args: { p_token: string }; Returns: Json };
+      remove_list_from_group: { Args: { p_group_id: string; p_list_id: string }; Returns: undefined };
       replace_list_share: { Args: { p_list_id: string }; Returns: Json };
     };
     Enums: Record<never, never>;

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 import type { ListCreateInput, ListRenameInput, ListDeleteInput } from "@/lib/schemas/wishlist";
+import { pageAll } from "@/lib/services/pagination";
 
 export type ListRow = Database["public"]["Tables"]["lists"]["Row"];
 
@@ -16,20 +17,29 @@ export async function listOwnedAndShared(client: Client): Promise<{ owned: ListR
     return { owned: [], shared: [] };
   }
 
-  const ownedQuery = client.from("lists").select("*").eq("owner_id", user.id).order("created_at", { ascending: false });
+  const [owned, shared] = await Promise.all([
+    pageAll<ListRow>((from, to) =>
+      client
+        .from("lists")
+        .select("*")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(from, to),
+    ),
+    // lists_select RLS and is_list_invitee() determine shared visibility; do not join invitations.
+    pageAll<ListRow>((from, to) =>
+      client
+        .from("lists")
+        .select("*")
+        .neq("owner_id", user.id)
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false })
+        .range(from, to),
+    ),
+  ]);
 
-  const sharedQuery = client
-    .from("lists")
-    .select("*")
-    .neq("owner_id", user.id)
-    .order("created_at", { ascending: false });
-
-  const [ownedRes, sharedRes] = await Promise.all([ownedQuery, sharedQuery]);
-
-  if (ownedRes.error) throw ownedRes.error;
-  if (sharedRes.error) throw sharedRes.error;
-
-  return { owned: ownedRes.data, shared: sharedRes.data };
+  return { owned, shared };
 }
 
 export async function getListById(client: Client, listId: string): Promise<ListRow | null> {
