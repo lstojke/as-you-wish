@@ -117,7 +117,7 @@ export const itemFormSchema = z.object({
   priceInput: z
     .string()
     .trim()
-    .refine((v) => v === "" || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) >= 0), "validation.priceFormat"),
+    .refine((v) => v === "" || /^\d+([.,]\d{1,2})?$/.test(v), "validation.priceFormat"),
   link: z
     .string()
     .trim()
@@ -130,7 +130,7 @@ export type ItemFormValues = z.infer<typeof itemFormSchema>;
 
 function parsePriceCents(priceInput: string): number | undefined {
   if (priceInput === "") return undefined;
-  return Math.round(Number(priceInput) * 100);
+  return Math.round(Number(priceInput.replace(",", ".")) * 100);
 }
 
 function normalizeLink(link: string): string | undefined {
