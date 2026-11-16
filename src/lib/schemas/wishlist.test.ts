@@ -22,4 +22,20 @@ describe("item form currency mapping", () => {
       false,
     );
   });
+
+  it.each([
+    ["49,99", 4999],
+    ["49,9", 4990],
+    ["0,01", 1],
+    ["49.99", 4999],
+    ["49", 4900],
+  ])("accepts %s and maps it to %i cents on create and update", (priceInput, cents) => {
+    const values = itemFormSchema.parse({ title: "Shoes", priceInput, link: "", currency: "EUR" });
+    expect(mapItemFormToCreate(listId, values)).toMatchObject({ priceCents: cents, currency: "EUR" });
+    expect(mapItemFormToUpdate(itemId, values)).toMatchObject({ priceCents: cents, currency: "EUR" });
+  });
+
+  it.each(["1,234", "1.234", "1,2.3", "1.2,3", "1,", ",50", "-1,00"])("rejects invalid price %s", (priceInput) => {
+    expect(itemFormSchema.safeParse({ title: "Shoes", priceInput, link: "", currency: "EUR" }).success).toBe(false);
+  });
 });
