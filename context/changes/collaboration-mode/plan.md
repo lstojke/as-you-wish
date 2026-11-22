@@ -244,10 +244,10 @@ Role lookup should be scoped to the current user and list, using the existing in
 
 #### Automated
 
-- [x] 3.1 Pass collaborator UI, service and access-control regression tests
-- [x] 3.2 Pass full test suite, lint, type check and production build
+- [x] 3.1 Pass collaborator UI, service and access-control regression tests — bbbd829
+- [x] 3.2 Pass full test suite, lint, type check and production build — bbbd829
 
 #### Manual
 
-- [x] 3.3 Verify owner, collaborator and viewer permissions in separate sessions
-- [x] 3.4 Verify reservation privacy, localization and keyboard/mobile usability
+- [x] 3.3 Verify owner, collaborator and viewer permissions in separate sessions — bbbd829
+- [x] 3.4 Verify reservation privacy, localization and keyboard/mobile usability — bbbd829
