@@ -5,6 +5,7 @@ const input = {
   acceptUrl: "https://example.com/invitations/accept?invite=1&email=a%40b.c",
   listTitle: "Urodziny",
   inviterEmail: "ola@example.com",
+  role: "viewer" as const,
 };
 
 describe("buildInvitationEmail", () => {
@@ -37,5 +38,19 @@ describe("buildInvitationEmail", () => {
     expect(html).toContain("&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
     expect(html).toContain("a&amp;b@example.com");
     expect(html).toContain('href="https://example.com/invitations/accept?invite=1&amp;email=a%40b.c"');
+  });
+
+  it("explains the chosen role in both languages and both formats", () => {
+    const viewer = buildInvitationEmail(input);
+    const collaborator = buildInvitationEmail({ ...input, role: "collaborator" });
+    for (const body of [viewer.text, viewer.html]) {
+      expect(body).toContain("Przeglądający może");
+      expect(body).toContain("A viewer can");
+    }
+    for (const body of [collaborator.text, collaborator.html]) {
+      expect(body).toContain("Współtwórca może");
+      expect(body).toContain("A collaborator can");
+      expect(body).toContain("cannot manage access or delete the list");
+    }
   });
 });

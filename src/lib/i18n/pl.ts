@@ -126,6 +126,9 @@ export const pl = {
   },
   invitation: {
     pageTitle: "Zaproszenie",
+    acceptedHeading: "Zaproszenie przyjęte",
+    acceptedOwner: "Jesteś właścicielem tej listy.",
+    openList: "Otwórz listę",
     mismatchHeading: "To zaproszenie wysłano na inny adres",
     mismatchDetail: "Zaloguj się adresem e-mail, na który wysłano zaproszenie, i otwórz link ponownie.",
     notConfirmedHeading: "Najpierw potwierdź swój e-mail",
@@ -184,6 +187,7 @@ export const pl = {
     inviteSelf: "Nie możesz zaprosić samego siebie",
     inviteDuplicate: "Ten adres e-mail został już zaproszony do tej listy",
     inviteSend: "Nie udało się wysłać zaproszenia",
+    inviteRoleChange: "Nie udało się potwierdzić zmiany uprawnień. Odśwież stronę przed ponowną próbą.",
     inviteRevoke: "Nie udało się cofnąć zaproszenia",
     inviteMismatch: "To zaproszenie wysłano na inny adres e-mail",
     inviteNotConfirmed: "Najpierw potwierdź swój adres e-mail",
@@ -308,9 +312,18 @@ export const pl = {
     sent: "Zaproszenie zostało wysłane",
     createdEmailFailed: "Zaproszenie utworzono, ale nie udało się wysłać e-maila",
     title: "Zaproś kogoś",
-    description: "Otrzyma e-mail z linkiem, który pozwoli przyjąć zaproszenie i wyświetlić tę listę.",
+    description: "Wybierz uprawnienia i wyślij zaproszenie e-mailem.",
     email: "E-mail",
     emailPlaceholder: "imie@example.com",
+    role: "Uprawnienia",
+    roleFor: "Uprawnienia dla {email}",
+    viewer: "Przeglądający",
+    collaborator: "Współtwórca",
+    viewerDescription:
+      "Przeglądający może oglądać listę i rezerwować pozycje, ale nie może jej edytować. Właściciel może zmienić uprawnienia.",
+    collaboratorDescription:
+      "Współtwórca może edytować pozycje, zmieniać nazwę listy i rezerwować pozycje. Nie może zarządzać dostępem ani usuwać listy. Właściciel może zmienić uprawnienia.",
+    roleChanged: "Uprawnienia zostały zmienione",
     cancel: "Anuluj",
     sending: "Wysyłanie…",
     send: "Wyślij zaproszenie",
@@ -416,7 +429,7 @@ export const pl = {
   email: {
     invitation: {
       subject: "{inviter} zaprasza Cię do swojej listy życzeń",
-      intro: "{inviter} zaprasza Cię do obejrzenia listy „{list}” w AsYouWish.",
+      intro: "{inviter} zaprasza Cię do listy „{list}” w AsYouWish.",
       cta: "Przyjmij zaproszenie",
       ignore: "Jeśli nie spodziewałeś(-aś) się tej wiadomości, możesz ją zignorować.",
     },

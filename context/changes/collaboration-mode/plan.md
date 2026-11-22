@@ -222,23 +222,23 @@ Role lookup should be scoped to the current user and list, using the existing in
 
 #### Automated
 
-- [x] 1.1 Apply migration with viewer defaults and legacy insert compatibility
-- [x] 1.2 Pass authorization, role-change, reservation and sharing integration tests
+- [x] 1.1 Apply migration with viewer defaults and legacy insert compatibility — 4bf2839
+- [x] 1.2 Pass authorization, role-change, reservation and sharing integration tests — 4bf2839
 
 #### Manual
 
-- [x] 1.3 Verify owner-controlled collaborator permissions and restrictions
+- [x] 1.3 Verify owner-controlled collaborator permissions and restrictions — 4bf2839
 
 ### Phase 2: Invitation and Role Management
 
 #### Automated
 
-- [ ] 2.1 Pass invitation role, acceptance and localized email tests
-- [ ] 2.2 Pass localization parity
+- [x] 2.1 Pass invitation role, acceptance and localized email tests
+- [x] 2.2 Pass localization parity
 
 #### Manual
 
-- [ ] 2.3 Verify invitation and role-management UX in Polish and English
+- [x] 2.3 Verify invitation and role-management UX in Polish and English
 
 ### Phase 3: Collaborator Controls and End-to-End Regression
 

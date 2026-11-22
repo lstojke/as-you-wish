@@ -87,12 +87,16 @@ export type ReservationReleaseInput = z.infer<typeof reservationReleaseSchema>;
 // Self-invite is enforced in the action handler (the schema doesn't know the
 // current user's email). email is normalized to lowercase/trimmed to match the
 // DB check constraint (email = lower(trim(email))) and unique (list_id, email).
+export const invitationRoleSchema = z.enum(["viewer", "collaborator"]);
+export type InvitationRole = z.infer<typeof invitationRoleSchema>;
+
 export const invitationCreateSchema = z.object({
   listId: z.uuid(),
   email: z.preprocess(
     (v) => (typeof v === "string" ? v.trim().toLowerCase() : v),
     z.email("validation.emailInvalid").max(320),
   ),
+  role: invitationRoleSchema.default("viewer"),
 });
 
 export type InvitationCreateInput = z.infer<typeof invitationCreateSchema>;
@@ -102,6 +106,13 @@ export const invitationRevokeSchema = z.object({
 });
 
 export type InvitationRevokeInput = z.infer<typeof invitationRevokeSchema>;
+
+export const invitationRoleChangeSchema = z.object({
+  invitationId: z.uuid(),
+  role: invitationRoleSchema,
+});
+
+export type InvitationRoleChangeInput = z.infer<typeof invitationRoleChangeSchema>;
 
 export const invitationAcceptSchema = z.object({
   invitationId: z.uuid(),

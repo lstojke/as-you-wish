@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { setupInvitationScenario, type InvitationScenario, type Member } from "../helpers/invitationFixtures";
 import { anonClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
+import { invitationCreateSchema } from "@/lib/schemas/wishlist";
+import { changeInvitationRole, createInvitation } from "@/lib/services/invitations";
 
 function expectDenied(result: { data: unknown; error: unknown }) {
   if (!result.error)
@@ -105,6 +107,24 @@ describe("collaborative list authorization", () => {
     const role = await invitee.client.rpc("get_list_role", { p_list_id: listId });
     expect(role.error).toBeNull();
     expect(role.data).toBe("viewer");
+  });
+
+  it("creates invitations with the selected role and changes accepted roles through the service", async () => {
+    const { owner, invitee, inviteeInvitation, listId } = scenario;
+    const input = invitationCreateSchema.parse({ listId, email: "service@example.test", role: "collaborator" });
+    const created = await createInvitation(owner.client, input);
+    expect(created.ok).toBe(true);
+    if (!created.ok) throw new Error("Invitation was not created");
+    expect(created.invitation.role).toBe("collaborator");
+    expect(await createInvitation(owner.client, input)).toEqual({ ok: false, reason: "already_invited" });
+    await accept(invitee.client, inviteeInvitation.invitationId);
+    await changeInvitationRole(owner.client, { invitationId: inviteeInvitation.invitationId, role: "collaborator" });
+    expect((await invitee.client.rpc("get_list_role", { p_list_id: listId })).data).toBe("collaborator");
+    await expect(
+      changeInvitationRole(invitee.client, { invitationId: inviteeInvitation.invitationId, role: "viewer" }),
+    ).rejects.toMatchObject({ code: "42501" });
+    await changeInvitationRole(owner.client, { invitationId: inviteeInvitation.invitationId, role: "viewer" });
+    expect((await invitee.client.rpc("get_list_role", { p_list_id: listId })).data).toBe("viewer");
   });
 
   it("preserves promotion through acceptance and applies demotion on the next request", async () => {

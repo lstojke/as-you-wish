@@ -200,6 +200,9 @@ function ListDetailInner({
           />
           <PendingInvitations
             invitations={invitations}
+            onRoleChanged={(id, role) => {
+              setInvitations((prev) => prev.map((inv) => (inv.id === id ? { ...inv, role } : inv)));
+            }}
             onRevoked={(id) => {
               setInvitations((prev) => prev.filter((inv) => inv.id !== id));
             }}

@@ -13,8 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { invitationRoleSchema } from "@/lib/schemas/wishlist";
 import type { InvitationRow } from "@/lib/services/invitations";
 import { z } from "zod";
 import { useT } from "@/components/hooks/useT";
@@ -23,6 +25,7 @@ import { useT } from "@/components/hooks/useT";
 // server action re-validates and normalizes via the full invitationCreateSchema.
 const inviteFormSchema = z.object({
   email: z.email("validation.emailInvalid").max(320),
+  role: invitationRoleSchema,
 });
 type InviteFormValues = z.infer<typeof inviteFormSchema>;
 
@@ -37,15 +40,15 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
   const { t, tm } = useT();
   const form = useForm<InviteFormValues>({
     resolver: zodResolver(inviteFormSchema),
-    defaultValues: { email: "" },
+    defaultValues: { email: "", role: "viewer" },
   });
 
   useEffect(() => {
-    form.reset({ email: "" });
+    form.reset({ email: "", role: "viewer" });
   }, [open, form]);
 
   async function onSubmit(values: InviteFormValues) {
-    const { data, error } = await actions.invitations.create({ listId, email: values.email });
+    const { data, error } = await actions.invitations.create({ listId, email: values.email, role: values.role });
 
     if (error) {
       if (isInputError(error)) {
@@ -93,6 +96,30 @@ export default function InviteDialog({ listId, open, onOpenChange, onInvited }: 
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t("invite.role")}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={form.formState.isSubmitting}>
+                    <FormControl>
+                      <SelectTrigger onBlur={field.onBlur} ref={field.ref}>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="viewer">{t("invite.viewer")}</SelectItem>
+                      <SelectItem value="collaborator">{t("invite.collaborator")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {t(field.value === "collaborator" ? "invite.collaboratorDescription" : "invite.viewerDescription")}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
