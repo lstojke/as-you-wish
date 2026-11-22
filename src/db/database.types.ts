@@ -20,6 +20,7 @@ export interface Database {
           id: string;
           invited_at: string;
           list_id: string;
+          role: string;
         };
         ComputedFields: never;
         Insert: {
@@ -29,6 +30,7 @@ export interface Database {
           id?: string;
           invited_at?: string;
           list_id: string;
+          role?: string;
         };
         Update: {
           accepted_at?: string | null;
@@ -37,6 +39,7 @@ export interface Database {
           id?: string;
           invited_at?: string;
           list_id?: string;
+          role?: string;
         };
         Relationships: [
           {
@@ -353,15 +356,22 @@ export interface Database {
     Functions: {
       accept_invitation: { Args: { invite_id: string }; Returns: string };
       disable_list_share: { Args: { p_list_id: string }; Returns: Json };
+      get_list_role: { Args: { p_list_id: string }; Returns: string | null };
       get_or_create_list_share: { Args: { p_list_id: string }; Returns: Json };
       is_item_list_member: { Args: { item_uuid: string }; Returns: boolean };
       is_item_reserved: { Args: { item_uuid: string }; Returns: boolean };
       is_list_invitee: { Args: { list_uuid: string }; Returns: boolean };
+      is_list_editor: { Args: { list_uuid: string }; Returns: boolean };
       is_list_member: { Args: { list_uuid: string }; Returns: boolean };
       is_list_owner: { Args: { list_uuid: string }; Returns: boolean };
       read_list_share: { Args: { p_token: string }; Returns: Json };
+      rename_collaborative_list: {
+        Args: { p_list_id: string; p_title: string };
+        Returns: Database["public"]["Tables"]["lists"]["Row"][];
+      };
       remove_list_from_group: { Args: { p_group_id: string; p_list_id: string }; Returns: undefined };
       replace_list_share: { Args: { p_list_id: string }; Returns: Json };
+      set_invitation_role: { Args: { p_invitation_id: string; p_role: string }; Returns: boolean };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
