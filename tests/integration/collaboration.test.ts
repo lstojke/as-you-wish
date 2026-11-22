@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { setupInvitationScenario, type InvitationScenario, type Member } from "../helpers/invitationFixtures";
 import { anonClient, createMember, signIn, type Client } from "../helpers/supabaseTestClients";
 import { invitationCreateSchema } from "@/lib/schemas/wishlist";
-import { changeInvitationRole, createInvitation } from "@/lib/services/invitations";
+import { changeInvitationRole, createInvitation, deleteInvitation } from "@/lib/services/invitations";
+import { createItem, deleteItem, updateItem } from "@/lib/services/items";
+import { deleteList, renameCollaborativeList } from "@/lib/services/lists";
 
 function expectDenied(result: { data: unknown; error: unknown }) {
   if (!result.error)
@@ -292,6 +294,41 @@ describe("collaborative list authorization", () => {
     expectDenied(await invitee.client.from("lists").update({ title: "Direct rename" }).eq("id", listId).select("id"));
   });
 
+  it("uses editor services and rejects stale collaborator mutations after demotion", async () => {
+    const { owner, invitee, inviteeInvitation, listId, admin } = scenario;
+    await setRole(inviteeInvitation.invitationId, "collaborator");
+    await accept(invitee.client, inviteeInvitation.invitationId);
+    await accept(viewer.client, viewerInvitationId);
+    await expect(deleteList(invitee.client, { listId })).rejects.toThrow("not owned");
+    await expect(deleteInvitation(invitee.client, { invitationId: viewerInvitationId })).rejects.toThrow("not owned");
+
+    const item = await createItem(invitee.client, { listId, title: "Gift" }, "PLN");
+    const [ownerEdit, collaboratorEdit] = await Promise.all([
+      updateItem(owner.client, { itemId: item.id, title: "Owner edit" }, "PLN"),
+      updateItem(invitee.client, { itemId: item.id, title: "Collaborator edit" }, "PLN"),
+    ]);
+    expect(ownerEdit.title).toBe("Owner edit");
+    expect(collaboratorEdit.title).toBe("Collaborator edit");
+    const current = await admin.from("items").select("title").eq("id", item.id).single();
+    expect(["Owner edit", "Collaborator edit"]).toContain(current.data?.title);
+    expect((await renameCollaborativeList(invitee.client, { listId, title: "Renamed" })).title).toBe("Renamed");
+
+    const reservation = await viewer.client.from("reservations").insert({ item_id: item.id, claimer_id: viewer.id });
+    expect(reservation.error).toBeNull();
+    await deleteItem(invitee.client, { itemId: item.id });
+    const deletedReservation = await admin.from("reservations").select("id").eq("item_id", item.id);
+    expect(deletedReservation.error).toBeNull();
+    expect(deletedReservation.data).toEqual([]);
+
+    const stillThere = await createItem(owner.client, { listId, title: "Existing" }, "PLN");
+    await setRole(inviteeInvitation.invitationId, "viewer");
+    await expect(createItem(invitee.client, { listId, title: "Denied" }, "PLN")).rejects.toBeDefined();
+    await expect(updateItem(invitee.client, { itemId: stillThere.id, title: "Denied" }, "PLN")).rejects.toBeDefined();
+    await expect(deleteItem(invitee.client, { itemId: stillThere.id })).rejects.toThrow("not editable");
+    await expect(renameCollaborativeList(invitee.client, { listId, title: "Denied" })).rejects.toBeDefined();
+    expect((await admin.from("items").select("id").eq("id", stillThere.id)).data).toHaveLength(1);
+  });
+
   it("keeps identity and list membership immutable even when both lists are editable", async () => {
     const { owner, invitee, inviteeInvitation, listId, itemId, admin } = scenario;
     await setRole(inviteeInvitation.invitationId, "collaborator");
@@ -349,12 +386,10 @@ describe("collaborative list authorization", () => {
     }
     const intact = await admin.from("lists").select("id").eq("id", listId);
     expect(intact.data).toHaveLength(1);
-    const revoke = await owner.client.from("invitations").delete().eq("id", created.data.id).select("id");
-    expect(revoke.error).toBeNull();
-    expect(revoke.data).toHaveLength(1);
-    const removed = await owner.client.from("lists").delete().eq("id", listId).select("id");
-    expect(removed.error).toBeNull();
-    expect(removed.data).toHaveLength(1);
+    await deleteInvitation(owner.client, { invitationId: created.data.id });
+    expect((await admin.from("invitations").select("id").eq("id", created.data.id)).data).toEqual([]);
+    await deleteList(owner.client, { listId });
+    expect((await admin.from("lists").select("id").eq("id", listId)).data).toEqual([]);
   });
 
   it("preserves reservation privacy, exclusive claims and release ownership", async () => {

@@ -2,12 +2,13 @@
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import ListDetail from "@/components/lists/ListDetail";
-import { getListById, type ListRow } from "@/lib/services/lists";
+import { getListById, getListRole, type ListRow, type ListRole } from "@/lib/services/lists";
 import { listItems, listReservedItemIds, type ItemRow } from "@/lib/services/items";
 import { listMyReservedItemIds } from "@/lib/services/reservations";
 import { listInvitations, type InvitationRow } from "@/lib/services/invitations";
 import { getDefaultCurrency } from "@/lib/services/profiles";
 import { SYSTEM_DEFAULT_CURRENCY } from "@/lib/currency";
+import { t } from "@/lib/i18n";
 
 export const prerender = false;
 
@@ -29,9 +30,12 @@ let reservedItemIds: string[] = [];
 let myReservedItemIds: string[] = [];
 let invitations: InvitationRow[] = [];
 let defaultCurrency: string = SYSTEM_DEFAULT_CURRENCY;
+let role: ListRole | null = null;
 try {
   maybeList = await getListById(supabase, id);
   if (maybeList) {
+    role = await getListRole(supabase, id);
+    if (!role) return new Response(null, { status: 404 });
     items = await listItems(supabase, id);
     [reservedItemIds, myReservedItemIds] = await Promise.all([
       listReservedItemIds(supabase, id),
@@ -40,16 +44,16 @@ try {
         items.map((i) => i.id),
       ),
     ]);
-    if (maybeList.owner_id === user.id) {
-      [invitations, defaultCurrency] = await Promise.all([listInvitations(supabase, id), getDefaultCurrency(supabase)]);
-    }
+    if (role === "owner") invitations = await listInvitations(supabase, id);
+    if (role !== "viewer") defaultCurrency = await getDefaultCurrency(supabase);
   }
 } catch (e) {
   // eslint-disable-next-line no-console -- surface SSR load failures in Wrangler tail
   console.error("lists/[id]: failed to load", e);
+  return new Response(t(Astro.locals.locale, "errors.unavailable"), { status: 503 });
 }
 
-if (!maybeList) {
+if (!maybeList || !role) {
   return new Response(null, { status: 404 });
 }
 
@@ -69,7 +73,7 @@ const list = maybeList;
       reservedItemIds={reservedItemIds}
       myReservedItemIds={myReservedItemIds}
       initialInvitations={invitations}
-      currentUserId={user.id}
+      role={role}
       defaultCurrency={defaultCurrency}
       locale={Astro.locals.locale}
     />

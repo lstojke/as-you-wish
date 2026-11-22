@@ -233,21 +233,21 @@ Role lookup should be scoped to the current user and list, using the existing in
 
 #### Automated
 
-- [x] 2.1 Pass invitation role, acceptance and localized email tests
-- [x] 2.2 Pass localization parity
+- [x] 2.1 Pass invitation role, acceptance and localized email tests — e9b3d84
+- [x] 2.2 Pass localization parity — e9b3d84
 
 #### Manual
 
-- [x] 2.3 Verify invitation and role-management UX in Polish and English
+- [x] 2.3 Verify invitation and role-management UX in Polish and English — e9b3d84
 
 ### Phase 3: Collaborator Controls and End-to-End Regression
 
 #### Automated
 
-- [ ] 3.1 Pass collaborator UI, service and access-control regression tests
-- [ ] 3.2 Pass full test suite, lint, type check and production build
+- [x] 3.1 Pass collaborator UI, service and access-control regression tests
+- [x] 3.2 Pass full test suite, lint, type check and production build
 
 #### Manual
 
-- [ ] 3.3 Verify owner, collaborator and viewer permissions in separate sessions
-- [ ] 3.4 Verify reservation privacy, localization and keyboard/mobile usability
+- [x] 3.3 Verify owner, collaborator and viewer permissions in separate sessions
+- [x] 3.4 Verify reservation privacy, localization and keyboard/mobile usability

@@ -15,7 +15,7 @@ import {
   invitationRoleChangeSchema,
   invitationAcceptSchema,
 } from "@/lib/schemas/wishlist";
-import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
+import { createList, renameCollaborativeList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
 import {
   getDefaultCurrency,
@@ -310,7 +310,7 @@ export const server = {
       handler: async (input, context) => {
         const client = requireSupabase(context.locals);
         try {
-          return await updateList(client, input);
+          return await renameCollaborativeList(client, input);
         } catch (err) {
           // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
           console.error("lists.rename failed", err);

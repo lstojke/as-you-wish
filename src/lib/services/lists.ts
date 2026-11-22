@@ -101,6 +101,7 @@ export async function updateList(client: Client, input: ListRenameInput): Promis
 
 // Cascade is enforced by items.list_id FK (on delete cascade) - see initial wishlist schema.
 export async function deleteList(client: Client, input: ListDeleteInput): Promise<void> {
-  const { error } = await client.from("lists").delete().eq("id", input.listId);
+  const { data, error } = await client.from("lists").delete().eq("id", input.listId).select("id").maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("List not found or not owned");
 }

@@ -15,11 +15,13 @@ import PersonalListGroups, { GroupsLoadError } from "@/components/dashboard/Pers
 import { groupHref, type PersonalListGroup, type ListGroupMembership } from "@/components/dashboard/group-types";
 import { Badge } from "@/components/ui/badge";
 import GroupNameDialog from "@/components/dashboard/GroupNameDialog";
+import { cn } from "@/lib/utils";
 
 interface Props {
   locale: Locale;
   owned: ListRow[];
   shared: ListRow[];
+  sharedRoles: Record<string, "viewer" | "collaborator">;
   loadError: boolean;
   groups: PersonalListGroup[];
   memberships: ListGroupMembership[];
@@ -29,7 +31,8 @@ interface Props {
 
 function DashboardListsInner({
   owned: initialOwned,
-  shared,
+  shared: initialShared,
+  sharedRoles,
   loadError,
   groups: initialGroups,
   memberships: initialMemberships,
@@ -38,6 +41,7 @@ function DashboardListsInner({
 }: Omit<Props, "locale">) {
   const { t } = useT();
   const [owned, setOwned] = useState<ListRow[]>(initialOwned);
+  const [shared, setShared] = useState<ListRow[]>(initialShared);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [groupDialogOpen, setGroupDialogOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<ListRow | null>(null);
@@ -72,6 +76,7 @@ function DashboardListsInner({
 
   function handleRenamed(updated: ListRow) {
     setOwned((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
+    setShared((prev) => prev.map((l) => (l.id === updated.id ? updated : l)));
   }
 
   const hasOwned = owned.length > 0;
@@ -168,7 +173,18 @@ function DashboardListsInner({
                           }}
                         />
                       ) : (
-                        <SharedListCard key={list.id} list={list} groups={labelsFor(list.id)} />
+                        <SharedListCard
+                          key={list.id}
+                          list={list}
+                          groups={labelsFor(list.id)}
+                          onRename={
+                            sharedRoles[list.id] === "collaborator"
+                              ? () => {
+                                  setRenameTarget(list);
+                                }
+                              : undefined
+                          }
+                        />
                       ),
                     )}
                   </div>
@@ -238,7 +254,18 @@ function DashboardListsInner({
                 {hasShared ? (
                   <div className="grid min-w-0 grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-3">
                     {shared.map((list) => (
-                      <SharedListCard key={list.id} list={list} groups={labelsFor(list.id)} />
+                      <SharedListCard
+                        key={list.id}
+                        list={list}
+                        groups={labelsFor(list.id)}
+                        onRename={
+                          sharedRoles[list.id] === "collaborator"
+                            ? () => {
+                                setRenameTarget(list);
+                              }
+                            : undefined
+                        }
+                      />
                     ))}
                   </div>
                 ) : (
@@ -345,17 +372,33 @@ function OwnedListCard({
   );
 }
 
-function SharedListCard({ list, groups }: { list: ListRow; groups: PersonalListGroup[] }) {
+function SharedListCard({
+  list,
+  groups,
+  onRename,
+}: {
+  list: ListRow;
+  groups: PersonalListGroup[];
+  onRename?: () => void;
+}) {
   const { t } = useT();
   return (
-    <Card className="hover:border-foreground/20 min-w-0 gap-0 py-0 transition-colors">
+    <Card className="hover:border-foreground/20 relative min-w-0 gap-0 py-0 transition-colors">
       <a
         href={`/lists/${list.id}`}
-        className="focus-visible:ring-ring/50 block min-w-0 rounded-xl p-2 outline-none focus-visible:ring-[3px] sm:p-4"
+        className={cn(
+          "focus-visible:ring-ring/50 block min-w-0 rounded-xl p-2 outline-none focus-visible:ring-[3px] sm:p-4",
+          onRename && "pr-12 sm:pr-14",
+        )}
         aria-label={t("dashboardLists.openList", { title: list.title })}
       >
         <CardTitle className="text-sm leading-snug break-words whitespace-normal sm:text-base">{list.title}</CardTitle>
       </a>
+      {onRename && (
+        <div className="absolute top-1 right-1 sm:top-2 sm:right-2">
+          <ListActionsMenu listTitle={list.title} onRename={onRename} />
+        </div>
+      )}
       <GroupLabels groups={groups} />
     </Card>
   );

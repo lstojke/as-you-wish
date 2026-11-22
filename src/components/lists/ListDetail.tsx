@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { actions } from "astro:actions";
 import { toast } from "sonner";
-import type { ListRow } from "@/lib/services/lists";
+import type { ListRole, ListRow } from "@/lib/services/lists";
 import type { ItemRow } from "@/lib/services/items";
 import type { InvitationRow } from "@/lib/services/invitations";
 import ItemsList from "@/components/lists/ItemsList";
@@ -26,7 +26,7 @@ interface Props {
   reservedItemIds: string[];
   myReservedItemIds: string[];
   initialInvitations: InvitationRow[];
-  currentUserId: string;
+  role: ListRole;
   defaultCurrency: string;
   locale: Locale;
 }
@@ -37,7 +37,7 @@ function ListDetailInner({
   reservedItemIds,
   myReservedItemIds,
   initialInvitations,
-  currentUserId,
+  role,
   defaultCurrency,
 }: Omit<Props, "locale">) {
   const { t } = useT();
@@ -56,7 +56,8 @@ function ListDetailInner({
   const [editTarget, setEditTarget] = useState<ItemRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ItemRow | null>(null);
 
-  const isOwner = list.owner_id === currentUserId;
+  const isOwner = role === "owner";
+  const canEdit = role === "owner" || role === "collaborator";
 
   async function handleReserve(item: ItemRow) {
     setPendingItemIds((prev) => [...prev, item.id]);
@@ -117,28 +118,32 @@ function ListDetailInner({
         </a>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-2">
           <h1 className="min-w-0 text-2xl font-semibold tracking-tight break-words sm:text-3xl">{list.title}</h1>
-          {isOwner && (
+          {canEdit && (
             <div className="flex flex-wrap items-center justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setShareOpen(true);
-                }}
-              >
-                {t("listDetail.shareLink")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setInviteOpen(true);
-                }}
-              >
-                {t("listDetail.invite")}
-              </Button>
+              {isOwner && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShareOpen(true);
+                    }}
+                  >
+                    {t("listDetail.shareLink")}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setInviteOpen(true);
+                    }}
+                  >
+                    {t("listDetail.invite")}
+                  </Button>
+                </>
+              )}
               <Button
                 ref={addItemTrigger}
                 type="button"
@@ -159,9 +164,13 @@ function ListDetailInner({
                 onRename={() => {
                   setRenameOpen(true);
                 }}
-                onDelete={() => {
-                  setDeleteOpen(true);
-                }}
+                onDelete={
+                  isOwner
+                    ? () => {
+                        setDeleteOpen(true);
+                      }
+                    : undefined
+                }
               />
             </div>
           )}
@@ -173,7 +182,7 @@ function ListDetailInner({
         myReservedItemIds={myReserved}
         pendingItemIds={pendingItemIds}
         canClaim={!isOwner}
-        ownedByCurrentUser={isOwner}
+        canEdit={canEdit}
         onEdit={(item) => {
           setEditTarget(item);
         }}
@@ -184,7 +193,7 @@ function ListDetailInner({
         onRelease={handleRelease}
       />
 
-      {isOwner && (
+      {canEdit && (
         <>
           <AddItemForm
             listId={list.id}
@@ -198,39 +207,43 @@ function ListDetailInner({
             onOptimisticReplace={handleOptimisticReplace}
             onOptimisticRemove={handleOptimisticRemove}
           />
-          <PendingInvitations
-            invitations={invitations}
-            onRoleChanged={(id, role) => {
-              setInvitations((prev) => prev.map((inv) => (inv.id === id ? { ...inv, role } : inv)));
-            }}
-            onRevoked={(id) => {
-              setInvitations((prev) => prev.filter((inv) => inv.id !== id));
-            }}
-          />
-          <InviteDialog
-            listId={list.id}
-            open={inviteOpen}
-            onOpenChange={setInviteOpen}
-            onInvited={(invitation) => {
-              setInvitations((prev) => [invitation, ...prev]);
-            }}
-          />
-          {shareOpen && <ShareLinkDialog listId={list.id} open={shareOpen} onOpenChange={setShareOpen} />}
+          {isOwner && (
+            <>
+              <PendingInvitations
+                invitations={invitations}
+                onRoleChanged={(id, role) => {
+                  setInvitations((prev) => prev.map((inv) => (inv.id === id ? { ...inv, role } : inv)));
+                }}
+                onRevoked={(id) => {
+                  setInvitations((prev) => prev.filter((inv) => inv.id !== id));
+                }}
+              />
+              <InviteDialog
+                listId={list.id}
+                open={inviteOpen}
+                onOpenChange={setInviteOpen}
+                onInvited={(invitation) => {
+                  setInvitations((prev) => [invitation, ...prev]);
+                }}
+              />
+              {shareOpen && <ShareLinkDialog listId={list.id} open={shareOpen} onOpenChange={setShareOpen} />}
+              <DeleteListDialog
+                list={list}
+                itemCount={items.length}
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                onDeleted={() => {
+                  window.location.assign("/dashboard");
+                }}
+              />
+            </>
+          )}
           <RenameListDialog
             list={list}
             open={renameOpen}
             onOpenChange={setRenameOpen}
             onRenamed={(updated) => {
               setList(updated);
-            }}
-          />
-          <DeleteListDialog
-            list={list}
-            itemCount={items.length}
-            open={deleteOpen}
-            onOpenChange={setDeleteOpen}
-            onDeleted={() => {
-              window.location.assign("/dashboard");
             }}
           />
           <EditItemForm

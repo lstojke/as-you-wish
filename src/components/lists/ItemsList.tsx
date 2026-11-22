@@ -11,7 +11,7 @@ interface Props {
   myReservedItemIds: string[];
   pendingItemIds: string[];
   canClaim: boolean;
-  ownedByCurrentUser: boolean;
+  canEdit: boolean;
   onEdit: (item: ItemRow) => void;
   onDelete: (item: ItemRow) => void;
   onReserve: (item: ItemRow) => void;
@@ -24,7 +24,7 @@ export default function ItemsList({
   myReservedItemIds,
   pendingItemIds,
   canClaim,
-  ownedByCurrentUser,
+  canEdit,
   onEdit,
   onDelete,
   onReserve,
@@ -70,7 +70,7 @@ export default function ItemsList({
               </a>
             )}
           </div>
-          {ownedByCurrentUser && (
+          {canEdit && (
             <ItemActionsMenu
               itemTitle={item.title}
               onEdit={() => {

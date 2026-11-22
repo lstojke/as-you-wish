@@ -56,8 +56,14 @@ export async function changeInvitationRole(client: Client, input: InvitationRole
 
 // RLS invitations_delete gates to is_list_owner; used to revoke a pending invite.
 export async function deleteInvitation(client: Client, input: InvitationRevokeInput): Promise<void> {
-  const { error } = await client.from("invitations").delete().eq("id", input.invitationId);
+  const { data, error } = await client
+    .from("invitations")
+    .delete()
+    .eq("id", input.invitationId)
+    .select("id")
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("Invitation not found or not owned");
 }
 
 export type AcceptInvitationReason = "mismatch" | "not_found" | "not_confirmed" | "unauthenticated" | "unknown";
