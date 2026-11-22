@@ -23,6 +23,7 @@ export default function ItemActionsMenu({ itemTitle, onEdit, onDelete }: Props) 
           type="button"
           variant="ghost"
           size="icon"
+          className="size-12 sm:size-9"
           aria-label={t("itemForm.actionsForItem", { title: itemTitle })}
         >
           <MoreVertical />
