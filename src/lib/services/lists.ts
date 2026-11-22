@@ -2,10 +2,30 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
 import type { ListCreateInput, ListRenameInput, ListDeleteInput } from "@/lib/schemas/wishlist";
 import { pageAll } from "@/lib/services/pagination";
+import { z } from "zod";
 
 export type ListRow = Database["public"]["Tables"]["lists"]["Row"];
 
 type Client = SupabaseClient<Database>;
+
+const listRoleSchema = z.enum(["owner", "collaborator", "viewer"]);
+export type ListRole = z.infer<typeof listRoleSchema>;
+
+export async function getListRole(client: Client, listId: string): Promise<ListRole | null> {
+  const { data, error } = await client.rpc("get_list_role", { p_list_id: listId });
+  if (error) throw error;
+  return listRoleSchema.nullable().parse(data);
+}
+
+export async function renameCollaborativeList(client: Client, input: ListRenameInput): Promise<ListRow> {
+  const { data, error } = await client.rpc("rename_collaborative_list", {
+    p_list_id: input.listId,
+    p_title: input.title,
+  });
+  if (error) throw error;
+  if (data.length !== 1) throw new Error("List not found or not editable");
+  return data[0];
+}
 
 export async function listOwnedAndShared(client: Client): Promise<{ owned: ListRow[]; shared: ListRow[] }> {
   const {
@@ -81,6 +101,7 @@ export async function updateList(client: Client, input: ListRenameInput): Promis
 
 // Cascade is enforced by items.list_id FK (on delete cascade) - see initial wishlist schema.
 export async function deleteList(client: Client, input: ListDeleteInput): Promise<void> {
-  const { error } = await client.from("lists").delete().eq("id", input.listId);
+  const { data, error } = await client.from("lists").delete().eq("id", input.listId).select("id").maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("List not found or not owned");
 }

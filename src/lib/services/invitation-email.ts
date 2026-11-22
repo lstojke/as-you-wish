@@ -1,9 +1,11 @@
 import { LOCALES, t, type Locale } from "@/lib/i18n";
+import type { InvitationRole } from "@/lib/schemas/wishlist";
 
 export interface InvitationEmailInput {
   acceptUrl: string;
   listTitle: string;
   inviterEmail: string;
+  role: InvitationRole;
 }
 
 export interface InvitationEmail {
@@ -14,7 +16,12 @@ export interface InvitationEmail {
 
 // Invitees have no known locale, so the email carries every language
 // (Polish first), separated by a divider.
-export function buildInvitationEmail({ acceptUrl, listTitle, inviterEmail }: InvitationEmailInput): InvitationEmail {
+export function buildInvitationEmail({
+  acceptUrl,
+  listTitle,
+  inviterEmail,
+  role,
+}: InvitationEmailInput): InvitationEmail {
   const locales: readonly Locale[] = LOCALES;
   const subject = `${locales.map((l) => t(l, "email.invitation.subject", { inviter: inviterEmail })).join(" / ")} - AsYouWish`;
 
@@ -22,6 +29,7 @@ export function buildInvitationEmail({ acceptUrl, listTitle, inviterEmail }: Inv
     .map((l) =>
       [
         t(l, "email.invitation.intro", { inviter: inviterEmail, list: listTitle }),
+        t(l, role === "collaborator" ? "invite.collaboratorDescription" : "invite.viewerDescription"),
         `${t(l, "email.invitation.cta")}: ${acceptUrl}`,
         t(l, "email.invitation.ignore"),
       ].join("\n\n"),
@@ -33,6 +41,7 @@ export function buildInvitationEmail({ acceptUrl, listTitle, inviterEmail }: Inv
       (l) =>
         `<div lang="${l}">` +
         `<p>${t(l, "email.invitation.intro", { inviter: escapeHtml(inviterEmail), list: escapeHtml(listTitle) })}</p>` +
+        `<p>${escapeHtml(t(l, role === "collaborator" ? "invite.collaboratorDescription" : "invite.viewerDescription"))}</p>` +
         `<p><a href="${escapeHtml(acceptUrl)}">${escapeHtml(t(l, "email.invitation.cta"))}</a></p>` +
         `<p>${escapeHtml(t(l, "email.invitation.ignore"))}</p>` +
         `</div>`,

@@ -12,9 +12,10 @@ import {
   reservationReleaseSchema,
   invitationCreateSchema,
   invitationRevokeSchema,
+  invitationRoleChangeSchema,
   invitationAcceptSchema,
 } from "@/lib/schemas/wishlist";
-import { createList, updateList, deleteList, getListById } from "@/lib/services/lists";
+import { createList, renameCollaborativeList, deleteList, getListById } from "@/lib/services/lists";
 import { createItem, updateItem, deleteItem } from "@/lib/services/items";
 import {
   getDefaultCurrency,
@@ -26,7 +27,7 @@ import { profileDetailsSchema, profilePreferencesSchema } from "@/lib/schemas/pr
 import { setLocaleCookie } from "@/lib/i18n/cookie";
 import { profileUpdateSchema } from "@/lib/currency";
 import { createReservation, releaseReservation, reserveErrorPayload } from "@/lib/services/reservations";
-import { createInvitation, deleteInvitation, acceptInvitation } from "@/lib/services/invitations";
+import { createInvitation, deleteInvitation, acceptInvitation, changeInvitationRole } from "@/lib/services/invitations";
 import { sendInvitationEmail } from "@/lib/services/email";
 import { listShareManageSchema } from "@/lib/schemas/list-shares";
 import { getListShareState, listShareView, manageListShare } from "@/lib/services/list-shares";
@@ -309,7 +310,7 @@ export const server = {
       handler: async (input, context) => {
         const client = requireSupabase(context.locals);
         try {
-          return await updateList(client, input);
+          return await renameCollaborativeList(client, input);
         } catch (err) {
           // eslint-disable-next-line no-console -- surface server-side action errors in Wrangler tail
           console.error("lists.rename failed", err);
@@ -425,6 +426,7 @@ export const server = {
             acceptUrl,
             listTitle: list?.title ?? "a wishlist",
             inviterEmail: context.locals.user?.email ?? "",
+            role: invitation.role,
           });
           return { invitation, emailSent };
         } catch (err) {
@@ -434,6 +436,24 @@ export const server = {
           throw new ActionError({
             code: "INTERNAL_SERVER_ERROR",
             message: t(context.locals.locale, "errors.inviteSend"),
+          });
+        }
+      },
+    }),
+    changeRole: defineAction({
+      accept: "json",
+      input: invitationRoleChangeSchema,
+      handler: async (input, context) => {
+        const client = requireSupabase(context.locals);
+        try {
+          await changeInvitationRole(client, input);
+          return { success: true as const };
+        } catch {
+          // eslint-disable-next-line no-console -- avoid logging invitation details
+          console.error("invitations.changeRole failed");
+          throw new ActionError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: t(context.locals.locale, "errors.inviteRoleChange"),
           });
         }
       },

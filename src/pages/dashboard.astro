@@ -2,7 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import AppHeader from "@/components/AppHeader.astro";
 import DashboardLists from "@/components/dashboard/DashboardLists";
-import { listOwnedAndShared, type ListRow } from "@/lib/services/lists";
+import { getListRole, listOwnedAndShared, type ListRow } from "@/lib/services/lists";
 import { t } from "@/lib/i18n";
 import { listGroups, listGroupMemberships } from "@/lib/services/list-groups";
 import type { PersonalListGroup, ListGroupMembership } from "@/components/dashboard/group-types";
@@ -15,6 +15,7 @@ if (!user || !supabase) {
 }
 let owned: ListRow[] = [];
 let shared: ListRow[] = [];
+let sharedRoles: Record<string, "viewer" | "collaborator"> = {};
 let listsLoadFailed = false;
 let groups: PersonalListGroup[] = [];
 let memberships: ListGroupMembership[] = [];
@@ -25,6 +26,14 @@ for (const delayMs of [0, 250, 750]) {
   }
   try {
     ({ owned, shared } = await listOwnedAndShared(supabase));
+    const roles = await Promise.all(
+      shared.map(async (list) => [list.id, await getListRole(supabase, list.id)] as const),
+    );
+    sharedRoles = {};
+    for (const [listId, role] of roles) {
+      if (role === "viewer" || role === "collaborator") sharedRoles[listId] = role;
+    }
+    shared = shared.filter((list) => list.id in sharedRoles);
     listsLoadFailed = false;
     break;
   } catch {
@@ -52,6 +61,7 @@ const selectedGroupId = Astro.url.searchParams.get("group");
       locale={locale}
       owned={owned}
       shared={shared}
+      sharedRoles={sharedRoles}
       loadError={listsLoadFailed}
       groups={groups}
       memberships={memberships}

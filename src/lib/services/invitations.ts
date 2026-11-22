@@ -1,8 +1,15 @@
 import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/database.types";
-import type { InvitationCreateInput, InvitationRevokeInput, InvitationAcceptInput } from "@/lib/schemas/wishlist";
+import {
+  invitationRoleSchema,
+  type InvitationCreateInput,
+  type InvitationRevokeInput,
+  type InvitationAcceptInput,
+  type InvitationRoleChangeInput,
+  type InvitationRole,
+} from "@/lib/schemas/wishlist";
 
-export type InvitationRow = Database["public"]["Tables"]["invitations"]["Row"];
+export type InvitationRow = Omit<Database["public"]["Tables"]["invitations"]["Row"], "role"> & { role: InvitationRole };
 
 type Client = SupabaseClient<Database>;
 
@@ -16,7 +23,7 @@ export type CreateInvitationResult = { ok: true; invitation: InvitationRow } | {
 export async function createInvitation(client: Client, input: InvitationCreateInput): Promise<CreateInvitationResult> {
   const { data, error } = await client
     .from("invitations")
-    .insert({ list_id: input.listId, email: input.email })
+    .insert({ list_id: input.listId, email: input.email, role: input.role })
     .select("*")
     .single();
 
@@ -24,7 +31,7 @@ export async function createInvitation(client: Client, input: InvitationCreateIn
     if (error.code === "23505") return { ok: false, reason: "already_invited" };
     throw error;
   }
-  return { ok: true, invitation: data };
+  return { ok: true, invitation: { ...data, role: invitationRoleSchema.parse(data.role) } };
 }
 
 // Owner visibility comes from invitations_select RLS (is_list_owner).
@@ -35,13 +42,28 @@ export async function listInvitations(client: Client, listId: string): Promise<I
     .eq("list_id", listId)
     .order("invited_at", { ascending: false });
   if (error) throw error;
-  return data;
+  return data.map((invitation) => ({ ...invitation, role: invitationRoleSchema.parse(invitation.role) }));
+}
+
+export async function changeInvitationRole(client: Client, input: InvitationRoleChangeInput): Promise<void> {
+  const { data, error } = await client.rpc("set_invitation_role", {
+    p_invitation_id: input.invitationId,
+    p_role: input.role,
+  });
+  if (error) throw error;
+  if (!data) throw new Error("Invitation role change was not confirmed");
 }
 
 // RLS invitations_delete gates to is_list_owner; used to revoke a pending invite.
 export async function deleteInvitation(client: Client, input: InvitationRevokeInput): Promise<void> {
-  const { error } = await client.from("invitations").delete().eq("id", input.invitationId);
+  const { data, error } = await client
+    .from("invitations")
+    .delete()
+    .eq("id", input.invitationId)
+    .select("id")
+    .maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("Invitation not found or not owned");
 }
 
 export type AcceptInvitationReason = "mismatch" | "not_found" | "not_confirmed" | "unauthenticated" | "unknown";

@@ -11,7 +11,7 @@ import {
 interface Props {
   listTitle: string;
   onRename: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 }
 
 export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props) {
@@ -43,16 +43,18 @@ export default function ListActionsMenu({ listTitle, onRename, onDelete }: Props
           <Pencil />
           {t("dashboardLists.rename")}
         </DropdownMenuItem>
-        <DropdownMenuItem
-          variant="destructive"
-          onSelect={(e) => {
-            e.preventDefault();
-            onDelete();
-          }}
-        >
-          <Trash2 />
-          {t("dashboardLists.delete")}
-        </DropdownMenuItem>
+        {onDelete && (
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={(e) => {
+              e.preventDefault();
+              onDelete();
+            }}
+          >
+            <Trash2 />
+            {t("dashboardLists.delete")}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

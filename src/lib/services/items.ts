@@ -52,7 +52,7 @@ export async function createItem(client: Client, input: ItemCreateInput, default
   return data;
 }
 
-// RLS gates update/delete to is_list_owner(list_id); no app-side ownership check needed.
+// RLS gates updates and deletes to the owner or an accepted collaborator.
 export async function updateItem(client: Client, input: ItemUpdateInput, defaultCurrency: string): Promise<ItemRow> {
   // Preserve the item's stored currency on edit; only fall back to the
   // caller's profile default when a price is newly added to an item that had none.
@@ -82,6 +82,7 @@ export async function updateItem(client: Client, input: ItemUpdateInput, default
 }
 
 export async function deleteItem(client: Client, input: ItemDeleteInput): Promise<void> {
-  const { error } = await client.from("items").delete().eq("id", input.itemId);
+  const { data, error } = await client.from("items").delete().eq("id", input.itemId).select("id").maybeSingle();
   if (error) throw error;
+  if (!data) throw new Error("Item not found or not editable");
 }

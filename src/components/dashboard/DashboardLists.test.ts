@@ -29,6 +29,7 @@ const props = {
   locale: "en" as const,
   owned: [list("owned", "me"), list("outside", "me")],
   shared: [list("shared", "other")],
+  sharedRoles: { shared: "viewer" as const },
   loadError: false,
   groups: [group("christmas"), group("birthday"), group("empty")],
   memberships: [
@@ -48,6 +49,19 @@ describe("personal groups on the dashboard", () => {
     expect(html).toContain('href="/lists/shared"');
     expect(html).not.toContain('href="/lists/outside"');
     expect(html).not.toContain('href="/lists/revoked"');
+  });
+
+  it("offers shared-list actions to collaborators but not viewers, including inside groups", () => {
+    const viewer = renderToStaticMarkup(createElement(DashboardLists, { ...props, selectedGroupId: "christmas" }));
+    const editor = renderToStaticMarkup(
+      createElement(DashboardLists, {
+        ...props,
+        selectedGroupId: "christmas",
+        sharedRoles: { shared: "collaborator" },
+      }),
+    );
+    expect(viewer).not.toContain("Actions for list List shared");
+    expect(editor).toContain("Actions for list List shared");
   });
 
   it("keeps empty groups openable and displays an empty-group state", () => {
